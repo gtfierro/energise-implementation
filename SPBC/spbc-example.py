@@ -145,8 +145,8 @@ class myspbc(pbc.SPBCProcess):
 cfg = {
     'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
     'wavemq': '127.0.0.1:4516',
-    'name': 'spbctest',
-    'entity': 'spbctest.ent',
+    'name': 'spbc-jasper-1',
+    'entity': 'spbc-jasper-1.ent',
     'reference_channels': ['flexlab1/L1','flexlab1/L2']
 }
 spbc_instance = myspbc(cfg)
