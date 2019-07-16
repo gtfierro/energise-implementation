@@ -10,12 +10,12 @@ from dss_3 import *
     # In[3]:
     
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
-def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt exist    
+def spbc_run(lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4): #write 'none' if doesnt exist    
     # Enter the path/name of the model's excel file and import
     
     #Test Case
-    filepath = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13_bal/"
-    modelpath = filepath + "016 GB_IEEE13_balance all ver2.xls"
+    filepath = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/2_1/"
+    modelpath = filepath + "001_phasor08_IEEE13.xls"
     
     modeldata = pd.ExcelFile(modelpath)
      
@@ -24,8 +24,8 @@ def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt e
     #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
     
     #Test Case
-    loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13_bal/"
-    loadpath = loadfolder + "016 GB_IEEE13_balance_sigBuilder_Q_12_13_norm03_act.xlsx"
+    loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/2_1/"
+    loadpath = loadfolder + "001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_acttest.xlsx"
     #001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_3_1.xlsx
     
     actpath = loadpath
@@ -87,16 +87,7 @@ def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt e
                 obj = obj + lam2*(cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[1,ts]) + cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[2,ts]) + cp.square(bus.Vmagsq_linopt[1,ts]-bus.Vmagsq_linopt[2,ts]))
     
     # objective 3.1 - power flow
-                '''
-        for key, line in myfeeder.linedict.items():
-            if line.name == 'line_651to632':
-                obj += lam3*cp.square(line.P_linopt[0,ts])
-                obj += lam3*cp.square(line.P_linopt[1,ts])
-                obj += lam3*cp.square(line.P_linopt[2,ts])
-                obj += lam3*cp.square(line.Q_linopt[0,ts])
-                obj += lam3*cp.square(line.Q_linopt[1,ts])
-                obj += lam3*cp.square(line.Q_linopt[2,ts])
-                '''
+
     
     # objective 3.2 - voltage volitility
     for ts in range(1,myfeeder.timesteps):
@@ -108,17 +99,7 @@ def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt e
                 
     # add cost function to actuators       
     if costfn_on_off == 1:
-        for ts in range(0,myfeeder.timesteps):
-            '''
-            for key,iact in myfeeder.actdict.items():
-                #print(key)
-                #print(iact.Pgen[:,timesteps-1].value)
-                key_str = str(key)
-                #if iact.Pgen[:,timesteps-1].value is not None:
-                #obj += cp.square(iact.Pgen[:,ts] * actcostdata[key_str][ts])
-                for idx in range(0,3):
-                    obj += cp.square(iact.Pgen[idx,ts:ts+1] * actcostdata[key_str][ts])
-            '''    
+        for ts in range(0,myfeeder.timesteps):  
                     
             for key, inode in myfeeder.busdict.items():
                 for iact in inode.actuators:
@@ -143,6 +124,7 @@ def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt e
     
     # Vtargdict[key(nodeID)][Vmag/Vang/KVbase]
     Vtargdict, act_keys = get_targets(myfeeder)
+    lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
     return Vtargdict, act_keys
 
 # In[8]:
@@ -150,37 +132,12 @@ def spbc_run(act_node1,act_node2,act_node3,act_node4): #write 'none' if doesnt e
 Vtargdict, act_keys = spbc_run(0,0,0,0)
 
 # In[9]:
-# JASPER temp
-#for key,iact in myfeeder.actdict.items():
-'''    
-for key, inode in myfeeder.busdict.items():
-    for iact in inode.actuators:
-
-        print('P:',iact.Pgen.value)
-        #print('Q:',iact.Qgen.value)
-
-        for ts in range(0,myfeeder.timesteps):
-            print(key)
-            print(iact.Pgen[:,ts].value)
-            print('normalized')
-            print(iact.Pgen[:,ts].value/(iact.Psched[:,ts]/inode.kVAbase))
-            print('Psched')
-            print(iact.Psched[:,ts]/inode.kVAbase)
-
-for ts in range(0,myfeeder.timesteps):
-    for key, line in myfeeder.linedict.items():
-# objective 3 - voltage volitility
-        #if choose_obj == 3:
-            if line.name == 'line_651to632':
-                print(np.max(line.P_linopt[:,:].value))
-'''
-
 # Plot first timestep of result
 
 tsp = 0 # select timestep for convergence plot
 
 # DSS_alltimesteps(myfeeder,1) 
-plot = 0
+plot = 0 #turn plot on/off
 if plot == 1:
     # Plot lin result
     print('Linear sln')
