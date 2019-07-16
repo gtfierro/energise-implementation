@@ -11,8 +11,7 @@ import pandas as pd
 import numpy as np
 import cvxpy as cp
 import string
-import networkx as nx # As of 2018.5.17 you need networkx v1.9; later versions have lost some important functionality
-import matplotlib.pyplot as plt
+import networkx as nx
 from copy import deepcopy
 import pdb
 

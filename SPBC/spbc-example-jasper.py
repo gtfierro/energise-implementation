@@ -130,6 +130,27 @@ class myspbc(pbc.SPBCProcess):
         
         # TODO: how do we communicate phase information?
         # None-padded? dicts keyed by the channel name?
+        # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
+        '''
+        computed_targets = {}
+        
+        for key in act_keys:
+            lpbcID = 'lpbc_' + key
+            
+            computed_targets[lpbcID] = {
+                    'channels': ['L1','L2','L3'],
+                    'V': [Vtargdict[key]['Vmag'][0],
+                          Vtargdict[key]['Vmag'][1],
+                          Vtargdict[key]['Vmag'][2]],
+                    'delta': [Vtargdict[act_keys[0]]['Vang'][0],
+                              Vtargdict[act_keys[0]]['Vang'][1],
+                              Vtargdict[act_keys[0]]['Vang'][2]],
+                    'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
+                    }
+            
+        '''    
+        
+        
         computed_targets = {
             'lpbc_1': {
                 # 3 phases
@@ -140,7 +161,7 @@ class myspbc(pbc.SPBCProcess):
                 'delta': [Vtargdict[act_keys[0]]['Vang'][0],
                           Vtargdict[act_keys[0]]['Vang'][1],
                           Vtargdict[act_keys[0]]['Vang'][2]],
-                'kvbase': Vtargdict[act_keys[0]]['KVbase'][0],
+                'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
             },
             'lpbctest': {
                 'channels': ['L2'],
