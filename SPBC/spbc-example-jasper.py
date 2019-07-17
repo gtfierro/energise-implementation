@@ -2,6 +2,13 @@ from pyxbos.process import run_loop, schedule
 from pyxbos.drivers import pbc
 import logging
 import random
+
+#import spbc related functions
+from setup_3 import *
+from constraints_3 import *
+from dss_3 import *
+from main_run_3 import *
+
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 class myspbc(pbc.SPBCProcess):
@@ -103,7 +110,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(3, self.compute_and_announce))
+        schedule(self.call_periodic(60, self.compute_and_announce))
 
     async def compute_and_announce(self):
 
@@ -117,22 +124,49 @@ class myspbc(pbc.SPBCProcess):
             print(f"Channel {channel} has {len(data) if data else 0} points")
 
         # you could do expensive compute to get new targets here.
-        # This oculd produce some intermediate structure like so:
-
+        # This could produce some intermediate structure like so:
+        Vtargdict, act_keys = spbc_run(0,0,0,0)
+        
+        
         # TODO: how do we communicate phase information?
         # None-padded? dicts keyed by the channel name?
+        # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
+        '''
+        computed_targets = {}
+        
+        for key in act_keys:
+            lpbcID = 'lpbc_' + key
+            
+            computed_targets[lpbcID] = {
+                    'channels': ['L1','L2','L3'],
+                    'V': [Vtargdict[key]['Vmag'][0],
+                          Vtargdict[key]['Vmag'][1],
+                          Vtargdict[key]['Vmag'][2]],
+                    'delta': [Vtargdict[act_keys[0]]['Vang'][0],
+                              Vtargdict[act_keys[0]]['Vang'][1],
+                              Vtargdict[act_keys[0]]['Vang'][2]],
+                    'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
+                    }
+            
+        '''    
+        
+        
         computed_targets = {
             'lpbc_1': {
                 # 3 phases
                 'channels': ['L1','L2','L3'],
-                'V': [1.0,2.0,3.0],
-                'delta': [.8, .9, .7],
-                'kvbase': None,
+                'V': [Vtargdict[act_keys[0]]['Vmag'][0],
+                      Vtargdict[act_keys[0]]['Vmag'][1],
+                      Vtargdict[act_keys[0]]['Vmag'][2]],
+                'delta': [Vtargdict[act_keys[0]]['Vang'][0],
+                          Vtargdict[act_keys[0]]['Vang'][1],
+                          Vtargdict[act_keys[0]]['Vang'][2]],
+                'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
             },
             'lpbctest': {
                 'channels': ['L2'],
                 'V': [1.0],
-                'delta': [.8],
+                'delta': [.5],
                 'kvbase': [1],
             }
         }
