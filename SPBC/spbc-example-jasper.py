@@ -142,12 +142,9 @@ class myspbc(pbc.SPBCProcess):
             await self.broadcast_target(lpbc_name, targets['channels'], \
                             targets['V'], targets['delta'], targets['kvbase'])
 
-cfg = {
-    'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-    'wavemq': '127.0.0.1:9516',
-    'name': 'spbc-jasper-1',
-    'entity': 'spbc-jasper-1.ent',
-    'reference_channels': ['flexlab1/L1','flexlab1/L2']
-}
+if len(sys.argv) > 1:
+    cfg = config_from_file(sys.argv[1])
+else:
+    sys.exit("Must supply config file as argument: python3 spbc.py <config file.toml>")
 spbc_instance = myspbc(cfg)
 run_loop()
