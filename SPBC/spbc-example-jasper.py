@@ -177,43 +177,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                     computed_targets[lpbcID]['KVbase'].append(Vtargdict[key]['KVbase'][phidx])
                     computed_targets[lpbcID]['KVAbase'].append(subkVAbase/3)
-                    
-                    
-           '''         
-            computed_targets[lpbcID] = {
-                    'channels': ['L1','L2','L3'],
-                    'V': [Vtargdict[key]['Vmag'][0],
-                          Vtargdict[key]['Vmag'][1],
-                          Vtargdict[key]['Vmag'][2]],
-                    'delta': [Vtargdict[key]['Vang'][0],
-                              Vtargdict[key]['Vang'][1],
-                              Vtargdict[key]['Vang'][2]],
-                    'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
-                    }
-            
-            
-        
-        
-        computed_targets = {
-            'lpbc_1': {
-                # 3 phases
-                'channels': ['L1','L2','L3'],
-                'V': [Vtargdict[act_keys[0]]['Vmag'][0],
-                      Vtargdict[act_keys[0]]['Vmag'][1],
-                      Vtargdict[act_keys[0]]['Vmag'][2]],
-                'delta': [Vtargdict[act_keys[0]]['Vang'][0],
-                          Vtargdict[act_keys[0]]['Vang'][1],
-                          Vtargdict[act_keys[0]]['Vang'][2]],
-                'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
-            },
-            'lpbctest': {
-                'channels': ['L2'],
-                'V': [1.0],
-                'delta': [.5],
-                'kvbase': [1],
-            }
-        }
-            '''
+
             
         # loop through the computed targets and send them to all LPBCs:
         for lpbc_name, targets in computed_targets.items():
