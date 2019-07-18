@@ -45,22 +45,27 @@ warnings.showwarning = warn_with_traceback
 class feeder:
 # The main class. Creating this from an ePHASORsim model and set of loads stores all the information about your network
 # Buses, loads, lines, actuators, etc. are all stored as dictionaries within this object
-    def __init__(self,modelpath,loadfolder,loadpath,actpath,timesteps,subkVbase_phg,subkVAbase):
+    #[HIL] - added ICDI vars and phasor reference vars
+    def __init__(self,modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes):
         # import data
         self.modeldata = pd.ExcelFile(modelpath)
         self.loadfolder = loadfolder
         self.loadpath = loadpath
         self.actpath = actpath
         self.timesteps = timesteps
+        self.timestepcur = timestepcur
         self.subkVbase_phg = subkVbase_phg
         self.subkVAbase = subkVAbase
+        self.refphasor = refphasor
+        self.Psat_nodes = Psat_nodes
+        self.Qsat_nodes = Qsat_nodes
         # groom data (note that the functions below are not separable... 
         # ...e.g. buses are not completely defined until all these functions have been run)
         self.busdict = busbuilder(self.modeldata, subkVbase_phg, subkVAbase, timesteps)
         self.Vsrcdict = Vsrcbuilder(self.modeldata, self.busdict)
         self.shuntdict = shuntbuilder(self.modeldata, self.busdict,timesteps)
-        self.loaddict = loadbuilderPQ(self.modeldata, self.busdict, loadpath, timesteps)
-        self.actdict = actbuilder(self.modeldata, self.busdict, loadpath, timesteps)
+        self.loaddict = loadbuilderPQ(self.modeldata, self.busdict, loadpath, timesteps, timestepcur)
+        self.actdict = actbuilder(self.modeldata, self.busdict, loadpath, timesteps, timestepcur)
         self.linedict = linebuilder(self.modeldata, self.busdict, timesteps)
         self.transdict = transbuilder(self.modeldata, self.busdict, self.subkVAbase, timesteps)
         self.switchdict = switchbuilder(self.modeldata, self.busdict, timesteps)
@@ -88,7 +93,7 @@ class bus:
         
         self.Vmag_NL = np.ones((3,timesteps))
         self.Vang_NL = np.array([[0.],[240.],[120.]])
-        for idx in range(timesteps-1):
+        for idx in range(timesteps-1): #[HIL] - delete -1? or set timesteps=2 and just use first value
             self.Vang_NL = np.concatenate((self.Vang_NL,np.array([[0.],[240.],[120.]])), axis=1)
                                 
 class connector:
@@ -506,7 +511,7 @@ def shuntbuilder(modeldata, busdict,timesteps):
 
 
 # Create load dictionary from ePHASORsim model and Gridbright load files
-def loadbuilderPQ(modeldata, busdict, loadpath, timesteps):
+def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
     
     # This creates the load objects from the ePHASORsim model, but ignores the specified values (values are set with a Gridbright load file)
     loadsheet = modeldata.parse('Multiphase Load')
@@ -552,8 +557,10 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps):
         
     loadfile = pd.ExcelFile(loadpath)
     loaddf = loadfile.parse('Time_Series_data')
-    #Jaimie
-    #loaddf = loadfile.parse('Sheet1')
+    #[HIL] - parse out current timestep
+    loaddf = loaddf[timestepcur:timestepcur+timesteps]
+    loaddf.index -= timestepcur
+    
 
     # Populate the load dictionary's P and Q schedules with a Gridbright load file
     
@@ -686,11 +693,14 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps):
 # Create actuator dictionary from Gridbright load file
 # This interprets all 'PV_KW_' entries in the load file as controllable PV. 
 # If the PV is uncontrollable, it should be included as negative load in the load P and Q schedules
-def actbuilder(modeldata, busdict, actpath, timesteps):
+def actbuilder(modeldata, busdict, actpath, timesteps, timestepcur):
     
     actdict = dict()
     actfile = pd.ExcelFile(actpath)
     actdf = actfile.parse('Time_Series_data')
+    #[HIL] - parse current timestep
+    actdf = actdf[timestepcur:timestepcur+timesteps]
+    actdf.index -= timestepcur
     
     for key,ibus in busdict.items():
         for ph in ibus.phases:

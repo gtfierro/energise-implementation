@@ -134,12 +134,17 @@ def cvx_buildN(currentline,timestep):
 def cons_slack(feeder):
 # This will set slack bus magnitude to 1 and angles to 0, 4pi/3, 2pi/3.
 # A more sophisticated later version might set the voltages at multiple buses based on Vsrc objects.
+    #[HIL] - refphasor - set slack = to refphasor
     conslist = list()
     for key, inode in feeder.busdict.items():
         if inode.type == 'SLACK' or inode.type == 'Slack' or inode.type == 'slack':
             for idx in range(feeder.timesteps):
+                conslist.append(inode.Vmagsq_linopt[:,idx:idx+1] == feeder.refphasor[:,0:1])
+                conslist.append(inode.Vang_linopt[:,idx:idx+1] == feeder.refphasor[:,1:2])        
+                '''
                 conslist.append(inode.Vmagsq_linopt[:,idx:idx+1] == np.ones([3,1]))
                 conslist.append(inode.Vang_linopt[:,idx:idx+1] == np.array([[0],[4*np.pi/3],[2*np.pi/3]]))
+                '''
     return conslist
 
 
@@ -209,7 +214,7 @@ def cons_realpwrbalance(feeder):
 
                 actuation = np.zeros((3,1), dtype=np.complex_)
                 for iact in inode.actuators:
-                    actuation = actuation + iact.Pgen[:,ts:ts+1]  
+                    actuation = (actuation + iact.Pgen[:,ts:ts+1])
 
                 conslist.append((power_in-power_out) == (cvx_setrealdemandpu(inode,ts)-actuation))
     return conslist
@@ -264,13 +269,20 @@ def cons_actuators(feeder,acttoggle):
     # This version creates box constraints and can be used if the circular constraints defined above cause problems
     conslist = list()
     for key, inode in feeder.busdict.items():
+        Psatmul = 1
+        Qsatmul = 1
+        if key in feeder.Psat_nodes: #[HIL] - ICDI
+            Psatmul = 0.9
+        if key in feeder.Qsat_nodes: #[HIL] - ICDI
+            Psatmul = 0.9
+        
         for iact in inode.actuators:
             for ts in range(0,feeder.timesteps):
                 
                 if acttoggle == True:
                     for idx in range(0,3):
-                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= iact.Psched[idx,ts:ts+1]/inode.kVAbase)
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= iact.Ssched[idx,ts:ts+1]/inode.kVAbase-iact.Psched[idx,ts:ts+1]/inode.kVAbase)
+                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
                     
                 else:
                     for idx in range(0,3):

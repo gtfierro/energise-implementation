@@ -2,6 +2,7 @@ from pyxbos.process import run_loop, schedule
 from pyxbos.drivers import pbc
 import logging
 import random
+import datetime
 
 #import spbc related functions
 from setup_3 import *
@@ -118,37 +119,79 @@ class myspbc(pbc.SPBCProcess):
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
-
+                
+        #create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
+        Psat_nodes = [] #dummy value
+        Qsat_nodes = [] #dummy value
+        
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
+        
+        #dummy values
+        refphasor = np.ones((3,2)) 
+        refphasor[:,0]=1
+        refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
         # you could do expensive compute to get new targets here.
         # This could produce some intermediate structure like so:
-        Vtargdict, act_keys = spbc_run(0,0,0,0)
+        Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes)
         
         
         # TODO: how do we communicate phase information?
         # None-padded? dicts keyed by the channel name?
         # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
-        '''
+
         computed_targets = {}
         
-        for key in act_keys:
+        #for key in act_keys:
+        for key, iact in myfeeder.actdict.items():
             lpbcID = 'lpbc_' + key
+            computed_targets[lpbcID] = {}
+            #intialize
+            computed_targets[lpbcID]['channels'] = []
+            computed_targets[lpbcID]['V'] = []
+            computed_targets[lpbcID]['delta'] = []
+            computed_targets[lpbcID]['KVbase'] = []
+            computed_targets[lpbcID]['KVAbase'] = []
             
+            for ph in iact.phases:
+                if ph == 'a':
+                    phidx  = 0
+                    computed_targets[lpbcID]['channels'].append('L1')
+                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                    computed_targets[lpbcID]['KVbase'].append(Vtargdict[key]['KVbase'][phidx])
+                    computed_targets[lpbcID]['KVAbase'].append(subkVAbase/3)
+                if ph == 'b':
+                    phidx  = 1
+                    computed_targets[lpbcID]['channels'].append('L2')
+                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                    computed_targets[lpbcID]['KVbase'].append(Vtargdict[key]['KVbase'][phidx])
+                    computed_targets[lpbcID]['KVAbase'].append(subkVAbase/3)
+                if ph == 'c':
+                    phidx  = 2
+                    computed_targets[lpbcID]['channels'].append('L3')
+                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                    computed_targets[lpbcID]['KVbase'].append(Vtargdict[key]['KVbase'][phidx])
+                    computed_targets[lpbcID]['KVAbase'].append(subkVAbase/3)
+                    
+                    
+           '''         
             computed_targets[lpbcID] = {
                     'channels': ['L1','L2','L3'],
                     'V': [Vtargdict[key]['Vmag'][0],
                           Vtargdict[key]['Vmag'][1],
                           Vtargdict[key]['Vmag'][2]],
-                    'delta': [Vtargdict[act_keys[0]]['Vang'][0],
-                              Vtargdict[act_keys[0]]['Vang'][1],
-                              Vtargdict[act_keys[0]]['Vang'][2]],
+                    'delta': [Vtargdict[key]['Vang'][0],
+                              Vtargdict[key]['Vang'][1],
+                              Vtargdict[key]['Vang'][2]],
                     'kvbase': [Vtargdict[act_keys[0]]['KVbase'][0]],
                     }
             
-        '''    
+            
         
         
         computed_targets = {
@@ -170,7 +213,8 @@ class myspbc(pbc.SPBCProcess):
                 'kvbase': [1],
             }
         }
-
+            '''
+            
         # loop through the computed targets and send them to all LPBCs:
         for lpbc_name, targets in computed_targets.items():
             await self.broadcast_target(lpbc_name, targets['channels'], \

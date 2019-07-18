@@ -6,15 +6,18 @@
 from setup_3 import *
 from constraints_3 import *
 from dss_3 import *
+import datetime
+import time
 
     # In[3]:
+ts = time.time()
     
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
-def spbc_run(lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4): #write 'none' if doesnt exist    
+def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist    
     # Enter the path/name of the model's excel file and import
     
     #Test Case
-    filepath = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/2_1/"
+    filepath = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13/"
     modelpath = filepath + "001_phasor08_IEEE13.xls"
     
     modeldata = pd.ExcelFile(modelpath)
@@ -24,8 +27,8 @@ def spbc_run(lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4): #write 'none' if does
     #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
     
     #Test Case
-    loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/2_1/"
-    loadpath = loadfolder + "001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_acttest.xlsx"
+    loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13/"
+    loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
     #001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_3_1.xlsx
     
     actpath = loadpath
@@ -38,11 +41,19 @@ def spbc_run(lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4): #write 'none' if does
      
     # Specify substation kV, kVA bases, and the number of timesteps in the load data
     subkVbase_phg = 4.16/np.sqrt(3)
-    subkVAbase = 5000
-    timesteps = 3
+    subkVAbase = 5000.
+    timesteps = 2
+    
+    #[HIL]
+    date = datetime.datetime.now()
+    month = date.month
+    day = date.day
+    hour = date.hour
+    minute = date.minute
+    timestepcur = hour*60+minute
     
     # Create feeder object
-    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,subkVbase_phg,subkVAbase)
+    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
      
     myfeeder
     
@@ -124,12 +135,22 @@ def spbc_run(lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4): #write 'none' if does
     
     # Vtargdict[key(nodeID)][Vmag/Vang/KVbase]
     Vtargdict, act_keys = get_targets(myfeeder)
-    lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
-    return Vtargdict, act_keys
+    #lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
+    return Vtargdict, act_keys, subkVAbase, myfeeder
 
 # In[8]:
 # Run main_run
-Vtargdict, act_keys = spbc_run(0,0,0,0)
+Psat = ['671']
+Qsat = ['671']
+#create dummy refphasor of nominal voltages
+refphasor = np.ones((3,2))
+refphasor[:,0]=1
+refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+
+Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
+
+tf = time.time()
+print(tf-ts)
 
 # In[9]:
 # Plot first timestep of result
@@ -139,6 +160,7 @@ tsp = 0 # select timestep for convergence plot
 # DSS_alltimesteps(myfeeder,1) 
 plot = 0 #turn plot on/off
 if plot == 1:
+    import matplotlib.pyplot as plt
     # Plot lin result
     print('Linear sln')
     ph1 = []

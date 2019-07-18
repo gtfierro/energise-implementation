@@ -552,6 +552,7 @@ def export_Vtargets(feeder):
 def get_targets(feeder):
 
     act_keys = []
+    tstep_cur = 0 #need way to call most recent timestep?
     for key, inode in feeder.busdict.items():
         for iact in inode.actuators:
             act_keys.append(key)
@@ -560,11 +561,19 @@ def get_targets(feeder):
 # use ID #'s, and create map of ID's to nodes
     Vtarg_dict = {}
     for key,ibus in feeder.busdict.items():
+        if ibus.type == 'SLACK' or ibus.type == 'Slack' or ibus.type == 'slack':
+            phAmag_ref = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
+            phBmag_ref = ibus.Vmag_NL[1,tstep_cur]/(ibus.kVbase_phg*1000)
+            phCmag_ref = ibus.Vmag_NL[2,tstep_cur]/(ibus.kVbase_phg*1000)
+            
+            phAang_ref = ibus.Vang_NL[0,tstep_cur]
+            phBang_ref = ibus.Vang_NL[1,tstep_cur]
+            phCang_ref = ibus.Vang_NL[2,tstep_cur]
+            print(phAmag_ref,phBmag_ref,phCmag_ref,phAang_ref,phBang_ref,phCang_ref)
         #for k in act_keys:
         #    print(k)
         #if key == k:
         if key in act_keys:
-            tstep_cur = 2 #need way to call most recent timestep?
             phAmag = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
             phBmag = ibus.Vmag_NL[1,tstep_cur]/(ibus.kVbase_phg*1000)
             phCmag = ibus.Vmag_NL[2,tstep_cur]/(ibus.kVbase_phg*1000)
@@ -586,9 +595,10 @@ def get_targets(feeder):
             '''
             
             Vtarg_dict[key] = {}
-            Vtarg_dict[key]['Vmag'] = [phAmag,phBmag,phCmag]
-            Vtarg_dict[key]['Vang'] = [phAang,phBang,phCang]
+            Vtarg_dict[key]['Vmag'] = [phAmag-phAmag_ref,phBmag-phBmag_ref,phCmag-phCmag_ref]
+            Vtarg_dict[key]['Vang'] = [phAang-phAang_ref,phBang-phBang_ref,phCang-phCang_ref]
             Vtarg_dict[key]['KVbase'] = [phA_KVbase,phB_KVbase,phC_KVbase]
+            Vtarg_dict[key]['KVAbase'] = [phA_KVbase,phB_KVbase,phC_KVbase]
             
     return Vtarg_dict, act_keys
 
