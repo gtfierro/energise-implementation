@@ -131,15 +131,9 @@ class democontroller(pbc.LPBCProcess):
 
         return status
 
-cfg = {
-        'namespace': "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ==",
-        'local_channels': ['flexlab1/L2'],
-        'reference_channels': ['flexlab1/L1'],
-        'entity': 'user.ent',
-        'wavemq': '127.0.0.1:4516',
-        'rate': 2, # number of seconds between calls to 'step'
-        'name': 'lpbctest',
-        'spbc': 'spbctest'
-        }
+if len(sys.argv) > 1:
+    cfg = config_from_file(sys.argv[1])
+else:
+    sys.exit("Must supply config file as argument: python3 lpbc.py <config file.toml>")
 lpbc1 = democontroller(cfg)
 run_loop()
