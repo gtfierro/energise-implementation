@@ -17,7 +17,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     # Enter the path/name of the model's excel file and import
     
     #Test Case
-    filepath = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13/"
+    filepath = "IEEE13/"
     modelpath = filepath + "001_phasor08_IEEE13.xls"
     
     modeldata = pd.ExcelFile(modelpath)
@@ -27,7 +27,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
     
     #Test Case
-    loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/Test_Cases/IEEE13/"
+    loadfolder = "IEEE13/"
     loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
     #001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_3_1.xlsx
     
