@@ -968,9 +968,8 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
         transdict[indkey].w0_kVbase_phg = row['w0_kV (ph-ph RMS)']/np.sqrt(3) 
         transdict[indkey].w0_kVAbase = row['w0_kVA_base']
         transdict[indkey].w0_rpu = row['w0_R_w0 (pu)'] 
-        print(transsheet.columns) #TEMP [HIL]
-        transdict[indkey].w0_conn = row[headmap['w0_conn']]
-        #transdict[indkey].w0_conn = row['w0_conn'] #[HIL] - edit, error
+        #transdict[indkey].w0_conn = row[headmap['w0_conn']]
+        transdict[indkey].w0_conn = row['w0_conn'] #[HIL] - edit, error
 
         if row['w1_bus_a']:
             transdict[indkey].w1_phases.append('a')    
