@@ -921,7 +921,9 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     print('windcols',windcols)
     othercols = len(transsheet.columns) - transsheet.columns.get_loc('winding 1') - windcols
     print('other',othercols)
+    print(transsheet.iloc[0])
     for idx in range(0,windcols):
+        print('windcols_idx',idx)
         transsheet.iloc[0][idx] = 'w0_' + transsheet.iloc[0][idx]
     for idx in range(windcols,2*windcols):
         transsheet.iloc[0][idx] = 'w1_' + transsheet.iloc[0][idx]
