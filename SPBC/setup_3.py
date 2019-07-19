@@ -915,6 +915,8 @@ def switchbuilder(modeldata, busdict, timesteps):
 # Create transformer dictionary from dataframe
 def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     transsheet = modeldata.parse('Transformer 3-phase')
+    if transsheet.iloc[0][0] == 'ID':
+        transsheet = modeldata.parse('transformer 3-phase', index_col=0)
     
     # Prep transformer column headers (This is built to handle a 2-winding transformer)
     windcols = transsheet.columns.get_loc('winding 1') - transsheet.columns.get_loc('winding 0')
