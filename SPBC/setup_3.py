@@ -918,7 +918,9 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     
     # Prep transformer column headers (This is built to handle a 2-winding transformer)
     windcols = transsheet.columns.get_loc('winding 1') - transsheet.columns.get_loc('winding 0')
+    print('windcols',windcols)
     othercols = len(transsheet.columns) - transsheet.columns.get_loc('winding 1') - windcols
+    print('other',othercols)
     for idx in range(0,windcols):
         transsheet.iloc[0][idx] = 'w0_' + transsheet.iloc[0][idx]
     for idx in range(windcols,2*windcols):
