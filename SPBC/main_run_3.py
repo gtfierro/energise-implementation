@@ -11,6 +11,7 @@ import time
 
     # In[3]:
 ts = time.time()
+print('running...')
     
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
 def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist    
@@ -150,6 +151,7 @@ refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
 
 tf = time.time()
+print('complete')
 print(tf-ts)
 
 # In[9]:

@@ -569,7 +569,6 @@ def get_targets(feeder):
             phAang_ref = ibus.Vang_NL[0,tstep_cur]
             phBang_ref = ibus.Vang_NL[1,tstep_cur]
             phCang_ref = ibus.Vang_NL[2,tstep_cur]
-            print(phAmag_ref,phBmag_ref,phCmag_ref,phAang_ref,phBang_ref,phCang_ref)
         #for k in act_keys:
         #    print(k)
         #if key == k:

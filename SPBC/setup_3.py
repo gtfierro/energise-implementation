@@ -915,17 +915,14 @@ def switchbuilder(modeldata, busdict, timesteps):
 # Create transformer dictionary from dataframe
 def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     transsheet = modeldata.parse('Transformer 3-phase')
+    #[HIL] - NEW CODE index misalignment during parse
     if transsheet.iloc[0][0] == 'ID':
         transsheet = modeldata.parse('Transformer 3-phase', index_col=0)
     
     # Prep transformer column headers (This is built to handle a 2-winding transformer)
     windcols = transsheet.columns.get_loc('winding 1') - transsheet.columns.get_loc('winding 0')
-    print('windcols',windcols)
     othercols = len(transsheet.columns) - transsheet.columns.get_loc('winding 1') - windcols
-    print('other',othercols)
-    print(transsheet.iloc[0])
     for idx in range(0,windcols):
-        print('windcols_idx',idx)
         transsheet.iloc[0][idx] = 'w0_' + transsheet.iloc[0][idx]
     for idx in range(windcols,2*windcols):
         transsheet.iloc[0][idx] = 'w1_' + transsheet.iloc[0][idx]
@@ -934,12 +931,6 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     
     # Create dictionary
     transdict = dict()
-    
-    #[HIL] - NEW CODE (key error when running on server)
-    headmap = {}
-    for idx, head in enumerate(transsheet.columns):
-        headmap[head]=idx
-    #[HIL] - NEW CODE end
     
     for idx, row in transsheet.iterrows():
         if row['w0_bus a']:
