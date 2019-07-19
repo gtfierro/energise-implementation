@@ -928,6 +928,13 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     
     # Create dictionary
     transdict = dict()
+    
+    #[HIL] - NEW CODE (key error when running on server)
+    headmap = {}
+    for idx, head in enumerate(transsheet.columns):
+        headmap[head]=idx
+    #[HIL] - NEW CODE end
+    
     for idx, row in transsheet.iterrows():
         if row['w0_bus a']:
             indkeyw0 = row['w0_bus a'][:len(row['w0_bus a'])-2]       
@@ -962,9 +969,10 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
         transdict[indkey].w0_node = busdict[indkeyw0]
     
         transdict[indkey].w0_kVbase_phg = row['w0_kV (ph-ph RMS)']/np.sqrt(3) 
-        transdict[indkey].w0_kVAbase = row['w0_kVA_base'] 
+        transdict[indkey].w0_kVAbase = row['w0_kVA_base']
         transdict[indkey].w0_rpu = row['w0_R_w0 (pu)'] 
-        transdict[indkey].w0_conn = row['w0_conn']
+        #transdict[indkey].w0_conn = row[headmap['w0_conn']]
+        transdict[indkey].w0_conn = row['w0_conn'] #[HIL] - edit, error
 
         if row['w1_bus_a']:
             transdict[indkey].w1_phases.append('a')    
