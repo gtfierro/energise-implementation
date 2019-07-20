@@ -137,17 +137,17 @@ class myspbc(pbc.SPBCProcess):
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
-            
-            #store most recent uPMU ref phasor values
-            if 'L1' in channel:
-                refphasor[0,0] = data[-1]['magnitude']
-                refphasor[0,1] = data[-1]['angle']
-            if 'L2' in channel:
-                refphasor[1,0] = data[-1]['magnitude']
-                refphasor[1,1] = data[-1]['angle']
-            if 'L3' in channel:
-                refphasor[2,0] = data[-1]['magnitude']
-                refphasor[2,1] = data[-1]['angle']
+            if data[-1].all() != None:
+                #store most recent uPMU ref phasor values
+                if 'L1' in channel:
+                    refphasor[0,0] = data[-1]['magnitude']
+                    refphasor[0,1] = data[-1]['angle']
+                if 'L2' in channel:
+                    refphasor[1,0] = data[-1]['magnitude']
+                    refphasor[1,1] = data[-1]['angle']
+                if 'L3' in channel:
+                    refphasor[2,0] = data[-1]['magnitude']
+                    refphasor[2,1] = data[-1]['angle']
             
             #Vmag_ref = data[-1]['magnitude']
             #Vang_ref = data[-1]['angle]
