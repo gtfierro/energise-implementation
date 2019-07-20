@@ -111,7 +111,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(60, self.compute_and_announce))
+        schedule(self.call_periodic(20, self.compute_and_announce))
 
     async def compute_and_announce(self):
 
@@ -133,7 +133,7 @@ class myspbc(pbc.SPBCProcess):
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
-            print(self.reference_phasors)
+            print(data.time)
         
         #dummy values
         refphasor = np.ones((3,2)) 
