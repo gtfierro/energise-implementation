@@ -133,7 +133,7 @@ class myspbc(pbc.SPBCProcess):
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
-            print(reference_phasors)
+            print(self.reference_phasors)
         
         #dummy values
         refphasor = np.ones((3,2)) 
