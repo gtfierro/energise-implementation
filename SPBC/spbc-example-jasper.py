@@ -133,7 +133,7 @@ class myspbc(pbc.SPBCProcess):
                     Psat_nodes.append(lpbc[5:])
         
         # ~~ REFERENCE PHASOR ~~ #
-        refphasor = np.inf((3,2))
+        refphasor = np.ones((3,2))*np.inf
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
