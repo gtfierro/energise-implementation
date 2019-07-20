@@ -115,6 +115,8 @@ class myspbc(pbc.SPBCProcess):
 
     async def compute_and_announce(self):
 
+        
+        # ~~ LPBC ~~ #
         Psat_nodes = [] #dummy value
         Qsat_nodes = [] #dummy value
         
@@ -130,15 +132,33 @@ class myspbc(pbc.SPBCProcess):
                 if status['q_saturated'] == 'True':
                     Psat_nodes.append(lpbc[5:])
         
+        # ~~ REFERENCE PHASOR ~~ #
+        refphasor = np.inf((3,2))
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
-            print(data)
-        
+            
+            #store most recent uPMU ref phasor values
+            if 'L1' in channel:
+                refphasor[0,0] = data[-1]['magnitude']
+                refphasor[0,1] = data[-1]['angle]
+            if 'L2' in channel:
+                refphasor[1,0] = data[-1]['magnitude']
+                refphasor[1,1] = data[-1]['angle]
+            if 'L3' in channel:
+                refphasor[2,0] = data[-1]['magnitude']
+                refphasor[2,1] = data[-1]['angle]
+            
+            #Vmag_ref = data[-1]['magnitude']
+            #Vang_ref = data[-1]['angle]
+        #convert angle from degrees to rads
+        refphasor[:,1] = refphasor[:,1]*np.pi/180
+        print(refphasor)
+                
         #dummy values
-        refphasor = np.ones((3,2)) 
-        refphasor[:,0]=1
-        refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+        #refphasor = np.ones((3,2)) 
+        #refphasor[:,0]=1
+        #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
         # you could do expensive compute to get new targets here.
         # This could produce some intermediate structure like so:
