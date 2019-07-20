@@ -125,9 +125,9 @@ class myspbc(pbc.SPBCProcess):
                 
                 
         #create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
-                if status['p_saturated'] == 'True'
+                if status['p_saturated'] == 'True':
                     Psat_nodes.append(lpbc[5:])
-                if status['q_saturated'] == 'True'
+                if status['q_saturated'] == 'True':
                     Psat_nodes.append(lpbc[5:])
         
         # how to loop through all reference phasor channels
