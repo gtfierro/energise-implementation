@@ -115,14 +115,20 @@ class myspbc(pbc.SPBCProcess):
 
     async def compute_and_announce(self):
 
+        Psat_nodes = [] #dummy value
+        Qsat_nodes = [] #dummy value
+        
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
                 
+                
         #create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
-        Psat_nodes = [] #dummy value
-        Qsat_nodes = [] #dummy value
+                if status['p_saturated'] == 'True'
+                    Psat_nodes.append(lpbc[5:])
+                if status['q_saturated'] == 'True'
+                    Psat_nodes.append(lpbc[5:])
         
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():

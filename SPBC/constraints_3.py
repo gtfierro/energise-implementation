@@ -282,7 +282,10 @@ def cons_actuators(feeder,acttoggle):
                 if acttoggle == True:
                     for idx in range(0,3):
                         conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
+                        #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
+                        #[HIL] - edit Ssched cons
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((cp.sqrt(cp.square(iact.Ssched[idx,ts:ts+1])-cp.square(iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
+                    
                     
                 else:
                     for idx in range(0,3):
