@@ -137,6 +137,7 @@ class myspbc(pbc.SPBCProcess):
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
+            print(len(channel))
             if data != None:
                 #store most recent uPMU ref phasor values
                 if 'L1' in channel:
