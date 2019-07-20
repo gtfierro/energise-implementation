@@ -141,13 +141,13 @@ class myspbc(pbc.SPBCProcess):
             #store most recent uPMU ref phasor values
             if 'L1' in channel:
                 refphasor[0,0] = data[-1]['magnitude']
-                refphasor[0,1] = data[-1]['angle]
+                refphasor[0,1] = data[-1]['angle']
             if 'L2' in channel:
                 refphasor[1,0] = data[-1]['magnitude']
-                refphasor[1,1] = data[-1]['angle]
+                refphasor[1,1] = data[-1]['angle']
             if 'L3' in channel:
                 refphasor[2,0] = data[-1]['magnitude']
-                refphasor[2,1] = data[-1]['angle]
+                refphasor[2,1] = data[-1]['angle']
             
             #Vmag_ref = data[-1]['magnitude']
             #Vang_ref = data[-1]['angle]
