@@ -112,6 +112,7 @@ class myspbc(pbc.SPBCProcess):
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
         schedule(self.call_periodic(20, self.compute_and_announce))
+        ### set some refphasor variable == true/false to determine length of schedule
 
     async def compute_and_announce(self):
 
@@ -127,17 +128,22 @@ class myspbc(pbc.SPBCProcess):
                 
                 
         #create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
-                if status['p_saturated'] == 'True':
+                if status['p_saturated'] == True:
                     Psat_nodes.append(lpbc[5:])
-                if status['q_saturated'] == 'True':
+                if status['q_saturated'] == True:
                     Psat_nodes.append(lpbc[5:])
         
         # ~~ REFERENCE PHASOR ~~ #
-        refphasor = np.ones((3,2))*np.inf
+        # change length to match # of channels
+        channels = []
+        for channel, data in self.reference_phasors.items():
+            channels.append(channel)
+        print(len(channels))
+        #refphasor = np.ones((3,2))*np.inf
+        refphasor = np.ones((2,2))*np.inf
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
-            print(len(channel))
             if data != None:
                 #store most recent uPMU ref phasor values
                 if 'L1' in channel:
@@ -158,6 +164,7 @@ class myspbc(pbc.SPBCProcess):
                 
         #dummy values
         if np.inf in refphasor:
+            ### WAIT TILL NEXT ###
             refphasor = np.ones((3,2)) 
             refphasor[:,0]=1
             refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
