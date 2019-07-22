@@ -206,6 +206,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                     computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                     computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+                '''
                 if ph == 'c':
                     phidx  = 2
                     computed_targets[lpbcID]['channels'].append('L3')
@@ -213,7 +214,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                     computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                     computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
-
+                '''
             
         # loop through the computed targets and send them to all LPBCs:
         for lpbc_name, targets in computed_targets.items():
