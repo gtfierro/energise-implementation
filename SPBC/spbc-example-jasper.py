@@ -140,7 +140,8 @@ class myspbc(pbc.SPBCProcess):
             channels.append(channel)
         print(len(channels))
         #refphasor = np.ones((3,2))*np.inf
-        refphasor = np.ones((2,2))*np.inf
+        refphasor_init = np.ones((2,2))*np.inf
+        refphasor = refphasor_init
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
@@ -165,7 +166,7 @@ class myspbc(pbc.SPBCProcess):
         #dummy values
         if np.inf in refphasor:
             ### WAIT TILL NEXT ###
-            refphasor = np.ones((3,2)) 
+            refphasor = refphasor_init 
             refphasor[:,0]=1
             refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
