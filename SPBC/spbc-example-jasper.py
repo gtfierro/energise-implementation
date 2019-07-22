@@ -121,6 +121,7 @@ class myspbc(pbc.SPBCProcess):
         Psat_nodes = [] #dummy value
         Qsat_nodes = [] #dummy value
         
+        print(status)
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
