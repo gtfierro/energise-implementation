@@ -168,7 +168,8 @@ class myspbc(pbc.SPBCProcess):
             ### WAIT TILL NEXT ###
             refphasor = refphasor_init 
             refphasor[:,0]=1
-            refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            refphasor[:,1]=[0,4*np.pi/3]
 
         # you could do expensive compute to get new targets here.
         # This could produce some intermediate structure like so:
