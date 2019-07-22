@@ -140,7 +140,7 @@ class myspbc(pbc.SPBCProcess):
             channels.append(channel)
         print(len(channels))
         #refphasor = np.ones((3,2))*np.inf
-        refphasor_init = np.ones((2,2))*np.inf
+        refphasor_init = np.ones((3,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
@@ -168,8 +168,8 @@ class myspbc(pbc.SPBCProcess):
             ### WAIT TILL NEXT ###
             refphasor = refphasor_init 
             refphasor[:,0]=1
-            #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-            refphasor[:,1]=[0,4*np.pi/3]
+            refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            
 
         # you could do expensive compute to get new targets here.
         # This could produce some intermediate structure like so:
@@ -208,7 +208,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                     computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                     computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
-                '''
+                
                 if ph == 'c':
                     phidx  = 2
                     computed_targets[lpbcID]['channels'].append('L3')
@@ -216,7 +216,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                     computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                     computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
-                '''
+                
             
         # loop through the computed targets and send them to all LPBCs:
         for lpbc_name, targets in computed_targets.items():
