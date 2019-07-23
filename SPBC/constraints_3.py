@@ -269,6 +269,8 @@ def cons_actuators(feeder,acttoggle):
     # This version creates box constraints and can be used if the circular constraints defined above cause problems
     conslist = list()
     for key, inode in feeder.busdict.items():
+        # Creates a feedback for saturated actuators.
+        # This is a very basic implementation, should be improved in later versions
         Psatmul = 1
         Qsatmul = 1
         if key in feeder.Psat_nodes: #[HIL] - ICDI
@@ -282,7 +284,7 @@ def cons_actuators(feeder,acttoggle):
                 if acttoggle == True:
                     for idx in range(0,3):
                         conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Pgen[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
                         #[HIL] - edit Ssched cons
                         #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((cp.sqrt(cp.square(iact.Ssched[idx,ts:ts+1])-cp.square(iact.Psched[idx,ts:ts+1]))*Qsatmul)/inode.kVAbase))
                     
