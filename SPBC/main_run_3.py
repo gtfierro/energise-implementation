@@ -12,14 +12,19 @@ import time
     # In[3]:
 ts = time.time()
 print('running...')
-    
+
+filepath = "IEEE13/"
+modelpath = filepath + "001_phasor08_IEEE13.xls"
+
+loadfolder = "IEEE13/"
+loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
+
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
 def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist    
     # Enter the path/name of the model's excel file and import
     
     #Test Case
-    filepath = "IEEE13/"
-    modelpath = filepath + "001_phasor08_IEEE13.xls"
+
     
     modeldata = pd.ExcelFile(modelpath)
      
@@ -28,8 +33,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
     
     #Test Case
-    loadfolder = "IEEE13/"
-    loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
+
     #001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_3_1.xlsx
     
     actpath = loadpath
@@ -141,17 +145,18 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
 
 # In[8]:
 # Run main_run
-Psat = ['671']
-Qsat = ['671']
+### dummy values ###    
+#Psat = ['671']
+#Qsat = ['671']
 #create dummy refphasor of nominal voltages
-refphasor = np.ones((3,2))
-refphasor[:,0]=1
-refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+#refphasor = np.ones((3,2))
+#refphasor[:,0]=1
+#refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
-Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
+#Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
 
 tf = time.time()
-print('complete')
+print('time to load model')
 print(tf-ts)
 
 # In[9]:

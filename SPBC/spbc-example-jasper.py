@@ -110,6 +110,9 @@ class myspbc(pbc.SPBCProcess):
         
         # define system phase size to define size of phasor reference
         # should maybe define such that # phases is read in from impedance model-bus tab-SLACK bus
+        modeldata = pd.ExcelFile(modelpath)
+        
+        
         try:
             system_size
         except:
@@ -137,7 +140,6 @@ class myspbc(pbc.SPBCProcess):
         
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
-            print('sees lpbc')
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
                 
@@ -147,7 +149,8 @@ class myspbc(pbc.SPBCProcess):
                     Psat_nodes.append(lpbc[5:])
                 if status['qSaturated'] == True:
                     Psat_nodes.append(lpbc[5:])
-        
+        print('Psat',Psat)
+        print('Qsat',Qsat)
         # ~~ REFERENCE PHASOR ~~ #
         # change length to match # of channels
         channels_avail = []
