@@ -123,6 +123,8 @@ class myspbc(pbc.SPBCProcess):
         ### set some refphasor variable == true/false to determine length of schedule
 
     async def compute_and_announce(self):
+        print('')
+        print('New compute_and_announce instance')
         
         # ~~ LPBC ~~ #
         Psat_nodes = [] #dummy value # getting 1 value per phase
