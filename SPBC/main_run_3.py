@@ -1,7 +1,7 @@
 # THIS IS THE INTERFACE FOR THE S-PBC
 #SPBC-HIL files moved 7/15/19
 
-# In[2]:
+# In[1]:
     
 from setup_3 import *
 from constraints_3 import *
@@ -9,9 +9,16 @@ from dss_3 import *
 import datetime
 import time
 
-    # In[3]:
+    # In[2]:
 ts = time.time()
 print('running...')
+
+
+# Enter the path/name of the model's excel file and import
+
+# All GridBright load files should be in the following folder
+#loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
+#loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 
 filepath = "IEEE13/"
 modelpath = filepath + "001_phasor08_IEEE13.xls"
@@ -19,23 +26,29 @@ modelpath = filepath + "001_phasor08_IEEE13.xls"
 loadfolder = "IEEE13/"
 loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
 
+# Specify substation kV, kVA bases, and the number of timesteps in the load data
+subkVbase_phg = 4.16/np.sqrt(3)
+subkVAbase = 5000.
+timesteps = 1
+
+# In[3]:
+
+# basic feeder init such that model is read in and network is defined
+def feeder_init():
+    modeldata = pd.ExcelFile(modelpath)
+    actpath = loadpath
+    
+    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
+    myfeeder
+    
+    return myfeeder
+
+# In[4]:
+
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
 def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist    
-    # Enter the path/name of the model's excel file and import
     
-    #Test Case
-
-    
-    modeldata = pd.ExcelFile(modelpath)
-     
-    # All GridBright load files should be in the following folder
-    #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
-    #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
-    
-    #Test Case
-
-    #001_phasor08_IEEE13_time_sigBuilder_1300-1400_norm03_3_1.xlsx
-    
+    modeldata = pd.ExcelFile(modelpath) 
     actpath = loadpath
     
     # Enter name of actuator costs file - should be in same folder as the load file
@@ -43,11 +56,6 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     if costfn_on_off == 1:
         actcostpath = loadfolder + 'act_costs_2_1_try2.xlsx'
         actcostdata = pd.read_excel(actcostpath, index_col=0)
-     
-    # Specify substation kV, kVA bases, and the number of timesteps in the load data
-    subkVbase_phg = 4.16/np.sqrt(3)
-    subkVAbase = 5000.
-    timesteps = 2
     
     #[HIL]
     date = datetime.datetime.now()
@@ -155,9 +163,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
 
 #Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
 
-tf = time.time()
-print('time to load model')
-print(tf-ts)
+#tf = time.time()
+#print('time to load model')
+#print(tf-ts)
 
 # In[9]:
 # Plot first timestep of result

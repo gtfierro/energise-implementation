@@ -135,7 +135,7 @@ class myspbc(pbc.SPBCProcess):
 
         
         # ~~ LPBC ~~ #
-        Psat_nodes = [] #dummy value
+        Psat_nodes = [] #dummy value # getting 1 value per phase
         Qsat_nodes = [] #dummy value
         
         # how to loop through all LPBC statuses
