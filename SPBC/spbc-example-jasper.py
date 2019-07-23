@@ -108,7 +108,9 @@ class myspbc(pbc.SPBCProcess):
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
         
-             
+        # define system phase size to define size of phasor reference
+        #phase_size, feeder_init = feeder_init()
+        
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
@@ -116,9 +118,6 @@ class myspbc(pbc.SPBCProcess):
         ### set some refphasor variable == true/false to determine length of schedule
 
     async def compute_and_announce(self):
-        
-        # define system phase size to define size of phasor reference
-        phase_size, feeder_init = feeder_init()
         
         # ~~ LPBC ~~ #
         Psat_nodes = [] #dummy value # getting 1 value per phase
