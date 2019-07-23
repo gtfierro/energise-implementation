@@ -109,22 +109,8 @@ class myspbc(pbc.SPBCProcess):
         # Pass options in using the 'cfg' dictionary
         
         # define system phase size to define size of phasor reference
-        # should maybe define such that # phases is read in from impedance model-bus tab-SLACK bus
-        modeldata = pd.ExcelFile(modelpath)
-        
-        
-        try:
-            system_size
-        except:
-            system_size = 0
-            
-        channels_avail = []
-        for channel, data in self.reference_phasors.items():
-            channels_avail.append(channel)
-        if len(channels_avail) > system_size:
-            system_size = len(channels_avail)
+        feeder_init, phase_size = feeder_init()
              
-
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
@@ -160,7 +146,7 @@ class myspbc(pbc.SPBCProcess):
         # Need way to initialize # of phases on system though, as this will allow dropped channels
         # size of phases must meet impedance model, otherwise error is returned
         #refphasor_init = np.ones((system_size,2))*np.inf
-        refphasor_init = np.ones((3,2))*np.inf
+        refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
@@ -177,8 +163,8 @@ class myspbc(pbc.SPBCProcess):
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
             
-            #Vmag_ref = data[-1]['magnitude']
-            #Vang_ref = data[-1]['angle]
+        #convert Vmag to p.u. (subKVbase_phg defined in main)
+        refphasor[:,0] = refphasor[:,0]/subkVbase_phg*1000
         #convert angle from degrees to rads
         refphasor[:,1] = refphasor[:,1]*np.pi/180
         print(refphasor)

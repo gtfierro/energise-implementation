@@ -33,15 +33,40 @@ timesteps = 1
 
 # In[3]:
 
+# [HIL] - to allow operations on the feeder without running the optimization
 # basic feeder init such that model is read in and network is defined
 def feeder_init():
     modeldata = pd.ExcelFile(modelpath)
     actpath = loadpath
     
-    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
-    myfeeder
+    # set dummy values for undefined variables
+    date = datetime.datetime.now()
+    month = date.month
+    day = date.day
+    hour = date.hour
+    minute = date.minute
+    timestepcur = hour*60+minute
     
-    return myfeeder
+    Psat_nodes = []
+    Qsat_nodes = []
+    
+    refphasor = np.ones((3,2))
+    refphasor[:,0]=1
+    refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+    
+    #get feeder
+    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
+    feeder_init
+    
+    phase_size = 0
+    for key, inode in feeder_init.busdict.items():
+        print(key)
+        if inode.type == 'SLACK' or inode.type == 'Slack' or inode.type == 'slack':
+            for ph in inode.phases:
+                print(inode)
+                phase_size += 1
+    
+    return feeder_init, phase_size
 
 # In[4]:
 
