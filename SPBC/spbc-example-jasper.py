@@ -107,6 +107,9 @@ class myspbc(pbc.SPBCProcess):
 
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
+        
+        # define system phase size to define size of phasor reference
+        # should maybe define such that # phases is read in from impedance model-bus tab-SLACK bus
         try:
             system_size
         except:
@@ -117,8 +120,7 @@ class myspbc(pbc.SPBCProcess):
             channels_avail.append(channel)
         if len(channels_avail) > system_size:
             system_size = len(channels_avail)
-        
-            
+             
 
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
@@ -153,7 +155,9 @@ class myspbc(pbc.SPBCProcess):
             channels_avail.append(channel)
         # changed from np.ones((3,2)) to match dimensions of channels present
         # Need way to initialize # of phases on system though, as this will allow dropped channels
-        refphasor_init = np.ones((len(channels_avail),2))*np.inf
+        # size of phases must meet impedance model, otherwise error is returned
+        #refphasor_init = np.ones((system_size,2))*np.inf
+        refphasor_init = np.ones((3,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
         for channel, data in self.reference_phasors.items():
@@ -179,10 +183,10 @@ class myspbc(pbc.SPBCProcess):
         #dummy values
         if np.inf in refphasor:
             ### WAIT TILL NEXT ###
-            #refphasor = refphasor_init 
+            refphasor = refphasor_init 
             #refphasor = no.ones((3,2))
-            #refphasor[:,0]=1
-            #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            refphasor[:,0]=1
+            refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
             print('Phasor reference read error')
             
         else:
