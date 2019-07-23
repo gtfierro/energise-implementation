@@ -35,7 +35,7 @@ timesteps = 1
 
 # [HIL] - to allow operations on the feeder without running the optimization
 # basic feeder init such that model is read in and network is defined
-def feeder_init():
+def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     modeldata = pd.ExcelFile(modelpath)
     actpath = loadpath
     
