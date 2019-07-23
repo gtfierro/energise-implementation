@@ -14,6 +14,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 #init feeder
 phase_size, feeder_init = feeder_init()
+print('phases on network:',phase_size)
 
 class myspbc(pbc.SPBCProcess):
     """
