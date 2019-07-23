@@ -114,7 +114,7 @@ class myspbc(pbc.SPBCProcess):
         
         # define system phase size to define size of phasor reference
         #phase_size, feeder_init = feeder_init()
-        #phase_size = 3
+        print('init running')
         
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
@@ -124,7 +124,7 @@ class myspbc(pbc.SPBCProcess):
 
     async def compute_and_announce(self):
         print('')
-        print('New compute_and_announce instance')
+        print('~~~ New compute_and_announce instance ~~~')
         
         # ~~ LPBC ~~ #
         Psat_nodes = [] #dummy value # getting 1 value per phase
