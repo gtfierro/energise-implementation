@@ -60,10 +60,8 @@ def feeder_init():
     
     phase_size = 0
     for key, inode in feeder_init.busdict.items():
-        print(key)
         if inode.type == 'SLACK' or inode.type == 'Slack' or inode.type == 'slack':
             for ph in inode.phases:
-                print(inode)
                 phase_size += 1
     
     return feeder_init, phase_size
