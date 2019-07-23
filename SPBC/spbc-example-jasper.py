@@ -110,7 +110,7 @@ class myspbc(pbc.SPBCProcess):
         try:
             system_size
         except:
-            system_size = None
+            system_size = 0
             
         channels_avail = []
         for channel, data in self.reference_phasors.items():
