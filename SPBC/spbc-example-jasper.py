@@ -12,6 +12,9 @@ from main_run_3 import *
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
+#init feeder
+phase_size, feeder_init = feeder_init()
+
 class myspbc(pbc.SPBCProcess):
     """
     This is an example SPBC implementation demonstrating how to access and use
@@ -110,7 +113,7 @@ class myspbc(pbc.SPBCProcess):
         
         # define system phase size to define size of phasor reference
         #phase_size, feeder_init = feeder_init()
-        phase_size = 3
+        #phase_size = 3
         
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
