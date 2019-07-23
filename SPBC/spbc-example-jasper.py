@@ -148,7 +148,7 @@ class myspbc(pbc.SPBCProcess):
                 if status['pSaturated'] == True:
                     Psat_nodes.append(lpbc[5:])
                 if status['qSaturated'] == True:
-                    Psat_nodes.append(lpbc[5:])
+                    Qsat_nodes.append(lpbc[5:])
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
         # ~~ REFERENCE PHASOR ~~ #
