@@ -64,7 +64,7 @@ def feeder_init():
             for ph in inode.phases:
                 phase_size += 1
     
-    return feeder_init, phase_size
+    return phase_size, feeder_init
 
 # In[4]:
 
