@@ -4,6 +4,7 @@
 # In[2]:
 
 from setup_3 import *
+import datetime
 
 # In[3]:
 
@@ -240,8 +241,44 @@ def cons_reactivepwrbalance(feeder):
                 conslist.append(power_in-power_out == cvx_setreactivedemandpu(inode,ts)-actuation)
     return conslist
 
+# In[11a]:
+    
+### Calculate weight for PV for real time simulation ###
 
-# In[11]:
+# calculate solar radiation (adapted from Masters)
+#inputs of lat, lon, maridian [degrees] & fraction of PV [fraction i.e. 0.5=50%].
+def solweight_realtime(lat,lon,maridian):
+    deg_rad = np.pi/180.
+    rad_deg = 180./np.pi
+
+    lat = lat*deg_rad
+    
+    date = datetime.datetime.now()
+    month = date.month
+    day = date.day
+    hour = date.hour
+    minute = date.minute
+    DOY = datetime.datetime.now().timetuple().tm_yday
+    
+    dsol = 23.45*np.sin(360/365*(DOY-81)*deg_rad)*deg_rad  #solar declination
+    Hsol = 15*(12-(hour+(minute+(lon-maridian)*4)/60))*deg_rad  #hour angle
+
+    alt = np.arcsin(np.cos(lat)*np.cos(dsol)*np.cos(Hsol)+np.sin(lat)*np.sin(dsol))  #solar altitude
+    azi = np.arcsin(np.cos(dsol)*np.sin(Hsol)/np.cos(alt))  #solar azimuth
+
+    Asol = 1160 + 75*np.sin(360/365*(DOY-275)*deg_rad)  #[W/m^2]  #extraterrestial flux
+    ksol = 0.174 + 0.035*np.sin(360/365*(DOY-100)*deg_rad)  #optical depth
+    msol = np.sqrt((708*np.sin(alt))**2 + 1417) - 708*np.sin(alt)  #air mass ratio
+
+    Ib = Asol*np.e**(-ksol*msol)  #[W/m^2]  #beam radiation
+    solweight = Ib/1000
+    
+    return solweight
+
+#currently tilt is not included, assumed that panel always faces sun directly as to avoid underestimating
+#seems implausible to know the tilt of every array in the network
+    
+# In[11b]:
 
 
 # def cons_actuators(feeder,acttoggle):
@@ -268,7 +305,9 @@ def cons_actuators(feeder,acttoggle):
     # acttoggle can turn actuators off altogether
     # This version creates box constraints and can be used if the circular constraints defined above cause problems
     conslist = list()
+    #for key, inode in feeder.busdict.items():
     for key, inode in feeder.busdict.items():
+        
         # Creates a feedback for saturated actuators.
         # This is a very basic implementation, should be improved in later versions
         Psatmul = 1
@@ -279,14 +318,25 @@ def cons_actuators(feeder,acttoggle):
             Psatmul = 0.9
         
         for iact in inode.actuators:
+            #scale PV actuation down based on TOD irradiance (really only uses beam) [HIL]
+            if feeder.PVforecast[str(key)]['on_off'] == True:
+                solweight = solweight_realtime(feeder.PVforecast[str(key)]['lat'],feeder.PVforecast[str(key)]['lon'],
+                                                feeder.PVforecast[str(key)]['maridian'])
+                PVfrac = feeder.PVforecast[str(key)]['PVfrac']
+            else:
+                solweight = 0
+                PVfrac = 0
             for ts in range(0,feeder.timesteps):
-                
                 if acttoggle == True:
                     for idx in range(0,3):
-                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Pgen[idx,ts:ts+1])*Qsatmul)/inode.kVAbase)
-                        #[HIL] - edit Ssched cons
-                        #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((cp.sqrt(cp.square(iact.Ssched[idx,ts:ts+1])-cp.square(iact.Psched[idx,ts:ts+1]))*Qsatmul)/inode.kVAbase))
+                        #adjust max Pgen to be scaled by insolation [HIL]
+                        Pmax = iact.Psched[idx,ts:ts+1]*(1-PVfrac*(1-solweight))
+                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (Pmax*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
+                        print('Pmax',Pmax/inode.kVAbase)
+                        #conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
+                        #[HIL] - edit Ssched - Qgen cons
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*1.2*inode.kVAbase)*Qsatmul)/inode.kVAbase) #new
+                        #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase) #old
                     
                     
                 else:

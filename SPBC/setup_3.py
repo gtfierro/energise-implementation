@@ -46,7 +46,7 @@ class feeder:
 # The main class. Creating this from an ePHASORsim model and set of loads stores all the information about your network
 # Buses, loads, lines, actuators, etc. are all stored as dictionaries within this object
     #[HIL] - added ICDI vars and phasor reference vars
-    def __init__(self,modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes):
+    def __init__(self,modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast):
         # import data
         self.modeldata = pd.ExcelFile(modelpath)
         self.loadfolder = loadfolder
@@ -59,6 +59,7 @@ class feeder:
         self.refphasor = refphasor
         self.Psat_nodes = Psat_nodes
         self.Qsat_nodes = Qsat_nodes
+        self.PVforecast = PVforecast
         # groom data (note that the functions below are not separable... 
         # ...e.g. buses are not completely defined until all these functions have been run)
         self.busdict = busbuilder(self.modeldata, subkVbase_phg, subkVAbase, timesteps)
@@ -704,7 +705,7 @@ def actbuilder(modeldata, busdict, actpath, timesteps, timestepcur):
     
     for key,ibus in busdict.items():
         for ph in ibus.phases:
-            if 'PV_KW_' + key + '_' + ph in list(actdf.columns.values):
+            if 'act_kVA_' + key + '_' + ph in list(actdf.columns.values):
                 if not (key in actdict):
                     actdict[key] = actuator(key, timesteps)
                     actdict[key].node = busdict[key]
@@ -712,21 +713,20 @@ def actbuilder(modeldata, busdict, actpath, timesteps, timestepcur):
                 actdict[key].phases.append(ph)
     
     for key, iact in actdict.items():
-        #print(key) #jasper
         for ph in iact.phases:
             for ts in range(0,timesteps):
-                actname_PV = 'PV_KW_' + key + '_' + ph
-                PV = actdf[actname_PV][ts]
+                actname_kVA = 'act_kVA_' + key + '_' + ph
+                act = actdf[actname_kVA][ts]
 
                 if ph == 'a':
-                    iact.Psched[0,ts] = PV
-                    iact.Ssched[0,ts] = PV
+                    iact.Psched[0,ts] = act
+                    iact.Ssched[0,ts] = act
                 if ph == 'b':
-                    iact.Psched[1,ts] = PV
-                    iact.Ssched[1,ts] = PV
+                    iact.Psched[1,ts] = act
+                    iact.Ssched[1,ts] = act
                 if ph == 'c':
-                    iact.Psched[2,ts] = PV
-                    iact.Ssched[2,ts] = PV
+                    iact.Psched[2,ts] = act
+                    iact.Ssched[2,ts] = act
         
     for key, iact in actdict.items():
         for idx in range(len(iact.phases)):

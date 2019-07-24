@@ -31,6 +31,21 @@ subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
 timesteps = 1
 
+#[HIL] - input constnats for PV forecasting
+PV_on = False # True for ON
+PVnodes = ['671','680']
+
+PVforecast = {}
+PVforecast['on_off'] = PV_on
+for node in PVnodes:
+    PVforecast[node] = {}
+    PVforecast[node]['on_off'] = PV_on
+    PVforecast[node]['lat'] = 37.87
+    PVforecast[node]['lon'] = -122
+    PVforecast[node]['maridian'] = -120
+    PVforecast[node]['PVfrac'] = 0.3
+
+
 # In[3]:
 
 # [HIL] - to allow operations on the feeder without running the optimization
@@ -55,7 +70,8 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
     
     #get feeder
-    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
+    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
+                         subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
     feeder_init
     
     phase_size = 0
@@ -89,8 +105,8 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     timestepcur = hour*60+minute
     
     # Create feeder object
-    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes)
-     
+    myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
+                         subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)    
     myfeeder
     
     # In[6]:
@@ -98,9 +114,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     # Run optimization problem and generate targets
     
     # set tuning parameters: 0 = off. lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
-    lam1 = 0
+    lam1 = 1
     lam2 = 0
-    lam3 = 1
+    lam3 = 0
     
     obj = 0
     #pdb.set_trace()
@@ -176,19 +192,22 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
 
 # In[8]:
 # Run main_run
+    
+'''
 ### dummy values ###    
-#Psat = ['671']
-#Qsat = ['671']
+Psat = []
+Qsat = []
 #create dummy refphasor of nominal voltages
-#refphasor = np.ones((3,2))
-#refphasor[:,0]=1
-#refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+refphasor = np.ones((3,2))
+refphasor[:,0]=1
+refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
-#Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
+Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
 
 #tf = time.time()
 #print('time to load model')
 #print(tf-ts)
+'''
 
 # In[9]:
 # Plot first timestep of result

@@ -113,8 +113,7 @@ class myspbc(pbc.SPBCProcess):
         # Pass options in using the 'cfg' dictionary
         
         # define system phase size to define size of phasor reference
-        #phase_size, feeder_init = feeder_init()
-        print('init running')
+        #phase_size, feeder_init = feeder_init() ## doesnt work inside of __init__
         
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
