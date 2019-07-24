@@ -332,7 +332,6 @@ def cons_actuators(feeder,acttoggle):
                         #adjust max Pgen to be scaled by insolation [HIL]
                         Pmax = iact.Psched[idx,ts:ts+1]*(1-PVfrac*(1-solweight))
                         conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (Pmax*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
-                        print('Pmax',Pmax/inode.kVAbase)
                         #conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
                         #[HIL] - edit Ssched - Qgen cons
                         conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*1.2*inode.kVAbase)*Qsatmul)/inode.kVAbase) #new

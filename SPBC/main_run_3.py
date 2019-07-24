@@ -179,7 +179,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     
     # In[7]:
     
-    DSS_alltimesteps(myfeeder,1) # Second argument turns voltage alarms on/off
+    DSS_alltimesteps(myfeeder,0) # Second argument turns voltage alarms on/off
     
     #export_Vtargets(myfeeder)
     ##[jasper] - fn to get target in vector format for LPBC
