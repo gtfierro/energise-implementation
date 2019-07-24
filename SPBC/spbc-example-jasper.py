@@ -175,13 +175,12 @@ class myspbc(pbc.SPBCProcess):
         print(refphasor)
                 
         #dummy values
-        if np.inf in refphasor:
-            ### WAIT TILL NEXT ###
-            #refphasor = refphasor_init 
-            #refphasor = no.ones((3,2))
-            #refphasor[:,0]=1
-            #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-            print('Phasor reference read error')
+        #if np.inf in refphasor:
+        ### WAIT TILL NEXT ###
+        refphasor = refphasor_init
+        refphasor[:,0]=1
+        refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+        print('Phasor reference read error')
             
         else:
             # you could do expensive compute to get new targets here.
