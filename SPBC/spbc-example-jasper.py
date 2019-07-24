@@ -169,71 +169,71 @@ class myspbc(pbc.SPBCProcess):
                     refphasor[2,1] = data[-1]['angle']
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000)
+        refphasor[:,0] = refphasor[:,0]/120     #(subkVbase_phg*1000)
         #convert angle from degrees to rads
         refphasor[:,1] = refphasor[:,1]*np.pi/180
         print(refphasor)
                 
         #dummy values
-        #if np.inf in refphasor:
-        ### WAIT TILL NEXT ###
-        refphasor = refphasor_init
-        refphasor[:,0]=1
-        refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-        print('Phasor reference read error')
+        if np.inf in refphasor:
+            ### WAIT TILL NEXT ###
+            #refphasor = refphasor_init
+            #refphasor[:,0]=1
+            #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            print('Phasor reference read error')
             
-        #else:
-        # you could do expensive compute to get new targets here.
-        # This could produce some intermediate structure like so:
-        Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes)
-        
-        
-        # TODO: how do we communicate phase information?
-        # None-padded? dicts keyed by the channel name?
-        # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
-
-        computed_targets = {}
-        
-        #for key in act_keys:
-        for key, iact in myfeeder.actdict.items():
-            lpbcID = 'lpbc_' + key
-            computed_targets[lpbcID] = {}
-            #intialize
-            computed_targets[lpbcID]['channels'] = []
-            computed_targets[lpbcID]['V'] = []
-            computed_targets[lpbcID]['delta'] = []
-            computed_targets[lpbcID]['kvbase'] = []
-            computed_targets[lpbcID]['kvabase'] = []
+        else:
+            # you could do expensive compute to get new targets here.
+            # This could produce some intermediate structure like so:
+            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes)
             
-            for ph in iact.phases:
-                if ph == 'a':
-                    phidx  = 0
-                    computed_targets[lpbcID]['channels'].append('L1')
-                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
-                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                    computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                    computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
-                if ph == 'b':
-                    phidx  = 1
-                    computed_targets[lpbcID]['channels'].append('L2')
-                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
-                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                    computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                    computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+            
+            # TODO: how do we communicate phase information?
+            # None-padded? dicts keyed by the channel name?
+            # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
+    
+            computed_targets = {}
+            
+            #for key in act_keys:
+            for key, iact in myfeeder.actdict.items():
+                lpbcID = 'lpbc_' + key
+                computed_targets[lpbcID] = {}
+                #intialize
+                computed_targets[lpbcID]['channels'] = []
+                computed_targets[lpbcID]['V'] = []
+                computed_targets[lpbcID]['delta'] = []
+                computed_targets[lpbcID]['kvbase'] = []
+                computed_targets[lpbcID]['kvabase'] = []
                 
-                if ph == 'c':
-                    phidx  = 2
-                    computed_targets[lpbcID]['channels'].append('L3')
-                    computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
-                    computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                    computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                    computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+                for ph in iact.phases:
+                    if ph == 'a':
+                        phidx  = 0
+                        computed_targets[lpbcID]['channels'].append('L1')
+                        computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                        computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                        computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
+                        computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+                    if ph == 'b':
+                        phidx  = 1
+                        computed_targets[lpbcID]['channels'].append('L2')
+                        computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                        computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                        computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
+                        computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+                    
+                    if ph == 'c':
+                        phidx  = 2
+                        computed_targets[lpbcID]['channels'].append('L3')
+                        computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                        computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                        computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
+                        computed_targets[lpbcID]['kvabase'].append(subkVAbase/3)
+                    
                 
-            
-        # loop through the computed targets and send them to all LPBCs:
-        for lpbc_name, targets in computed_targets.items():
-            await self.broadcast_target(lpbc_name, targets['channels'], \
-                            targets['V'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase'])
+            # loop through the computed targets and send them to all LPBCs:
+            for lpbc_name, targets in computed_targets.items():
+                await self.broadcast_target(lpbc_name, targets['channels'], \
+                                targets['V'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase'])
 
 if len(sys.argv) > 1:
     cfg = config_from_file(sys.argv[1])
