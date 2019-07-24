@@ -243,11 +243,11 @@ def cons_reactivepwrbalance(feeder):
 
 # In[11a]:
     
-### Calculate weight for PV for real time simulation ###
+### Calculate weight for PV for real time simulation ### 
 
 # calculate solar radiation (adapted from Masters)
 #inputs of lat, lon, maridian [degrees] & fraction of PV [fraction i.e. 0.5=50%].
-def solweight_realtime(lat,lon,maridian):
+def solweight_realtime(lat,lon,maridian): #[HIL]
     deg_rad = np.pi/180.
     rad_deg = 180./np.pi
 
