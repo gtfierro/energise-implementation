@@ -172,6 +172,7 @@ class myspbc(pbc.SPBCProcess):
         refphasor[:,0] = refphasor[:,0]/120     #(subkVbase_phg*1000)
         #convert angle from degrees to rads
         refphasor[:,1] = refphasor[:,1]*np.pi/180
+        print('phasor reference:')
         print(refphasor)
                 
         #dummy values
@@ -180,7 +181,7 @@ class myspbc(pbc.SPBCProcess):
             #refphasor = refphasor_init
             #refphasor[:,0]=1
             #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-            print('Phasor reference read error')
+            print('Reference uPMU read error')
             
         else:
             # you could do expensive compute to get new targets here.
