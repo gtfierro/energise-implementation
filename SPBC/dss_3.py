@@ -569,9 +569,7 @@ def get_targets(feeder):
             phAang_ref = ibus.Vang_NL[0,tstep_cur]
             phBang_ref = ibus.Vang_NL[1,tstep_cur]
             phCang_ref = ibus.Vang_NL[2,tstep_cur]
-        #for k in act_keys:
-        #    print(k)
-        #if key == k:
+
         if key in act_keys:
             phAmag = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
             phBmag = ibus.Vmag_NL[1,tstep_cur]/(ibus.kVbase_phg*1000)
@@ -581,23 +579,15 @@ def get_targets(feeder):
             phBang = ibus.Vang_NL[1,tstep_cur]
             phCang = ibus.Vang_NL[2,tstep_cur]
             
-            phA_KVbase = ibus.Vmag_NL[0,tstep_cur]/ibus.Vmag_NL[0,tstep_cur]*ibus.kVbase_phg
-            phB_KVbase = ibus.Vmag_NL[1,tstep_cur]/ibus.Vmag_NL[1,tstep_cur]*ibus.kVbase_phg
-            phC_KVbase = ibus.Vmag_NL[2,tstep_cur]/ibus.Vmag_NL[2,tstep_cur]*ibus.kVbase_phg
-            
-            '''
-            Vtarg = np.ones((1,3,3))
-            Vtarg[:,0,:] = [phAmag,phBmag,phCmag]
-            Vtarg[:,1,:] = [phAang,phBang,phCang]
-            Vtarg[:,2,:] = [phA_KVbase,phB_KVbase,phC_KVbase]
-            Vtarg_dict[key] = Vtarg
-            '''
+            phA_kVbase = ibus.Vmag_NL[0,tstep_cur]/ibus.Vmag_NL[0,tstep_cur]*ibus.kVbase_phg
+            phB_kVbase = ibus.Vmag_NL[1,tstep_cur]/ibus.Vmag_NL[1,tstep_cur]*ibus.kVbase_phg
+            phC_kVbase = ibus.Vmag_NL[2,tstep_cur]/ibus.Vmag_NL[2,tstep_cur]*ibus.kVbase_phg
             
             Vtarg_dict[key] = {}
             Vtarg_dict[key]['Vmag'] = [phAmag-phAmag_ref,phBmag-phBmag_ref,phCmag-phCmag_ref]
             Vtarg_dict[key]['Vang'] = [phAang-phAang_ref,phBang-phBang_ref,phCang-phCang_ref]
-            Vtarg_dict[key]['KVbase'] = [phA_KVbase,phB_KVbase,phC_KVbase]
-            Vtarg_dict[key]['KVAbase'] = [phA_KVbase,phB_KVbase,phC_KVbase]
+            Vtarg_dict[key]['KVbase'] = [phA_kVbase,phB_kVbase,phC_kVbase]
+            Vtarg_dict[key]['KVAbase'] = [feeder.subkVAbase/3,feeder.subkVAbase/3,feeder.subkVAbase/3] #assumes 3ph sub
             
     return Vtarg_dict, act_keys
 

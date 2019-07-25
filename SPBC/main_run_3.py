@@ -37,7 +37,7 @@ PVnodes = ['671','680']
 
 PVforecast = {}
 PVforecast['on_off'] = PV_on
-for node in PVnodes:
+for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
     PVforecast[node] = {}
     PVforecast[node]['on_off'] = PV_on
     PVforecast[node]['lat'] = 37.87
