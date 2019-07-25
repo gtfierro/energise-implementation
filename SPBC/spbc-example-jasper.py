@@ -169,7 +169,7 @@ class myspbc(pbc.SPBCProcess):
                     refphasor[2,1] = data[-1]['angle']
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/120     #(subkVbase_phg*1000)
+        refphasor[:,0] = refphasor[:,0]/120   #FLEXLAB V = 120#  #(subkVbase_phg*1000)
         #convert angle from degrees to rads
         refphasor[:,1] = refphasor[:,1]*np.pi/180
         print('phasor reference:')

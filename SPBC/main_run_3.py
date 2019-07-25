@@ -29,7 +29,7 @@ loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 1
+timesteps = 2
 
 #[HIL] - input constnats for PV forecasting
 PV_on = False # True for ON
@@ -114,9 +114,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     # Run optimization problem and generate targets
     
     # set tuning parameters: 0 = off. lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
-    lam1 = 1
+    lam1 = 0
     lam2 = 0
-    lam3 = 0
+    lam3 = 1
     
     obj = 0
     #pdb.set_trace()
