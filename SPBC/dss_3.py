@@ -569,9 +569,6 @@ def get_targets(feeder):
             phAang_ref = ibus.Vang_NL[0,tstep_cur]
             phBang_ref = ibus.Vang_NL[1,tstep_cur]
             phCang_ref = ibus.Vang_NL[2,tstep_cur]
-            print('ref ang A',phAang_ref)
-            print('ref ang B',phBang_ref)
-            print('ref ang C',phCang_ref)
 
         if key in act_keys:
             phAmag = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
@@ -581,9 +578,6 @@ def get_targets(feeder):
             phAang = ibus.Vang_NL[0,tstep_cur]
             phBang = ibus.Vang_NL[1,tstep_cur]
             phCang = ibus.Vang_NL[2,tstep_cur]
-            print(key, 'act ang A', phAang)
-            print(key, 'act ang B', phBang)
-            print(key, 'act ang C', phCang)
             
             phA_kVbase = ibus.Vmag_NL[0,tstep_cur]/ibus.Vmag_NL[0,tstep_cur]*ibus.kVbase_phg
             phB_kVbase = ibus.Vmag_NL[1,tstep_cur]/ibus.Vmag_NL[1,tstep_cur]*ibus.kVbase_phg

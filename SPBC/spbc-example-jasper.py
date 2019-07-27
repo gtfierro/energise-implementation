@@ -126,13 +126,20 @@ class myspbc(pbc.SPBCProcess):
         print('~~~ New compute_and_announce instance ~~~')
         
         # ~~ LPBC ~~ #
-        Psat_nodes = [] #dummy value # getting 1 value per phase
-        Qsat_nodes = [] #dummy value
+        Psat_nodes = []
+        Qsat_nodes = []
+        lpbc_nodes = []
         
+        # TODO: do lpbc's live at actuator nodes or at perf nodes?
+            # if at perf nodes need to write method to send out voltage targets for the right nodes
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
+                for key, ibus in myfeeder.busdict.items():
+                    if lpbc == 'lpbc_' + key:
+                        lpbc_nodes.append(key)
+                
                 
                 
         #create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
@@ -171,8 +178,12 @@ class myspbc(pbc.SPBCProcess):
         #convert Vmag to p.u. (subKVbase_phg defined in main)
         refphasor[:,0] = refphasor[:,0]/120   #FLEXLAB V = 120#  #(subkVbase_phg*1000)
         #convert angle from degrees to rads
+        # TODO: phases in right order?
+        #[[1.00925961 2.04308987]
+        #[1.00899569 6.2332654 ]
+        #[1.01064548 4.13935041]]
         refphasor[:,1] = refphasor[:,1]*np.pi/180
-        print('phasor reference:')
+        print('phasor reference [pu-rad]:')
         print(refphasor)
                 
         #dummy values
@@ -206,6 +217,7 @@ class myspbc(pbc.SPBCProcess):
                 computed_targets[lpbcID]['kvbase'] = []
                 computed_targets[lpbcID]['kvabase'] = []
                 
+                # TODO: does this even work? (iact vs ibus) (check origin code)
                 for ph in iact.phases:
                     if ph == 'a':
                         phidx  = 0
