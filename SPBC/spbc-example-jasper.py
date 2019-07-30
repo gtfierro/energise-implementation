@@ -3,6 +3,7 @@ from pyxbos.drivers import pbc
 import logging
 import random
 import datetime
+import numpy as np
 
 #import spbc related functions
 from setup_3 import *
@@ -15,6 +16,22 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 #init feeder & other vars
 phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
+
+# SETTINGS
+lpbc_phases = ['a','b','c']
+
+dummy = True
+constant_phasor = True
+
+if dummy_ref == True:
+    print('WARNING: dummy_ref ON')
+if constant_phasor == True:
+    # set phasor target values here (not relative)
+    cons_Vmag = [0.9862920,0.9956446,0.9881567]
+    cons_Vang = [-1.61526,-121.75103,118.20174]
+    cons_KVbase = np.ones(3)*4.16/np.sqrt(3)
+    cons_KVAbase = np.ones(3)*5000/3
+    print('WARNING: constant_phasor ON')
 
 # TODO: vmagprev, check dims across all instances, think it shoud just be 3
 Vmag_prev = []
@@ -196,7 +213,15 @@ class myspbc(pbc.SPBCProcess):
         #[1.01064548 4.13935041]]
         refphasor[:,1] = refphasor[:,1]*np.pi/180
         print('phasor reference [pu-rad]:')
-        print(refphasor)               
+        print(refphasor)
+
+        if dummy_ref == True:
+            #dummy values
+            refphasor = refphasor_init
+            refphasor[:,0]=1
+            refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+            print('using dummy reference values')
+                         
         
         if np.inf in refphasor:
             ### WAIT TILL NEXT ###
@@ -215,6 +240,15 @@ class myspbc(pbc.SPBCProcess):
             # None-padded? dicts keyed by the channel name?
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
     
+            if constant_phasor == True:
+                Vtargdict = {}
+                for key in lpbc_nodes:
+                    Vtargdict[key] = {}
+                    Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[0]-refphasor[2,0]]
+                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[0]-refphasor[2,1]]
+                    Vtargdict[key]['KVbase'] = [cons_kVbase,cons_kVbase,cons_kVbase]
+                    Vtargdict[key]['KVAbase'] = [feeder.subkVAbase/3,feeder.subkVAbase/3,feeder.subkVAbase/3] #assumes 3ph sub
+                    
             computed_targets = {}
             
             #for key in act_keys:
@@ -231,7 +265,8 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['kvbase'] = []
                     computed_targets[lpbcID]['kvabase'] = []
                     
-                    for ph in ibus.phases:
+                    #for ph in ibus.phases:
+                    for ph in lpbc_phases:
                         if ph == 'a':
                             phidx  = 0
                             computed_targets[lpbcID]['channels'].append('L1')

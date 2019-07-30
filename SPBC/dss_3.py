@@ -214,7 +214,7 @@ def DSS_trans(feeder,timestep):
                             + " kVs=[" + str(itrans.w0_kVbase_phg*np.sqrt(3)) + ", " + str(itrans.w1_kVbase_phg*np.sqrt(3)) + "]"
                             + " kVAs=[" + str(itrans.w0_kVAbase) + ", " + str(itrans.w1_kVAbase) + "]"
                             + " %Rs=[" + str(itrans.w0_rpu*100) + ", " + str(itrans.w1_rpu*100) + "]"
-                            + " XHL=" + str(itrans.xpu*100))
+                            + " XHL=" + str(itrans.xpu*100)) #TODO: NOTE change this 100 to match Zbase ratio - come back to this (ask Keith)
             
         if itrans.phasevec[1,0] == 1:
             dss.run_command("New Transformer." + itrans.name + "b Phases=1 Windings=2 buses=["
@@ -237,7 +237,7 @@ def DSS_actuators(feeder,timestep):
 # Uses DSS commands to add the previously solved-for values of actuator dispatch to the model as negative loads.
     for key,iact in feeder.actdict.items():
         Pvec = -iact.Pgen[:,timestep].value
-        #print('P:',Pvec) #jasper
+        print('P:',Pvec) #jasper
         Qvec = -iact.Qgen[:,timestep].value
         #print('Q:',Qvec) #jasper
         for idx in range(0,3):
