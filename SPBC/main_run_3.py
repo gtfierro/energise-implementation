@@ -20,11 +20,11 @@ print('running...')
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 
-filepath = "IEEE13/"
-modelpath = filepath + "001_phasor08_IEEE13.xls"
+filepath = "IEEE13_bal/"
+modelpath = filepath + "016 GB_IEEE13_balance all ver2.xls"
 
-loadfolder = "IEEE13/"
-loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
+loadfolder = "IEEE13_bal/"
+loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
@@ -60,7 +60,8 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     day = date.day
     hour = date.hour
     minute = date.minute
-    timestepcur = hour*60+minute
+    #timestepcur = hour*60+minute
+    timestepcur = 11*60
     
     Psat_nodes = []
     Qsat_nodes = []
@@ -85,7 +86,7 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
 # In[4]:
 
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
-def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist    
+def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes): #write 'none' if doesnt exist    
     
     modeldata = pd.ExcelFile(modelpath) 
     actpath = loadpath
@@ -102,7 +103,8 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     day = date.day
     hour = date.hour
     minute = date.minute
-    timestepcur = hour*60+minute
+    #timestepcur = hour*60+minute
+    timestepcur = 11*60
     
     # Create feeder object
     myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
@@ -127,7 +129,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
             
     # objective 1 - phasor target  
     
-            if bus.name == 'bus_675':
+            if bus.name == 'bus_671':
                 Vmag_match = .98
                 Vang_a_match = 0
                 Vang_b_match = 4/3*2*np.pi
@@ -151,14 +153,35 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     
     # objective 3.1 - power flow
 
-    
+
     # objective 3.2 - voltage volitility
+    
     for ts in range(1,myfeeder.timesteps):
         for key, bus in myfeeder.busdict.items():
-            if bus.name == 'bus_632':
+            if bus.name == 'bus_671':
                 obj += lam3*cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[0,ts-1]+
                                       bus.Vmagsq_linopt[1,ts]-bus.Vmagsq_linopt[1,ts-1]+
                                       bus.Vmagsq_linopt[2,ts]-bus.Vmagsq_linopt[2,ts-1])
+    
+    
+    # voltage volatility doesn't really make sense for only 2 timesteps? compute over horizon? 
+    # OR (preferred) find way to store value from previous iteration?
+        # is this equivalent even though not all cvx vars anymore?
+        # initialize by minimizing volatility over first 10 timesteps...
+    
+    # TODO: vmagprev
+    #Vmag_prev = {}
+    #Vmag_prev[key] = np.ones((3,myfeeder.timesteps))
+    # objective 3.2 [HIL} - voltage volatility
+    '''
+    for ts in range(0,myfeeder.timesteps):
+        for key, bus in myfeeder.busdict.items():
+            if key in perf_nodes:
+                if bus.name == 'bus_' + key:
+                    obj += lam3*cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_prev[key][0]+
+                                          bus.Vmagsq_linopt[1,ts]-Vmag_prev[key][1]+
+                                          bus.Vmagsq_linopt[2,ts]-Vmag_prev[key][2])
+    '''
                 
     # add cost function to actuators       
     if costfn_on_off == 1:
@@ -179,7 +202,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     
     # In[7]:
     
-    DSS_alltimesteps(myfeeder,0) # Second argument turns voltage alarms on/off
+    DSS_alltimesteps(myfeeder,1) # Second argument turns voltage alarms on/off
     
     #export_Vtargets(myfeeder)
     ##[jasper] - fn to get target in vector format for LPBC
@@ -190,6 +213,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
     #lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
     return Vtargdict, act_keys, subkVAbase, myfeeder
 
+
 # In[8]:
 # Run main_run
     
@@ -197,12 +221,13 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes): #write 'none' if doesnt exist
 ### dummy values ###    
 Psat = []
 Qsat = []
+perf_nodes = ['671']
 #create dummy refphasor of nominal voltages
 refphasor = np.ones((3,2))
 refphasor[:,0]=1
 refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
-Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat)
+Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat,perf_nodes)
 
 #tf = time.time()
 #print('time to load model')

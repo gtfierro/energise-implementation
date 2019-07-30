@@ -334,7 +334,7 @@ def cons_actuators(feeder,acttoggle):
                         conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (Pmax*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
                         #conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
                         #[HIL] - edit Ssched - Qgen cons
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*1.2*inode.kVAbase)*Qsatmul)/inode.kVAbase) #new
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*inode.kVAbase)*Qsatmul)/inode.kVAbase) #new
                         #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase) #old
                     
                     

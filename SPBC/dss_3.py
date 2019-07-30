@@ -529,9 +529,13 @@ def export_Vtargets(feeder):
         phBname = ibus.name + '_b'
         phCname = ibus.name + '_c'
         
-        phA_KVbase = ibus.Vmag_NL[0,:]/ibus.Vmag_NL[0,:]*ibus.kVbase_phg
-        phB_KVbase = ibus.Vmag_NL[1,:]/ibus.Vmag_NL[1,:]*ibus.kVbase_phg
-        phC_KVbase = ibus.Vmag_NL[2,:]/ibus.Vmag_NL[2,:]*ibus.kVbase_phg
+        #phA_KVbase = ibus.Vmag_NL[0,:]/ibus.Vmag_NL[0,:]*ibus.kVbase_phg
+        #phB_KVbase = ibus.Vmag_NL[1,:]/ibus.Vmag_NL[1,:]*ibus.kVbase_phg
+        #phC_KVbase = ibus.Vmag_NL[2,:]/ibus.Vmag_NL[2,:]*ibus.kVbase_phg
+        
+        phA_KVbase = ibus.kVbase_phg
+        phB_KVbase = ibus.kVbase_phg
+        phC_KVbase = ibus.kVbase_phg
         
         KVbasedf[phAname + '_KVbase'] = phA_KVbase
         KVbasedf[phBname + '_KVbase'] = phB_KVbase
