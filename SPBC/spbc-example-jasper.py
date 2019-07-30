@@ -154,14 +154,16 @@ class myspbc(pbc.SPBCProcess):
                 for key, ibus in myfeeder.busdict.items():
                     if lpbc == 'lpbc_' + key:
                         lpbc_nodes.append(key)
-        # hardcode lpbc_nodes in
-        lpbc_nodes = ['671']
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
                     Psat_nodes.append(lpbc[5:])
                 if status['qSaturated'] == True:
                     Qsat_nodes.append(lpbc[5:])
+                    
+        # hardcode lpbc_nodes in
+        lpbc_nodes = ['671']
+        
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
         
