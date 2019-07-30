@@ -237,7 +237,7 @@ def DSS_actuators(feeder,timestep):
 # Uses DSS commands to add the previously solved-for values of actuator dispatch to the model as negative loads.
     for key,iact in feeder.actdict.items():
         Pvec = -iact.Pgen[:,timestep].value
-        print('P:',Pvec) #jasper
+        #print('P:',Pvec) #jasper
         Qvec = -iact.Qgen[:,timestep].value
         #print('Q:',Qvec) #jasper
         for idx in range(0,3):

@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a','b','c']
 
-dummy = True
+dummy_ref = True
 constant_phasor = True
 
 if dummy_ref == True:
@@ -29,8 +29,8 @@ if constant_phasor == True:
     # set phasor target values here (not relative)
     cons_Vmag = [0.9862920,0.9956446,0.9881567]
     cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_KVbase = np.ones(3)*4.16/np.sqrt(3)
-    cons_KVAbase = np.ones(3)*5000/3
+    cons_kVbase = np.ones(3)*4.16/np.sqrt(3)
+    cons_kVAbase = np.ones(3)*5000/3
     print('WARNING: constant_phasor ON')
 
 # TODO: vmagprev, check dims across all instances, think it shoud just be 3
@@ -205,13 +205,13 @@ class myspbc(pbc.SPBCProcess):
                     refphasor[2,1] = data[-1]['angle']
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/120   #FLEXLAB V = 120#  #(subkVbase_phg*1000)
+        refphasor[:,0] = refphasor[:,0]/120   #FLEXLAB V = 120#  #(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
         #convert angle from degrees to rads
         # TODO: phases in right order?
         #[[1.00925961 2.04308987]
         #[1.00899569 6.2332654 ]
         #[1.01064548 4.13935041]]
-        refphasor[:,1] = refphasor[:,1]*np.pi/180
+        refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
         print('phasor reference [pu-rad]:')
         print(refphasor)
 
@@ -242,12 +242,14 @@ class myspbc(pbc.SPBCProcess):
     
             if constant_phasor == True:
                 Vtargdict = {}
+                refphasor[:,1] = refphasor[:,1]*180/np.pi
+                refphasor[1,1] = refphasor[1,1]-360
                 for key in lpbc_nodes:
                     Vtargdict[key] = {}
                     Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[0]-refphasor[2,0]]
-                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[0]-refphasor[2,1]]
-                    Vtargdict[key]['KVbase'] = [cons_kVbase,cons_kVbase,cons_kVbase]
-                    Vtargdict[key]['KVAbase'] = [feeder.subkVAbase/3,feeder.subkVAbase/3,feeder.subkVAbase/3] #assumes 3ph sub
+                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
+                    Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
+                    Vtargdict[key]['KVAbase'] = [feeder_init.subkVAbase/3,feeder_init.subkVAbase/3,feeder_init.subkVAbase/3] #assumes 3ph sub
                     
             computed_targets = {}
             
@@ -275,7 +277,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             
-                            Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
+                            #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if ph == 'b':
                             phidx  = 1
                             computed_targets[lpbcID]['channels'].append('L2')
