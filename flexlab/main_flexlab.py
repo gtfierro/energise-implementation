@@ -25,12 +25,14 @@ import numpy as np
 from ORT_modbus_energise import *
 '''
 functions from ORT_modbus_energise:
+    ~ set up to copy and paste functions into command line of python console
+    ~ need to have run read_sw_mat before sim_start_stop
     
-    read_sw_mat(filepath)
+    dfsw_in,dfsw_out = read_sw_mat(filepath)
         ~ read in the sw matrix excel file that has switch configs for each test case on that feeder
         ~ define relative folder in pathname and filename in filename
     
-    sim_start_stop(test_ID,sim_time_min)
+    sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
         ~ sends switch values of associated test_ID [i.e. 'T1.1']
         ~ along with a simulation flag signal of 1 to begin recording data
         ~ at end of sim_time_min [minutes], sends simulation flag of 0 to stop recording data
@@ -44,10 +46,7 @@ functions from ORT_modbus_energise:
 
 # settings...
 
-test_ID = 'T1.1' # which test case you want to run
-sim_time_min = 1 # amount of time to record for in minutes
-
-#should input option for choosing feeder such that the correct excel sheet is selected
+#should input option for choosing feeder such that the correct excel sheet is selected?
 #currently only set up for 13NF_bal
 # feeder =
 # Choose from [13NF_bal, 13NF_unbal]
@@ -56,19 +55,11 @@ filename = 'HIL_switch_matrix_13NF_bal.xlsx'
 filepath = pathname+filename
 
 
+test_ID = 'T1.1' # which test case you want to run
+sim_length_min = 1 # amount of time to record for in minutes
+# In[run]:
 
+# run functions...
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+dfsw_in,dfsw_out = read_sw_mat(filepath)
+sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)

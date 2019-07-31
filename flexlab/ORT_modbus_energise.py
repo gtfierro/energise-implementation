@@ -25,6 +25,8 @@ def read_sw_mat(filepath):
     dfsw = pd.ExcelFile(filepath)
     dfsw_in = dfsw.parse('inputs')
     dfsw_out = dfsw.parse('outputs')
+    
+    return dfsw_in, dfsw_out
 
 # In[Modbus]:
     
@@ -32,7 +34,7 @@ def read_sw_mat(filepath):
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient    
     
 #MODBUS
-def sim_start_stop(test_ID,sim_length_min):
+def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
     IP = '131.243.41.14'
     PORT = 502
     id = 1
@@ -54,8 +56,7 @@ def sim_start_stop(test_ID,sim_length_min):
             
     mtx = []
     mtx_register = []
-    mtx.append(1) #sets simulation flag to 1 (ON)
-    mtx_register.append(1) # Start with base
+
     for i in sw_idx:
         mtx.append(dfsw_in[test_ID][i])
         mtx_register.append(dfsw_in['Register'][i])  
@@ -69,12 +70,16 @@ def sim_start_stop(test_ID,sim_length_min):
         client.write_registers(scales['loadrack']['register'],
                                int(scales['loadrack']['value']), unit=id)
         
+        # write switch positions for config
+        for i in range(len(mtx)):
+            client.write_registers(mtx_register[i], int(mtx[i]), unit=id)
+            
         # Read simulaiton time
         sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
         print('simulation start time:',sim_start)
         
-        for i in range(len(mtx)):
-            client.write_registers(mtx_register[i], int(mtx[i]), unit=id)
+        # start recording data (sim flag on)
+        client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
             
         #for sw in mtx:
         #    client.write_registers(mtx_register, int(sw), unit=id)
@@ -94,6 +99,8 @@ def sim_start_stop(test_ID,sim_length_min):
         
     finally:
         client.close()
+    
+    return
         
 def sim_stop():
     
@@ -112,4 +119,6 @@ def sim_stop():
     finally:
         client.close()
         print('client closed')
+    
+    return
         
