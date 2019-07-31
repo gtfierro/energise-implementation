@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a','b','c']
 
-dummy_ref = True
+dummy_ref = False
 constant_phasor = True
 
 if dummy_ref == True:
@@ -205,7 +205,7 @@ class myspbc(pbc.SPBCProcess):
                     refphasor[2,1] = data[-1]['angle']
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/120   #FLEXLAB V = 120#  #(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
+        refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
         #convert angle from degrees to rads
         # TODO: phases in right order?
         #[[1.00925961 2.04308987]
