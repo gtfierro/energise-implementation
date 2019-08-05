@@ -281,7 +281,7 @@ class myspbc(pbc.SPBCProcess):
                     #Vmag_prev = {}
                     #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                     computed_targets[lpbcID]['channels'] = []
-                    computed_targets[lpbcID]['V'] = []
+                    computed_targets[lpbcID]['delV'] = []
                     computed_targets[lpbcID]['delta'] = []
                     computed_targets[lpbcID]['kvbase'] = []
                     computed_targets[lpbcID]['kvabase'] = []
@@ -290,8 +290,8 @@ class myspbc(pbc.SPBCProcess):
                     for ph in lpbc_phases:
                         if ph == 'a':
                             phidx  = 0
-                            computed_targets[lpbcID]['channels'].append('L1')
-                            computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['channels'].append('ph_A')
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
@@ -299,16 +299,16 @@ class myspbc(pbc.SPBCProcess):
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if ph == 'b':
                             phidx  = 1
-                            computed_targets[lpbcID]['channels'].append('L2')
-                            computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['channels'].append('ph_B')
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                         
                         if ph == 'c':
                             phidx  = 2
-                            computed_targets[lpbcID]['channels'].append('L3')
-                            computed_targets[lpbcID]['V'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['channels'].append('ph_C')
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
@@ -319,7 +319,7 @@ class myspbc(pbc.SPBCProcess):
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
                 await self.broadcast_target(lpbc_name, targets['channels'], \
-                                targets['V'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
+                                targets['delV'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
 
 if len(sys.argv) > 1:
     cfg = config_from_file(sys.argv[1])
