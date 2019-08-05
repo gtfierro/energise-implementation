@@ -20,11 +20,16 @@ client = ModbusClient(IP, port=PORT)
 
 P1, P2, P3 = 20000, 20000, 20000
 Q1, Q2, Q3 = 20000, 20000, 20000
-Psign = [1,1,1]
-Qsign = [1,1,1]
+#           P,Q
+sign_vec = [1,1,
+            1,1,
+            1,1]
+sign_base = [2**0,2**1,2**2,2**3,2**4,2**5]
+sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
-mtx = [0]*6
-mtx_register = np.arange(1,7).tolist()
+#mtx = [0]*6
+mtx = [P1,Q1,P2,Q2,P3,Q3,sign_list]
+mtx_register = np.arange(1,8).tolist()
 
 
 try:
