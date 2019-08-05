@@ -178,6 +178,13 @@ class myspbc(pbc.SPBCProcess):
                 if status['qSaturated'] == True:
                     Qsat_nodes.append(lpbc[5:])
                     
+# =============================================================================
+                     if status['pSaturated'] == True:
+                         Psat_nodes.append(f'{lpbc[5:]}_a')
+                     if status['qSaturated'] == True:
+                        Qsat_nodes.append(lpbc[5:])
+# =============================================================================
+                    
         # hardcode lpbc_nodes in
         lpbc_nodes = ['671']
         
