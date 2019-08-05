@@ -18,7 +18,7 @@ id = 2
 # Connect to client
 client = ModbusClient(IP, port=PORT)
 
-mtx = [1]*6
+mtx = [0]*6
 mtx_register = np.arange(1,7).tolist()
 
 

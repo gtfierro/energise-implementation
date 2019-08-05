@@ -18,7 +18,7 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a']
+lpbc_phases = ['a','b','c']
 
 dummy_ref = True
 constant_phasor = True
@@ -144,7 +144,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(30, self.compute_and_announce))
+        schedule(self.call_periodic(60, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
 
     async def compute_and_announce(self):
@@ -190,6 +190,7 @@ class myspbc(pbc.SPBCProcess):
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
+        
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
             if data != None:
@@ -197,12 +198,23 @@ class myspbc(pbc.SPBCProcess):
                 if 'L1' in channel:
                     refphasor[0,0] = data[-1]['magnitude']
                     refphasor[0,1] = data[-1]['angle']
+                
+                #if 'L2' in channel:
+                #    refphasor[1,0] = data[-1]['magnitude']
+                #    refphasor[1,1] = data[-1]['angle']
+                #if 'L3' in channel:
+                #    refphasor[2,0] = data[-1]['magnitude']
+                #    refphasor[2,1] = data[-1]['angle']
+                
+                # TODO: phase allocation?
+                    
                 if 'L2' in channel:
                     refphasor[1,0] = data[-1]['magnitude']
                     refphasor[1,1] = data[-1]['angle']
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
+        
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
         refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
