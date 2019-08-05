@@ -11,7 +11,7 @@ import time
 
     # In[2]:
 ts = time.time()
-print('running...')
+print('running...',ts)
 
 
 # Enter the path/name of the model's excel file and import

@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a','b','c']
 
-dummy_ref = False
+dummy_ref = True
 constant_phasor = True
 
 if dummy_ref == True:
@@ -168,7 +168,7 @@ class myspbc(pbc.SPBCProcess):
                 print('LPBC status:', lpbc,':', channel, ':', status)
                 
                 # get perf nodes (lpbc nodes)
-                for key, ibus in myfeeder.busdict.items():
+                for key, ibus in feeder_init.busdict.items():
                     if lpbc == 'lpbc_' + key:
                         lpbc_nodes.append(key)
         
@@ -190,6 +190,7 @@ class myspbc(pbc.SPBCProcess):
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
+        
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
             if data != None:
@@ -197,12 +198,23 @@ class myspbc(pbc.SPBCProcess):
                 if 'L1' in channel:
                     refphasor[0,0] = data[-1]['magnitude']
                     refphasor[0,1] = data[-1]['angle']
+                
+                #if 'L2' in channel:
+                #    refphasor[1,0] = data[-1]['magnitude']
+                #    refphasor[1,1] = data[-1]['angle']
+                #if 'L3' in channel:
+                #    refphasor[2,0] = data[-1]['magnitude']
+                #    refphasor[2,1] = data[-1]['angle']
+                
+                # TODO: phase allocation?
+                    
                 if 'L2' in channel:
                     refphasor[1,0] = data[-1]['magnitude']
                     refphasor[1,1] = data[-1]['angle']
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
+        
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
         refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
@@ -249,7 +261,7 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[0]-refphasor[2,0]]
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
-                    Vtargdict[key]['KVAbase'] = [feeder_init.subkVAbase/3,feeder_init.subkVAbase/3,feeder_init.subkVAbase/3] #assumes 3ph sub
+                    Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
                     
             computed_targets = {}
             
@@ -300,7 +312,7 @@ class myspbc(pbc.SPBCProcess):
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
                 await self.broadcast_target(lpbc_name, targets['channels'], \
-                                targets['V'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase'])
+                                targets['V'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
 
 if len(sys.argv) > 1:
     cfg = config_from_file(sys.argv[1])
