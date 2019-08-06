@@ -40,6 +40,11 @@ functions from ORT_modbus_energise:
     sim_stop()
         ~ sends simulation flag signal of 0
         
+        
+    datetime function to get datetime from epoch....
+        import datetime as dt
+        dt.datetime.fromtimestamp(1565048195.416524)
+        
 '''
 
 # In[settings]:

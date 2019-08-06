@@ -20,12 +20,15 @@ client = ModbusClient(IP, port=PORT)
 
 
 #P,Q commands in W and VAR (not kilo)
+c = 500/3.3/1000
 
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
 P1, P2, P3 = 0, 0, 0
 Q1, Q2, Q3 = 0, 0, 0
+
+
 
 # set signs of commands through sign_vec
 #           P,Q      1 is positive, 0 is negative
