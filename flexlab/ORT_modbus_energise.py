@@ -134,7 +134,7 @@ def sim_stop():
 
 def CIL_start_stop():
     IP = '131.243.41.14'
-    PORT = 503
+    PORT = 504
     id = 2
 
     # Connect to client
