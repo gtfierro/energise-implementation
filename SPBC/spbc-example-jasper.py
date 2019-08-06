@@ -28,7 +28,8 @@ if dummy_ref == True:
 if constant_phasor == True:
     # set phasor target values here (not relative)
     cons_Vmag = [0.9862920,0.9956446,0.9881567]
-    cons_Vang = [-1.61526,-121.75103,118.20174]
+    #cons_Vang = [-1.61526,-121.75103,118.20174]
+    cons_Vang = [-2,-122,118]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3)
     cons_kVAbase = np.ones(3)*5000/3
     print('WARNING: constant_phasor ON')
@@ -179,10 +180,12 @@ class myspbc(pbc.SPBCProcess):
                     Qsat_nodes.append(lpbc[5:])
                     
 # =============================================================================
-                     if status['pSaturated'] == True:
-                         Psat_nodes.append(f'{lpbc[5:]}_a')
-                     if status['qSaturated'] == True:
-                        Qsat_nodes.append(lpbc[5:])
+# =============================================================================
+#                      if status['pSaturated'] == True:
+#                          Psat_nodes.append(f'{lpbc[5:]}_a')
+#                      if status['qSaturated'] == True:
+#                         Qsat_nodes.append(lpbc[5:])
+# =============================================================================
 # =============================================================================
                     
         # hardcode lpbc_nodes in
@@ -204,17 +207,7 @@ class myspbc(pbc.SPBCProcess):
                 #store most recent uPMU ref phasor values
                 if 'L1' in channel:
                     refphasor[0,0] = data[-1]['magnitude']
-                    refphasor[0,1] = data[-1]['angle']
-                
-                #if 'L2' in channel:
-                #    refphasor[1,0] = data[-1]['magnitude']
-                #    refphasor[1,1] = data[-1]['angle']
-                #if 'L3' in channel:
-                #    refphasor[2,0] = data[-1]['magnitude']
-                #    refphasor[2,1] = data[-1]['angle']
-                
-                # TODO: phase allocation?
-                    
+                    refphasor[0,1] = data[-1]['angle']             
                 if 'L2' in channel:
                     refphasor[1,0] = data[-1]['magnitude']
                     refphasor[1,1] = data[-1]['angle']
@@ -286,11 +279,13 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['kvbase'] = []
                     computed_targets[lpbcID]['kvabase'] = []
                     
+                    # TODO: shiff from line to phase channel tags
                     #for ph in ibus.phases:
                     for ph in lpbc_phases:
                         if ph == 'a':
                             phidx  = 0
-                            computed_targets[lpbcID]['channels'].append('ph_A')
+                            #computed_targets[lpbcID]['channels'].append('ph_A')
+                            computed_targets[lpbcID]['channels'].append('L1')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
@@ -299,7 +294,8 @@ class myspbc(pbc.SPBCProcess):
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if ph == 'b':
                             phidx  = 1
-                            computed_targets[lpbcID]['channels'].append('ph_B')
+                            #computed_targets[lpbcID]['channels'].append('ph_B')
+                            computed_targets[lpbcID]['channels'].append('L2')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
@@ -307,7 +303,8 @@ class myspbc(pbc.SPBCProcess):
                         
                         if ph == 'c':
                             phidx  = 2
-                            computed_targets[lpbcID]['channels'].append('ph_C')
+                            #computed_targets[lpbcID]['channels'].append('ph_C')
+                            computed_targets[lpbcID]['channels'].append('L3')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
