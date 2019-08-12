@@ -1,5 +1,7 @@
 
 
+# clear()
+
 from IIRfilter import *
 
 import numpy as np
@@ -8,7 +10,7 @@ import matplotlib.pyplot as plt
 import sys
 
 # parameters
-nphases = 1
+nphases = 3
 stepRate = 4 #this gives the discrete sampling rate
 filterOrder = 3
 stopbandFreqs = (1/100, 1/15) # in cont domain , Hz
@@ -25,7 +27,7 @@ else:
 
 # define artificial data
 N = time.size
-data0 = np.ones(N).astype(np.float)         # data0 - signal without noise (constant value)
+data0 = np.ones((nphases,N)).astype(np.float)         # data0 - signal without noise (constant value)
 data1 = data0  #+ 0.002 * np.random.randn(N)    # data1 - signal with wideband noise (if # is removed)
 fdisturbance = 1/30                           # narrowband disturbance frequency in Hz
 w = 2 * np.pi * fdisturbance                # angular frequency (still continuous domain)
@@ -47,10 +49,10 @@ if nphases > 1:
     for i in range(N):
         data2_filtered[:,i] = filter.filterStep(data2[:,i])
     #plot
-    plotindex = 0
+    plotindex = 2
     plt.plot(time, data2_filtered[plotindex,:], label='filtered')
     plt.plot(time, data2[plotindex,:], label='unfiltered')
-    plt.plot(time, data0, label='target')
+    plt.plot(time, data0[plotindex,:], label='target')
     plt.title('Vang filtered')
     plt.ylabel('Vang')
     plt.xlabel('Timestep')
@@ -59,14 +61,16 @@ if nphases > 1:
 else:
     #initialize:
     data2_filtered = np.zeros(N)
-    filter.initializeFilterState(data2[0])
+    print('data1[0,0] : ' + str((data2[0,0])))
+    print('data1[:,0] : ' + str((data2[:,0])))
+    filter.initializeFilterState(data2[0,0])
     #run
     for i in range(N):
-        data2_filtered[i] = filter.filterStep(data2[i])
+        data2_filtered[i] = filter.filterStep(data2[0,i])
     #plot
     plt.plot(time, data2_filtered, label='filtered')
-    plt.plot(time, data2, label='unfiltered')
-    plt.plot(time, data0, label='target')
+    plt.plot(time, data2[0,:], label='unfiltered')
+    plt.plot(time, data0[0,:], label='target')
     plt.title('Vang filtered')
     plt.ylabel('Vang')
     plt.xlabel('Timestep')
