@@ -43,6 +43,7 @@ Vmag_prev = []
 # TODO; put lpbc_nodes outsie of loop in init section?
 #lpbc_nodes = []
 
+print()
 class myspbc(pbc.SPBCProcess):
     """
     This is an example SPBC implementation demonstrating how to access and use

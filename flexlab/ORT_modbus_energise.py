@@ -14,6 +14,8 @@
 # Imports
 import pandas as pd
 import numpy as np
+import time
+import datetime as dt
 
 #Read in swtich info for ORT imports and exports
 #pathname = 'sw_mat/'
@@ -39,8 +41,8 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
     if test_ID in dfsw_in.columns:
         
         IP = '131.243.41.14'
-        PORT = 502
-        id = 1
+        PORT = 503
+        id = 2
         
         # Connect to client
         client = ModbusClient(IP, port=PORT)
@@ -64,7 +66,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
     
         for i in sw_idx:
             mtx.append(dfsw_in[test_ID][i])
-            mtx_register.append(dfsw_in['Register'][i])  
+            mtx_register.append(dfsw_in['Register'][i])
         
         
         try:
@@ -81,10 +83,11 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
                 
             # Read simulaiton time
             sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
-            print('simulation start time:',sim_start)
             
             # start recording data (sim flag on)
             client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
+            print('simulation start time:',sim_start)
+            print(dt.datetime.fromtimestamp(time.time()))
                 
             #for sw in mtx:
             #    client.write_registers(mtx_register, int(sw), unit=id)
@@ -104,20 +107,40 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
             
         finally:
             client.close()
+            print('client closed')
             
     else:
         print('Test ID error')
     
     return
+
+def sim_start_pause_stop(sim_length_min):
+    
         
-def sim_stop():
-    
     IP = '131.243.41.14'
-    PORT = 502
-    id = 1
+    PORT = 503
+    id = 2
     
+    # Connect to client
     client = ModbusClient(IP, port=PORT)
+    
+    
     try:
+            
+        # Read simulaiton time
+        sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
+        print('simulation start time:',sim_start)
+        
+        # start recording data (sim flag on)
+        client.write_registers(int(1), int(3), unit=id) #sets simulation flag to 1 (ON)
+            
+        w = 1
+        
+        while w > 0:
+            sim_cur = client.read_input_registers(1, count=1, unit=id).registers[0]
+            if sim_cur - sim_start >= sim_length_min*60:
+                break                
+        print('simulation end time',sim_cur)
         client.write_registers(int(1), int(0), unit=id)
         print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])
         
@@ -127,76 +150,78 @@ def sim_stop():
     finally:
         client.close()
         print('client closed')
-    
+
     return
         
-
-
-def CIL_start_stop():
+def sim_stop():
+    
     IP = '131.243.41.14'
-    PORT = 504
+    PORT = 503
     id = 2
-
-    # Connect to client
+    
     client = ModbusClient(IP, port=PORT)
-    
-    mtx = [1]*6
-    mtx_register = np.arange(1,7).tolist()
-    
-    '''
-    # Get indeces & assign values
-    sw_idx = []
-    scales = {}
-
-    for i in range(dfsw_in.shape[0]):
-        if dfsw_in.Description.values[i][:3] == 'sw_':
-            sw_idx.append(i)
-        if 'scale_flexgrid' in dfsw_in.Description.values[i]:
-            scales['flexgrid'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
-        if 'scale_loadrack' in dfsw_in.Description.values[i]:
-            scales['loadrack'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
-            
-    mtx = []
-    mtx_register = []
-
-    for i in sw_idx:
-        mtx.append(dfsw_in[test_ID][i])
-        mtx_register.append(dfsw_in['Register'][i])  
-    '''
-    
     try:
-        
-        # write switch positions for config
-        for i in range(len(mtx)):
-            client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-        print('sent')
-            
-        # Read simulaiton time
-        #sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
-        #print('simulation start time:',sim_start)
-        
-        # start recording data (sim flag on)
-        #client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
-            
-        #for sw in mtx:
-        #    client.write_registers(mtx_register, int(sw), unit=id)
-        #    mtx_register += 1
-        #w = 1
-        
-        #while w > 0:
-        '''
-            sim_cur = client.read_input_registers(1, count=1, unit=id).registers[0]
-            if sim_cur - sim_start >= sim_length_min*60:
-                break                
-        print('simulation end time',sim_cur)
         client.write_registers(int(1), int(0), unit=id)
+        print('simulation stop time:',client.read_input_registers(1, count=1, unit=id).registers[0])
+        print('epoch:',time.time())
+        print(dt.datetime.fromtimestamp(time.time()))
         print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])
-        '''
         
     except Exception as e:
         print(e)
         
     finally:
         client.close()
+        print('client closed [stop]')
+    
+    return
+        
+
+
+def sim_start():
+
+    IP = '131.243.41.14'
+    PORT = 503
+    id = 2
+    
+    client = ModbusClient(IP, port=PORT)
+    try:
+        client.write_registers(int(1), int(1), unit=id)
+        print('simulation start time:',client.read_input_registers(1, count=1, unit=id).registers[0])
+        print('epoch:',time.time())
+        print(dt.datetime.fromtimestamp(time.time()))
+        print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])
+        
+        
+    except Exception as e:
+        print(e)
+        
+    finally:
+        client.close()
+        print('client closed [start]')
+    
+    return
+
+def sim_pause():
+
+    IP = '131.243.41.14'
+    PORT = 503
+    id = 2
+    
+    client = ModbusClient(IP, port=PORT)
+    try:
+        client.write_registers(int(1), int(3), unit=id)
+        print('simulation start/pause time:',client.read_input_registers(1, count=1, unit=id).registers[0])
+        print('epoch:',time.time())
+        print(dt.datetime.fromtimestamp(time.time()))
+        print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])
+        
+        
+    except Exception as e:
+        print(e)
+        
+    finally:
+        client.close()
+        print('client closed [pause]')
     
     return

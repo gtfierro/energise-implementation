@@ -11,7 +11,9 @@ import time
 
     # In[2]:
 ts = time.time()
-print('running...',ts)
+print()
+print('SPBC running...',ts)
+print(datetime.datetime.fromtimestamp(ts))
 
 
 # Enter the path/name of the model's excel file and import
