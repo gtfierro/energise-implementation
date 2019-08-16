@@ -5,6 +5,7 @@ Created on Wed Jul 31 18:20:43 2019
 
 @author: energise
 """
+import numpy as np
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 IP = '131.243.41.14'
