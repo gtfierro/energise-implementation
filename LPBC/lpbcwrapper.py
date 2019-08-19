@@ -14,7 +14,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 from PIcontroller import *
-from APC import *
+#from APC import *
 
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
@@ -38,6 +38,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.controller = PIcontroller(nphases)
 
         self.ametek_phase_shift = 0
+        self.actType = actType
 
         self.nphases = nphases
         self.iteration_counter = 0
@@ -69,6 +70,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.VmagTarg_pu = np.zeros(nphases)
         self.VmagTarg_relative = np.zeros(nphases)
         self.VmagTarg_relative_pu = np.zeros(nphases)
+        self.status_phases = []
 
         self.kVbase = np.NaN #received from SPBC #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
         self.localVratio = localVratio #!= 1 if Ametek voltage ratio needs to be taken into account (ie PMU123 not PMUP123 used for the voltage)
@@ -126,8 +128,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
         self.act_idxs = np.asarray(act_idxs)
-        self.actuatorType = actType #'inverter' or 'load'
-        if self.type == 'inverter':
+ #'inverter' or 'load'
+        if self.actType == 'inverter':
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
         commandReceipt = np.zeros(nphases)
 
@@ -136,7 +138,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
         self.inv_s_max = 7600.
-        self.mode = 1  #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
+        self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros((nphases, 1)) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros((nphases, 1)) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros((nphases, 1)) #load commands are given in watts
@@ -151,24 +153,31 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         phaseA = False
         phaseB = False
         phaseC = False
-        for i in np.arrange(nphases):
+        status_phases = []
+        for i in np.arange(nphases):
             if 'ph_A' in phasor_target['phasor_targets'][i]['channelName']:
                 phaseA = True
                 phase = 'A'
+                status_phases.append('ph_A')
             elif 'ph_B' in phasor_target['phasor_targets'][i]['channelName']:
                 phaseB = True
                 phase = 'B'
+                status_phases.append('ph_B')
             elif 'ph_C' in phasor_target['phasor_targets'][i]['channelName']:
                 phaseC = True
                 phase = 'C'
+                status_phases.append('ph_C')
             else:
                 disp('no phase found for target ' + str(i) + 'using phase A')
                 phaseA = True
                 phase = 'A'
+                status_phases.append('ph_A')
             Vmag_targ_dict[phase] = phasor_target['phasor_targets'][i]['magnitude']
             Vang_targ_dict[phase] = phasor_target['phasor_targets'][i]['angle']
             kvbase_dict[phase] = phasor_target['phasor_targets'][i]['kvbase']['value']
             kvabase_dict[phase] = phasor_target['phasor_targets'][i]['kvabase']['value']
+
+        status_phases = sorted(status_phases)
         Vmag_targ = []
         Vang_targ = []
         kvbase = []
@@ -188,7 +197,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Vang_targ.append(Vang_targ_dict['C'])
             kvbase.append(kvbase_dict['C'])
             kvabase.append(kvabase_dict['C'])
-        return (Vmag_targ, Vang_targ, kvbase, kvabase)
+        return (Vmag_targ, Vang_targ, kvbase, kvabase, status_phases)
         #there are alternative ways to do this (eg creating Phases_to_V_idx using similar logic)
 
 
@@ -317,13 +326,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
 
-
     def checkSaturation(self, nphases, Pact, Qact, Pcmd, Qcmd):
         "Checking for P saturation (anti-windup control)"
         # find indicies where Pact + tolerance is less than Pcmd
         indexP = np.where(abs(Pact + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
         # initialize saturation counter for each phase
-        sat_arrayP = np.ones(nphases) #
+        sat_arrayP = np.ones((nphases,1)) #
         # stop integrator for saturated phases
         for i in indexP:
             sat_arrayP[i] = 0 #0 where saturated
@@ -331,7 +339,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # find indicies where Qact + tolerance is less than Qcmd
         indexQ = np.where(abs(Qact + (0.03 * Qcmd)) < abs(Qcmd))[0]
         # initialize saturation counter for each phase
-        sat_arrayQ = np.ones(nphases)
+        sat_arrayQ = np.ones((nphases,1))
         # stop integrator for saturated phases
         for i in indexQ:
             sat_arrayQ[i] = 0
@@ -345,21 +353,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
             if phase in np.where(~self.Psat.any(axis=1))[0]: #if each row doesnt have a 1 in it, then send ICDI for that phase
-                ICDI_sigP[phase] = True
-                Pmax_pu[phase] = Pact_pu[phase]
+                self.ICDI_sigP[phase] = True
+                self.Pmax_pu[phase] = Pact_pu[phase]
             else:
-                ICDI_sigP[phase] = False
-                Pmax_pu[phase] = np.NaN
+                self.ICDI_sigP[phase] = False
+                self.Pmax_pu[phase] = np.NaN
         self.Qsat = np.append(self.Qsat, sat_arrayQ, axis=1)
         self.Qsat = self.Qsat[:, 1:]
         for phase in range(nphases):
             if phase in np.where(~self.Qsat.any(axis=1))[0]:
-                ICDI_sigQ[phase] = True
-                Qmax_pu[phase] = Qact_pu[phase]
+                self.ICDI_sigQ[phase] = True
+                self.Qmax_pu[phase] = Qact_pu[phase]
             else:
-                ICDI_sigQ[phase] = False
-                Qmax_pu[phase] = np.NaN
-        return (ICDI_sigP, ICDI_sigQ, Pmax_pu, Qmax_pu)
+                self.ICDI_sigQ[phase] = False
+                self.Qmax_pu[phase] = np.NaN
+        return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
 
 
@@ -427,7 +435,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
 
-    def httptoLoads(self, act_idxs, Pcmd_kVA, Qcmd_kVA):
+    def httptoLoads(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA):
         #load commands are between 0 and 2000, but from the LPBC's perspective it can control between -1000 and 1000 W, with 1000 W collocated
         Pcmd_VA = Pcmd_kVA*1000
         Qcmd_VA = Qcmd_kVA*1000
@@ -456,21 +464,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
     def initializeActuators(self, mode):
+        if mode == 0:
+            return
         if mode == 1 or mode == 2:
             responseInverters = requests.get("http://131.243.41.47:9090/control?P_ctrl=97,Batt_ctrl=0")
         if mode == 3:
             responseInverters = requests.get("http://131.243.41.47:9090/control?P_ctrl=0,Batt_ctrl=0")
-        responseLoads = requests.get(f"http://131.243.41.118:9090/control?P_ctrl=0")
+        #responseLoads = requests.get(f"http://131.243.41.118:9090/control?P_ctrl=0")
         if responseInverters.status_code != 200 or responseLoads.status_code != 200:
             error('Error with actuator initialization, responseInverters.status_code = ' + str(responseInverters.status_code) + 'responseLoads.status_code = ' + str(responseLoads.status_code))
-        return (responseInverters.status_code, responseLoads.status_code)
+        return #(responseInverters.status_code, responseLoads.status_code)
 
 
 
 
-    def statusforSPBC(self, plug_to_phase_map, channels, phasor_error_mag_pu, phasor_error_ang, ICDI_sigP, ICDI_sigQ, Pmax_pu, Qmax_pu):
+    def statusforSPBC(self, phases, phasor_error_mag_pu, phasor_error_ang, ICDI_sigP, ICDI_sigQ, Pmax_pu, Qmax_pu):
         status = {}
-        # status['phases'] = plug_to_phase_map #This has to be a list (cant just be a string) #HERE may create an error cause its a numpy array currently
+        status['phases'] = phases #This has to be a list (cant just be a string) #HERE may create an error cause its a numpy array currently
         status['phasor_errors'] = {
                 'V': list(phasor_error_mag_pu.ravel()), #ravel flatens the dimensions
                 'delta': list(phasor_error_ang.ravel())
@@ -488,10 +498,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         self.iteration_counter += 1
+        print(self.iteration_counter)
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
-            (responseInverters, responseLoads) = initializeActuators(self.mode) #throws an error if initialization fails
+            print('1') # Used for debugging; uncomment below in acutal testing
+            #(responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
 
         if phasor_target is None and self.VangTarg == 'initialize':
             print("Iteration", self.iteration_counter, ": No target received by SPBC")
@@ -503,39 +515,48 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 #get targets and bases from phasor_target, sent by the SPBC
                 #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
-                (self.VmagTarg, self.VangTarg, self.kVbase, self.network_kVAbase) = targetExtraction(phasor_target)
+                (self.VmagTarg_relative_pu, self.VangTarg, self.kVbase, self.network_kVAbase, self.status_phases) = self.targetExtraction(phasor_target)
+                self.kVbase  = np.asarray(self.kVbase)
+                self.network_kVAbase = np.asarray(self.network_kVAbase)
                 #VmagTarg is given as VmagTarg_relative rn from the SPBC
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
                 self.localkVAbase = self.network_kVAbase/self.localSratio
                 self.localIbase = self.localkVAbase/self.localkVbase
-                self.VmagTarg_pu = self.VmagTarg/(self.localkVbase * 1000)
+                #self.VmagTarg_pu = self.VmagTarg/(self.localkVbase * 1000)
 
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            self.Vmag_pu = self.Vmag / (self.localkVbase * 1000)
+
+            (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
+
             # self.VmagTarg_relative = self.VmagTarg - self.VmagRef
-            self.VmagTarg_relative = self.VmagTarg #VmagTarg is given as VmagTarg_relative rn from the SPBC
-            self.VmagTarg_relative_pu = self.VmagTarg_relative / (self.localkVbase * 1000)
+            #self.VmagTarg_relative = self.VmagTarg_pu #VmagTarg is given as VmagTarg_relative rn from the SPBC
+            #self.VmagTarg_relative_pu = self.VmagTarg_relative / (self.localkVbase * 1000)
+
             self.phasor_error_ang = self.VangTarg - self.Vang
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
             # self.phasor_error_mag_pu = self.VmagTarg_pu - self.Vmag_pu    #both this and taking the difference of the relative values work
 
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
-                (self.Iang,self.Imag) = phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-                self.Imag_pu = self.Imag / self.localIbase
-                (self.Pact,self.Qact) = PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx) #calculate P/Q from actuators
-                self.Pact_pu = self.Pact / self.localkVAbase
-                self.Qact_pu = self.Qact / self.localkVAbase
-                (self.sat_arrayP,self.sat_arrayQ) = checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA) #returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-                (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, self.Pact_pu, self.Qact_pu)
+                print('bypass') #TODO: uncomment below
+                #(self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                #self.Imag_pu = self.Imag / self.localIbase
+
             else:
-                self.Icomp_est = phasorI_estFromScmd(self.Vmag_relative_pu, self.Vang, self.Pcmd_pu, self.Qcmd_pu) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
+                self.Icomp_est = self.phasorI_estFromScmd(self.Vmag_relative_pu, self.Vang, self.Pcmd_pu, self.Qcmd_pu) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
                 self.Icomp_pu_est = self.Icomp_est / self.localIbase
+            (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  # calculate P/Q from actuators
+            self.Pact_pu = self.Pact / self.localkVAbase
+            self.Qact_pu = self.Qact / self.localkVAbase
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP,
+                                                                                         self.sat_arrayQ, self.Pact_pu,
+                                                                                         self.Qact_pu)
             if np.sum(self.sat_arrayP) + np.sum(self.sat_arrayQ) > 0: #these are 1 if unsaturated
                 self.saturated = 0
             else:
@@ -543,22 +564,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #if saturated, Iang and Imag from measurements are still legit, but Icomp_est is not legit because the s commanded was not actually enacted
 
             #run control loop
-            (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+            (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
-                    self.commandReceipt = httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
+                    self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
+                    print(self.commandReceipt)
                 else:
                     disp('couldnt send inverter commands because no current measurement available')
             elif self.actType == 'load':
-                self.commandReceipt = httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
             else:
                 error('actType error')
 
-            status = statusforSPBC(self.plug_to_phase_map, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
+            status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
+            print('STATUS',status)
             return status
 
 
@@ -632,8 +655,8 @@ actType_dict = dict()
 
 #Manual entry here to determine test case, phases, etc.
 #Test Case
-testcase = '37'
-testcase = '13unb'
+#testcase = '37'
+#testcase = '13unb'
 testcase = '13bal'
 
 if testcase == '37':
@@ -715,23 +738,23 @@ for key in lpbcidx:
 #entity corresponds to a given piece of hardware (eg a server), putting multiple entities so that the lpbcs could go on different pieces of hardware
 #these entity files are on the server (Leo)
 entitydict = dict()
-entitydict[0] = lpbc_1.ent
-entitydict[1] = lpbc_2.ent
-entitydict[2] = lpbc_3.ent
-entitydict[3] = lpbc_4.ent
-entitydict[4] = lpbc_5.ent
-entitydict[5] = lpbc_6.ent
+entitydict[0] = 'lpbc_1.ent'
+entitydict[1] = 'lpbc_2.ent'
+entitydict[2] = 'lpbc_3.ent'
+entitydict[3] = 'lpbc_4.ent'
+entitydict[4] = 'lpbc_5.ent'
+entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3']) #HERE is this okay that this is a numpyarray now? depends on Gabes code, hopefully fine
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3'])
+refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
 nlpbc = len(lpbcidx)
 
 #cfg file is used to build each LPBC, this is a template that is modified below for each LPBC
-cfg_file_template = config_from_file(template.toml) #config_from_file defined in XBOSProcess
+cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 lpbcdict = dict()
 lpbcCounter = 0
@@ -746,7 +769,7 @@ for key in lpbcidx:
     cfg = cfg_file_template
     # namespace is the account that controls permissions
     cfg['name'] = key
-    cfg['entity'] = entitydict[lpbccounter] #entity is like a key for each LPBC
+    cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = 4
         cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])

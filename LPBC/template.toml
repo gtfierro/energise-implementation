@@ -3,6 +3,6 @@ local_channels = ['flexlab1/L2']
 reference_channels = ['flexlab1/L1']
 entity = 'user.ent'
 wavemq = '127.0.0.1:4516'
-rate = 2 # number of seconds between calls to 'step'
+rate = 3 # number of seconds between calls to 'step'
 name = 'lpbctest'
 spbc = 'spbctest'
