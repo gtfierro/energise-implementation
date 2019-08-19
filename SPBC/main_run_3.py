@@ -31,7 +31,7 @@ loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 2
+timesteps = 5
 
 #[HIL] - input constnats for PV forecasting
 PV_on = False # True for ON
@@ -170,6 +170,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes): #write 'none' if doesn
     # OR (preferred) find way to store value from previous iteration?
         # is this equivalent even though not all cvx vars anymore?
         # initialize by minimizing volatility over first 10 timesteps...
+    # alternative method:
+        # consider previous timestep as well as next X timesteps
+        # weigh previous timestep more heavily than future timesteps
     
     # TODO: vmagprev
     #Vmag_prev = {}

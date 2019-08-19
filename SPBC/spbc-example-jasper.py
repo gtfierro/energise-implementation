@@ -170,6 +170,12 @@ class myspbc(pbc.SPBCProcess):
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
                 
+                if channel == 'L1':
+                    chanph = 'a'
+                if channel == 'L2':
+                    chanph = 'b'
+                if channel == 'L3':
+                    chanph = 'c'
                 # get perf nodes (lpbc nodes)
                 for key, ibus in feeder_init.busdict.items():
                     if lpbc == 'lpbc_' + key:
@@ -177,9 +183,9 @@ class myspbc(pbc.SPBCProcess):
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
-                    Psat_nodes.append(lpbc[5:])
+                    Psat_nodes.append(lpbc[5:]+'_'+chanph)
                 if status['qSaturated'] == True:
-                    Qsat_nodes.append(lpbc[5:])
+                    Qsat_nodes.append(lpbc[5:]+'_'+chanph)
                     
 # =============================================================================
 # =============================================================================

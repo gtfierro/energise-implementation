@@ -310,13 +310,31 @@ def cons_actuators(feeder,acttoggle):
         
         # Creates a feedback for saturated actuators.
         # This is a very basic implementation, should be improved in later versions
-        Psatmul = 1
-        Qsatmul = 1
-        if key in feeder.Psat_nodes: #[HIL] - ICDI
-            Psatmul = 0.9
-        if key in feeder.Qsat_nodes: #[HIL] - ICDI
-            Psatmul = 0.9
         
+        '''
+        >>> from  __builtin__ import any as b_any
+        >>> lst = ['yellow', 'orange', 'red']
+        >>> word = "or"
+        >>> b_any(word in x for x in lst)
+        True
+        '''
+        
+        Psatmul = [1,1,1]
+        Qsatmul = [1,1,1]
+        print(feeder.Psat_nodes)
+        for phidx, ph in enumerate (['a','b','c']):
+            print('0',key)
+            for i in range(len(feeder.Psat_nodes)):
+                if key in feeder.Psat_nodes[i]: #[HIL] - ICDI
+                    print('1')
+                    if ph in feeder.Psat_nodes[i]:
+                        print('2')
+                        Psatmul[phidx] = 0.5
+                    print(Psatmul)
+            if key in feeder.Qsat_nodes: #[HIL] - ICDI
+                if ph in feeder.Qsat_nodes:
+                    Qsatmul[phidx] = 0.5
+                print(Qsatmul)
         for iact in inode.actuators:
             #scale PV actuation down based on TOD irradiance (really only uses beam) [HIL]
             if feeder.PVforecast[str(key)]['on_off'] == True:
