@@ -318,23 +318,14 @@ def cons_actuators(feeder,acttoggle):
         >>> b_any(word in x for x in lst)
         True
         '''
-        
+        #[HIL] - ICDI
         Psatmul = [1,1,1]
         Qsatmul = [1,1,1]
-        print(feeder.Psat_nodes)
         for phidx, ph in enumerate (['a','b','c']):
-            print('0',key)
-            for i in range(len(feeder.Psat_nodes)):
-                if key in feeder.Psat_nodes[i]: #[HIL] - ICDI
-                    print('1')
-                    if ph in feeder.Psat_nodes[i]:
-                        print('2')
-                        Psatmul[phidx] = 0.5
-                    print(Psatmul)
-            if key in feeder.Qsat_nodes: #[HIL] - ICDI
-                if ph in feeder.Qsat_nodes:
-                    Qsatmul[phidx] = 0.5
-                print(Qsatmul)
+            if any(key in x for x in feeder.Psat_nodes) & any(ph in x for x in feeder.Psat_nodes) == True:
+                Psatmul[phidx] = 0.8
+            if any(key in x for x in feeder.Qsat_nodes) & any(ph in x for x in feeder.Qsat_nodes) == True:
+                Qsatmul[phidx] = 0.8
         for iact in inode.actuators:
             #scale PV actuation down based on TOD irradiance (really only uses beam) [HIL]
             if feeder.PVforecast[str(key)]['on_off'] == True:
@@ -349,10 +340,10 @@ def cons_actuators(feeder,acttoggle):
                     for idx in range(0,3):
                         #adjust max Pgen to be scaled by insolation [HIL]
                         Pmax = iact.Psched[idx,ts:ts+1]*(1-PVfrac*(1-solweight))
-                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (Pmax*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
+                        conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (Pmax*Psatmul[idx])/inode.kVAbase)  #[HIL] - ICDI
                         #conslist.append(cp.abs(iact.Pgen[idx,ts:ts+1]) <= (iact.Psched[idx,ts:ts+1]*Psatmul)/inode.kVAbase)  #[HIL] - ICDI
                         #[HIL] - edit Ssched - Qgen cons
-                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*inode.kVAbase)*Qsatmul)/inode.kVAbase) #new
+                        conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*inode.kVAbase)*Qsatmul[idx])/inode.kVAbase) #new
                         #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase) #old
                     
                     
