@@ -170,22 +170,25 @@ class myspbc(pbc.SPBCProcess):
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
                 
-                if channel == 'L1':
+                if channel == 'ph_A':
                     chanph = 'a'
-                if channel == 'L2':
+                if channel == 'ph_B':
                     chanph = 'b'
-                if channel == 'L3':
+                if channel == 'ph_C':
                     chanph = 'c'
                 # get perf nodes (lpbc nodes)
                 for key, ibus in feeder_init.busdict.items():
-                    if lpbc == 'lpbc_' + key:
+                    #if lpbc == 'lpbc_' + key:
+                    if lpbc == key:
                         lpbc_nodes.append(key)
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
-                    Psat_nodes.append(lpbc[5:]+'_'+chanph)
+                    #Psat_nodes.append(lpbc[5:]+'_'+chanph)
+                    Psat_nodes.append(lpbc + '_' + chanph)
                 if status['qSaturated'] == True:
-                    Qsat_nodes.append(lpbc[5:]+'_'+chanph)
+                    #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
+                    Qsat_nodes.append(lpbc + '_' + chanph)
                     
 # =============================================================================
 # =============================================================================
@@ -197,7 +200,7 @@ class myspbc(pbc.SPBCProcess):
 # =============================================================================
                     
         # hardcode lpbc_nodes in
-        lpbc_nodes = ['671']
+        lpbc_nodes = ['675']
         
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
@@ -276,7 +279,8 @@ class myspbc(pbc.SPBCProcess):
             #for key in act_keys:
             for key, ibus in myfeeder.busdict.items():
                 if key in lpbc_nodes:
-                    lpbcID = 'lpbc_' + key
+                    #lpbcID = 'lpbc_' + key
+                    lpbcID = key
                     #intialize
                     computed_targets[lpbcID] = {}
                     #Vmag_prev = {}
@@ -292,8 +296,8 @@ class myspbc(pbc.SPBCProcess):
                     for ph in lpbc_phases:
                         if ph == 'a':
                             phidx  = 0
-                            #computed_targets[lpbcID]['channels'].append('ph_A')
-                            computed_targets[lpbcID]['channels'].append('L1')
+                            computed_targets[lpbcID]['channels'].append('ph_A')
+                            #computed_targets[lpbcID]['channels'].append('L1')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
@@ -302,8 +306,8 @@ class myspbc(pbc.SPBCProcess):
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if ph == 'b':
                             phidx  = 1
-                            #computed_targets[lpbcID]['channels'].append('ph_B')
-                            computed_targets[lpbcID]['channels'].append('L2')
+                            computed_targets[lpbcID]['channels'].append('ph_B')
+                            #computed_targets[lpbcID]['channels'].append('L2')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
@@ -311,8 +315,8 @@ class myspbc(pbc.SPBCProcess):
                         
                         if ph == 'c':
                             phidx  = 2
-                            #computed_targets[lpbcID]['channels'].append('ph_C')
-                            computed_targets[lpbcID]['channels'].append('L3')
+                            computed_targets[lpbcID]['channels'].append('ph_C')
+                            #computed_targets[lpbcID]['channels'].append('L3')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
