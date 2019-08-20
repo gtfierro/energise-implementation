@@ -1,6 +1,7 @@
 from pyxbos.process import run_loop, schedule, config_from_file
 import sys
 from pyxbos.drivers import pbc
+import pyxbos_dbcli as dbcli
 import logging
 import random
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
@@ -108,6 +109,12 @@ class myspbc(pbc.SPBCProcess):
 
     async def compute_and_announce(self):
 
+        # getting config values that we may have changed
+        Vmag = dbcli.get('Vmag')
+        Vang = dbcli.get('Vang')
+        kVbase = dbcli.get('kVbase')
+        kVAbase = dbcli.get('kVAbase')
+
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
@@ -126,9 +133,9 @@ class myspbc(pbc.SPBCProcess):
             'lpbc_1': {
                 # 3 phases
                 'channels': ['L1','L2','L3'],
-                'V': [1.0,2.0,3.0],
-                'delta': [.8, .9, .7],
-                'kvbase': None,
+                'V': Vmag,
+                'delta': Vang,
+                'kvbase': kVbase,
             },
             'lpbctest': {
                 'channels': ['L2'],
@@ -143,9 +150,20 @@ class myspbc(pbc.SPBCProcess):
             await self.broadcast_target(lpbc_name, targets['channels'], \
                             targets['V'], targets['delta'], targets['kvbase'])
 
+# set default values
+dbcli.put('Vmag', "[0.9862920,0.9956446,0.9881567]")
+dbcli.put('Vang', "[-2,-122,118]")
+dbcli.put('kVbase', "np.ones(3)*4.16/np.sqrt(3)")
+dbcli.put('kVAbase ', "np.ones(3)*5000/3")
+dbcli.commit()
+
 if len(sys.argv) > 1:
     cfg = config_from_file(sys.argv[1])
 else:
     sys.exit("Must supply config file as argument: python3 spbc.py <config file.toml>")
 spbc_instance = myspbc(cfg)
+
+# make sure you add this for interactively setting config values
+dbcli.prompt()
+
 run_loop()
