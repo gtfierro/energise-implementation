@@ -1,19 +1,18 @@
 import numpy as np
 
 class PIcontroller():
+    def __init__(self, nphases, kp_ang, ki_ang, kp_mag, ki_mag):
+        self.currentIntError_ang = np.zeros(nphases)
+        self.currentIntError_mag = np.zeros(nphases)
+        self.intError_ang = np.zeros(nphases)
+        self.intError_mag = np.zeros(nphases)
+        self.Pcmd_pu = np.zeros(nphases)
+        self.Qcmd_pu = np.zeros(nphases)
 
-    def __init__(self, nphases):
-        self.currentIntError_ang = np.zeros((nphases, 1))
-        self.currentIntError_mag = np.zeros((nphases, 1))
-        self.intError_ang = np.zeros((nphases, 1))
-        self.intError_mag = np.zeros((nphases, 1))
-        self.Pcmd_pu = np.zeros((nphases, 1))
-        self.Qcmd_pu = np.zeros((nphases, 1))
-
-        self.Kp_ang = [1,2,3] # TODO
-        self.Ki_ang = [1,2,3] # TODO
-        self.Kp_mag = [1,2,3] # TODO
-        self.Ki_mag = [1,2,3] # TODO
+        self.Kp_ang = kp_ang
+        self.Ki_ang = ki_ang
+        self.Kp_mag = kp_mag
+        self.Ki_mag = ki_mag
 
     def PIiteration(self, nphases, phasor_error_mag, phasor_error_ang, sat_arrayP, sat_arrayQ):
         for phase in range(nphases):
