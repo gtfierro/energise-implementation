@@ -36,7 +36,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # Zskestinit = (from toml file or whatever, shoudl be nphases-long)
         # Qcost = np.eye(nphases*4)
         # Rcost = np.eye(nphases*2)*10^-1 # for LQR controller
-        # self.controller = APCcontroller(nphases,busID,timesteplength,Qcost,Rcost,VmagRef,VangRef,controllerUpdateCadence,saturated,lpAlpha,linearizeplant,lam,ninit,ZskAsMatrix,Zskinit,Gt):
+        # self.controller = APCcontroller(nphases,busID,timesteplength,Qcost,Rcost,VmagRef,VangRef,controllerUpdateCadence,saturated,lpAlpha,linearizeplant,lam,ninit,Zskinit,Gt):
 
         self.controller = 'PI' #set controller to 'PI' or 'LQR'
 
@@ -49,6 +49,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         elif controller == 'LQR':
             pass
             #TODO for Keith: insert LQR controller stuff here
+            '''
+            Dont think the LQR controller needs the busID actually
+            '''
+            Zsk = #load from folder
+
+            Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
+            Rcost = np.eye(nphases*2)*10^-1 #controll costs (P and Q)
+            use_Zsk_est = True
+            self.controller = PIcontroller(nphases,
         else:
             error('error in controller type')
 

@@ -1,19 +1,13 @@
 
-
-
 import numpy as np
 from scipy.linalg import solve_discrete_are as dare
 from numpy.linalg import inv
 
-# from pyxbos.process import run_loop, config_from_file
-# from pyxbos.drivers import pbc
-
 #using matrices rather than nd.arrays bc ecah controller only needs 2 dimensions, makes math easier
 #all voltages, powers and impedances in pu
 
-class APCcontroller:
-    def __init__(self,nphases,busID,timesteplength,Qcost,Rcost,VmagRef,VangRef,controllerUpdateCadence,saturated,lpAlpha,linearizeplant,lam,ninit,ZskAsMatrix,Zskinit,Gt):
-        self.busID = busID
+class LQRcontroller:
+    def __init__(self,nphases,timesteplength,Qcost,Rcost,VmagRef,VangRef,controllerUpdateCadence,saturated,lpAlpha,linearizeplant,lam,ninit,ZskAsMatrix,Zskinit,Gt):
         self.nphases = nphases
         self.VmagRef = VmagRef
         self.VangRef = VangRef
@@ -92,11 +86,9 @@ class APCcontroller:
         return(Gt,ZskestInit)
 
 
-
     def pfEqns3phase(self,VmagTarg,VangTarg,Zskest):
         error('not built')
         return
-
 
 
     def APCupdate(self,Vmag,Vang,Icomp,ts):
@@ -179,7 +171,7 @@ class APCcontroller:
         self.IcompPrev = Icomp;
         self.VcompPrev = Vcomp;
 
-        #APC defines u as positive for power flowing out of the network (due to the signs of the PF linearization)
+        #LQR defines u as positive for power flowing out of the network (due to the signs of the PF linearization)
         #but general LPBC convention is power is defined as postive into the network
         #returns powers in pu, I believe
         Plpbc = np.asarray(-self.u[0,0:self.nphases])
