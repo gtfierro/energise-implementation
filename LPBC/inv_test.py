@@ -17,6 +17,11 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 from PIcontroller import *
 #from APC import *
 
+import time
+import datetime as dt
+import pandas as pd
+
+## PATH NAME OF CSV ##
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
@@ -43,17 +48,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Pcmd_kVA_t2 = [0, -1, -2, -3.3]
         self.Qcmd_kVA = [0, 1, 2, 3, 4]
         self.Qcmd_kVA_t2 = [0, -1, -2, -3, -4]
-        self.P_PV_store = [] #storing
-        self.P_act_store = [] #storing
-        self.Q_act_store = [] #storing
-        self.inv_time = [] #storing
-        self.test_phase_shift = [] #storing
         self.q_count = 0
         self.test = 1 # see picture on white board (1, 2, 3.1, 3.2)
-        self.cmd_epoch =[]
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
+        
+        #empty lists for storing and writing to csv
+        self.cmd_epoch =[]
         self.Pcmd_store = []
         self.Qcmd_store = []
+        self.P_act_store = []
+        self.Q_act_store = []
+        self.P_PV_store = []
+        self.test_phase_shift = []
+        self.inv_time = []
         # UP THERE JASPER!
 
         self.actType = actType
@@ -638,13 +645,68 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
 
+        '''
+        #empty lists for storing and writing to csv
+        self.cmd_epoch =[]
+        self.Pcmd_store = []
+        self.Qcmd_store = []
+        self.P_act_store = []
+        self.Q_act_store = []
+        self.P_PV_store = []
+        self.test_phase_shift = []
+        self.inv_time = []
+        # UP THERE JASPER!
+        '''
+        
         if self.test == 1 or self.test == 2:
-            if self.iteration_counter == 20:
+            if self.iteration_counter == 19:
                 "DO WRITE TO CSV HERE"
+                # set path name according to time of creation#
+                date = dt.datetime.now()
+                month, day, hour, minute = date.month, date.day, date.hour, date.minute
+                path_to = f'{month}-{day}-{hour}{minute}_HIL_cal_T{self.test}'
+                
+                # create df
+                df = pd.DataFrame()         
+                df['cmd_epoch'] = self.cmd_epoch
+                for i in df.cmd_epoch:
+                    df['cmd_datetime'] = dt.datetime.fromtimestamp(i)
+                df['phase_shift'] = self.test_phase_shift
+                df['Pcmd'] = self.Pcmd_store
+                df['Qcmd'] = self.Qcmd_store
+                df['Pact'] = self.P_act_store
+                df['Qact'] = self.Q_act_store
+                
+                # write df to csv
+                df.to_csv(path_to)
+                
+                print('wrote to csv')
+                print('~~~ END ~~~')
 
         elif self.test == 3.1 or self.test == 3.2:
-            if self.iteration_counter == 25:
+            if self.iteration_counter == 24:
                 "DO WRITE TO CSV HERE"
+                # set path name according to time of creation#
+                date = dt.datetime.now()
+                month, day, hour, minute = date.month, date.day, date.hour, date.minute
+                path_to = f'{month}-{day}-{hour}{minute}_HIL_cal_T{self.test}'
+                
+                # create df
+                df = pd.DataFrame()         
+                df['cmd_epoch'] = self.cmd_epoch
+                for i in df.cmd_epoch:
+                    df['cmd_datetime'] = dt.datetime.fromtimestamp(i)
+                df['phase_shift'] = self.test_phase_shift
+                df['Pcmd'] = self.Pcmd_store
+                df['Qcmd'] = self.Qcmd_store
+                df['Pact'] = self.P_act_store
+                df['Qact'] = self.Q_act_store
+                
+                # write df to csv
+                df.to_csv(path_to)
+                
+                print('wrote to csv')
+                print('~~~ END ~~~')
 
 
         self.iteration_counter += 1
