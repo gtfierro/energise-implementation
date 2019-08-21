@@ -22,21 +22,14 @@ from PIcontroller import *
 
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, nphases, act_idxs, actType, plug_to_phase_idx, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
+    def __init__(self, cfg, busId, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
         super().__init__(cfg)
 
         # INITIALIZATION
-        self.busId = busId #NEW
+        self.busId = busId
+        self.timesteplength = timesteplength
 
         #HERE put in optional accumulator term for PI controller
-
-        #HHERE
-        #NEW
-        #get ZskestIinit from excel file somewhere, cause LPBCwrapper doesnt know feeder (or have netowrkx)
-        # Zskestinit = (from toml file or whatever, shoudl be nphases-long)
-        # Qcost = np.eye(nphases*4)
-        # Rcost = np.eye(nphases*2)*10^-1 # for LQR controller
-        # self.controller = APCcontroller(nphases,busID,timesteplength,Qcost,Rcost,VmagRef,VangRef,controllerUpdateCadence,saturated,lpAlpha,linearizeplant,lam,ninit,Zskinit,Gt):
 
         self.controller = 'PI' #set controller to 'PI' or 'LQR'
 
@@ -48,16 +41,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif controller == 'LQR':
             pass
-            #TODO for Keith: insert LQR controller stuff here
-            '''
-            Dont think the LQR controller needs the busID actually
-            '''
+            #TODO for Keith:
             Zsk = #load from folder
-
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*10^-1 #controll costs (P and Q)
-            use_Zsk_est = True
-            self.controller = PIcontroller(nphases,
+            use_Zsk_est = 1
+            self.controller = PIcontroller(nphases,timesteplength,Qcost,Rcost,VmagRef,VangRef,Zskinit,use_Zsk_est,currentMeasExists)
         else:
             error('error in controller type')
 
@@ -649,8 +638,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                print('LQR')
-                #HHERE only run estimation loop if not saturated
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(Vmag,Vang,Icomp,ts) #HHERE
                 #TODO for Keith: insert LOR controller step here
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
@@ -865,7 +853,6 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 lpbcdict = dict()
-lpbcCounter = 0
 for key in lpbcidx:
     #kVbase = np.NaN #should get this from the SPBC so lpbcwrapper doesnt have to run feeder (which requires networkx)
     #kVAbase = subkVAbase #this should also come from SPBC, once it does you can take it out from here
@@ -897,8 +884,8 @@ for key in lpbcidx:
     else:
         error('actType Error')
     cfg['spbc'] = 'spbc-jasper-1'
-    lpbcdict[key] = lpbcwrapper(cfg, key, nphases, act_idxs, actType, plug_to_phase_idx, currentMeasExists) #Every LPBC will have its own step that it calls on its own
-    lpbcCounter += 1
+    timesteplength = cfg['rate']
+    lpbcdict[key] = lpbcwrapper(cfg, key, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists) #Every LPBC will have its own step that it calls on its own
 
 run_loop() #defined in XBOSProcess
 
