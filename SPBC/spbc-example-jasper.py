@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a','b','c'] # [INPUT HERE]
 
-TV_load = False # [INPUT HERE]
+TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
 
 dummy_ref = True # [INPUT HERE]
@@ -153,26 +153,36 @@ class myspbc(pbc.SPBCProcess):
         # that produces the phasor target for each LPBC
         schedule(self.call_periodic(60, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
+        
+         #~~ initialize values ~~#
+        self.iteration = -1
+        if TV_load == True:
+            self.timestepcur = start_hour*60-1
+        else:
+            self.timestepcur = start_hour*60
+        
+        '''
+        for lpbc, channels in self.lpbcs.items():
+            for channel, status in channels.items():    
+                for key, ibus in feeder_init.busdict.items():
+                            #if lpbc == 'lpbc_' + key:
+                            if lpbc == key:
+                                self.lpbc_nodes.append(key)
+        # hardcode lpbc_nodes in
+        self.lpbc_nodes = ['675'] # [INPUT HERE]
+        '''
 
     async def compute_and_announce(self):
         print('')
         print('~~~ New compute_and_announce instance ~~~')
         
         #~~ initialize values ~~#
-        try:
-            iteration
-            iteration += 1
-        except NameError:
-            iteration = 0
-        print(f'iteration: {iteration}')
-  
-        try:
-            timestepcur
-            if TV_load == True:
-                timestepcur += 1
-        except NameError:
-            timestepcur = start_hour*60
-        print(f'timestep: {timestepcur-start_hour*60}')
+            
+        self.iteration += 1
+        if TV_load == True:
+            self.timestepcur += 1
+            
+        print(f'iteration: {self.iteration}, timestep: {self.timestepcur-start_hour*60}')
         
         # ~~ LPBC ~~ #
         Psat_nodes = []
@@ -277,7 +287,7 @@ class myspbc(pbc.SPBCProcess):
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
-            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,timestepcur) 
+            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur) 
             
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?

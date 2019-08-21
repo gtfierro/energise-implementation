@@ -311,13 +311,6 @@ def cons_actuators(feeder,acttoggle):
         # Creates a feedback for saturated actuators.
         # This is a very basic implementation, should be improved in later versions
         
-        '''
-        >>> from  __builtin__ import any as b_any
-        >>> lst = ['yellow', 'orange', 'red']
-        >>> word = "or"
-        >>> b_any(word in x for x in lst)
-        True
-        '''
         #[HIL] - ICDI
         Psatmul = [1,1,1]
         Qsatmul = [1,1,1]
