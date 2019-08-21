@@ -31,7 +31,7 @@ loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 5
+timesteps = 3
 
 #[HIL]
 date = datetime.datetime.now()
