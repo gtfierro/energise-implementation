@@ -18,22 +18,26 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c']
+lpbc_phases = ['a','b','c'] # [INPUT HERE]
 
-dummy_ref = True
-constant_phasor = True
+TV_load = False # [INPUT HERE]
+start_hour = 11 # [INPUT HERE]
+
+dummy_ref = True # [INPUT HERE]
+constant_phasor = True # [INPUT HERE]
 
 if dummy_ref == True:
     print('WARNING: dummy_ref ON')
 if constant_phasor == True:
     # set phasor target values here (not relative)
-    cons_Vmag = [0.9862920,0.9956446,0.9881567]
+    cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     #cons_Vmag = [0.988,0.988,0.988]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_Vang = [-2,-122,118]
-    cons_kVbase = np.ones(3)*4.16/np.sqrt(3)
-    cons_kVAbase = np.ones(3)*5000/3
+    cons_Vang = [-2,-122,118] # [INPUT HERE]
+    cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
+    cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
+
 
 # TODO: vmagprev, check dims across all instances, think it shoud just be 3
 Vmag_prev = []
@@ -154,6 +158,22 @@ class myspbc(pbc.SPBCProcess):
         print('')
         print('~~~ New compute_and_announce instance ~~~')
         
+        #~~ initialize values ~~#
+        try:
+            iteration
+            iteration += 1
+        except NameError:
+            iteration = 0
+        print(f'iteration: {iteration}')
+  
+        try:
+            timestepcur
+            if TV_load == True:
+                timestepcur += 1
+        except NameError:
+            timestepcur = start_hour*60
+        print(f'timestep: {timestepcur-start_hour*60}')
+        
         # ~~ LPBC ~~ #
         Psat_nodes = []
         Qsat_nodes = []
@@ -200,7 +220,7 @@ class myspbc(pbc.SPBCProcess):
 # =============================================================================
                     
         # hardcode lpbc_nodes in
-        lpbc_nodes = ['675']
+        lpbc_nodes = ['675'] # [INPUT HERE]
         
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
@@ -243,7 +263,7 @@ class myspbc(pbc.SPBCProcess):
             refphasor = refphasor_init
             refphasor[:,0]=1
             refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-            print('using dummy reference values')
+            print('using nominal reference values')
                          
         
         if np.inf in refphasor:
@@ -257,7 +277,7 @@ class myspbc(pbc.SPBCProcess):
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
-            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes)   
+            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,timestepcur) 
             
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
@@ -299,7 +319,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['channels'].append('ph_A')
                             #computed_targets[lpbcID]['channels'].append('L1')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             
@@ -309,7 +329,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['channels'].append('ph_B')
                             #computed_targets[lpbcID]['channels'].append('L2')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                         
@@ -318,7 +338,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['channels'].append('ph_C')
                             #computed_targets[lpbcID]['channels'].append('L3')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
+                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             

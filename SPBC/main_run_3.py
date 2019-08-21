@@ -33,6 +33,15 @@ subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
 timesteps = 5
 
+#[HIL]
+date = datetime.datetime.now()
+month = date.month
+day = date.day
+hour = date.hour
+minute = date.minute
+#timestepcur = hour*60+minute
+timestepcur = 11*60 # [INPUT HERE] Manual input of start time
+
 #[HIL] - input constnats for PV forecasting
 PV_on = False # True for ON
 PVnodes = ['671','680']
@@ -88,7 +97,7 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
 # In[4]:
 
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
-def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes): #write 'none' if doesnt exist    
+def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'none' if doesnt exist    
     
     modeldata = pd.ExcelFile(modelpath) 
     actpath = loadpath
@@ -98,15 +107,6 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes): #write 'none' if doesn
     if costfn_on_off == 1:
         actcostpath = loadfolder + 'act_costs_2_1_try2.xlsx'
         actcostdata = pd.read_excel(actcostpath, index_col=0)
-    
-    #[HIL]
-    date = datetime.datetime.now()
-    month = date.month
-    day = date.day
-    hour = date.hour
-    minute = date.minute
-    #timestepcur = hour*60+minute
-    timestepcur = 11*60
     
     # Create feeder object
     myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
