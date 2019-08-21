@@ -638,7 +638,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(Vmag,Vang,Icomp,ts) #HHERE
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(Vmag,Vang,Icomp,self.iteration_counter) #Vang must be in radians
                 #TODO for Keith: insert LOR controller step here
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions

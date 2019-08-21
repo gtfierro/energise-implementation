@@ -79,7 +79,7 @@ class LQRcontroller:
         return
 
 
-    def LQRupdate(self,Vmag,Vang,Icomp,ts):
+    def LQRupdate(self,Vmag,Vang,Icomp,iteration_counter): #HHERE shape of Vmag after asmatrix
         #Internal Controller Accounting
         #set statek to Vmag and Vang and increment integrator
         Vcomp = Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j
@@ -96,7 +96,7 @@ class LQRcontroller:
         R = np.real(self.Zskest)
         X = np.imag(self.Zskest)
         Babbrev = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R))))
-        if np.mod(ts-1,self.controllerUpdateCadence) == 0:
+        if np.mod(iteration_counter-1,self.controllerUpdateCadence) == 0:
             self.K = self.updateController()
 
         #DOBC
@@ -104,7 +104,7 @@ class LQRcontroller:
             ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
         else:
             ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
-        if ts != 0:
+        if iteration_counter != 1: #iteration_counter is 1 in the first call
             dm = ueff.T - self.u #dm for d measurement
             self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
         else:
@@ -122,7 +122,7 @@ class LQRcontroller:
 
         #Estimate Zeff
         if self.use_Zsk_est == 1 and (currentMeasExists == 1 or saturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
-            if ts != 0: # There arent any previous measurements at t=1, so you cant update Zeff
+            if iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
