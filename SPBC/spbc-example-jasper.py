@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a','b','c'] # [INPUT HERE]
 
-TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
+TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
 
 dummy_ref = True # [INPUT HERE]
@@ -161,7 +161,7 @@ class myspbc(pbc.SPBCProcess):
         else:
             self.timestepcur = start_hour*60
         
-        '''
+        ''' # add initializtion of LPBC nodes here, and then add update in loop
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():    
                 for key, ibus in feeder_init.busdict.items():
@@ -315,7 +315,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID] = {}
                     #Vmag_prev = {}
                     #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
-                    computed_targets[lpbcID]['channels'] = []
+                    computed_targets[lpbcID]['phase'] = []
                     computed_targets[lpbcID]['delV'] = []
                     computed_targets[lpbcID]['delta'] = []
                     computed_targets[lpbcID]['kvbase'] = []
@@ -326,7 +326,7 @@ class myspbc(pbc.SPBCProcess):
                     for ph in lpbc_phases:
                         if ph == 'a':
                             phidx  = 0
-                            computed_targets[lpbcID]['channels'].append('ph_A')
+                            computed_targets[lpbcID]['phase'].append('ph_A')
                             #computed_targets[lpbcID]['channels'].append('L1')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
@@ -336,7 +336,7 @@ class myspbc(pbc.SPBCProcess):
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if ph == 'b':
                             phidx  = 1
-                            computed_targets[lpbcID]['channels'].append('ph_B')
+                            computed_targets[lpbcID]['phase'].append('ph_B')
                             #computed_targets[lpbcID]['channels'].append('L2')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
@@ -345,7 +345,7 @@ class myspbc(pbc.SPBCProcess):
                         
                         if ph == 'c':
                             phidx  = 2
-                            computed_targets[lpbcID]['channels'].append('ph_C')
+                            computed_targets[lpbcID]['phase'].append('ph_C')
                             #computed_targets[lpbcID]['channels'].append('L3')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
                             computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
@@ -357,7 +357,7 @@ class myspbc(pbc.SPBCProcess):
                 
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
-                await self.broadcast_target(lpbc_name, targets['channels'], \
+                await self.broadcast_target(lpbc_name, targets['phase'], \
                                 targets['delV'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
 
 if len(sys.argv) > 1:
