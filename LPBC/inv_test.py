@@ -498,6 +498,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 1:
             if self.iteration_counter < 5:
+                print('here1')
                 pcmd = self.Pcmd_kVA[0]
                 qcmd = 0
                 t = time.time()
@@ -512,6 +513,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.test_phase_shift.append(angle[0])
                 self.Pcmd_store.append(pcmd)
                 self.Qcmd_store.append(qcmd)
+                print('here2')
             elif 4 < self.iteration_counter < 10:
                 pcmd = self.Pcmd_kVA[1]
                 qcmd = 0
