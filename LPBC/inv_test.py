@@ -441,6 +441,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 1
                 urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                               f"pf_ctrl={pf_ctrl}")
+                #urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 2: #mode 2: PV calculated
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
