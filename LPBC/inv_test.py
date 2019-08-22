@@ -492,6 +492,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target):
         print('interation:', self.iteration_counter)
+        print('q count:', self.q_count)
         #to change phases see acts_to_phase_dict
         print('length ref:', len(reference_phasors[0]))
 
@@ -716,6 +717,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.iteration_counter += 1
         
+        print('end loop')
+        
         return
 
 
@@ -930,7 +933,7 @@ for key in lpbcidx:
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = 5 # JASPER CHANGE RATE HERE
-        cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]]]).tolist()
+        cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]]])
         #cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]].tolist() #listen to the correct references
