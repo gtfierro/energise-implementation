@@ -511,7 +511,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('here PQ')
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
-                angle = self.phasorV_calc(self, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                 print('here Vcalc')
                 self.test_phase_shift.append(angle[0])
                 self.Pcmd_store.append(pcmd)
