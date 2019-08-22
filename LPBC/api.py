@@ -16,6 +16,7 @@ load racks:
         
 '''
 import requests
+import numpy
 import time
 import datetime as dt
 
@@ -25,31 +26,38 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = 500 # (+) is charging!
-pf_ctrl = 0.8
+Batt_ctrl = 0 # (+) is charging!
+pf_ctrl = 0.9 # [-1,1] - BUT abs() > 0.85
 inv_id = 3 # [1,2,3]
 
 inv_perc = 97
 
+
+if np.abs(pf_ctrl) < 0.85:
+    pf_ctrl = 0.85
+    
 t0 = time.time()
 
-# load racks:
+#~~~~~~~~~~~
+# LOAD RACKS:
+
 #r = requests.get('http://131.243.41.118:9090/control_enable')
 #r = requests.get('http://131.243.41.118:9090/control_disable')
 
 #r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}')
 #r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}')
 
+#~~~~~~~~~~~
 # INVERTER
 
 ##### batt only
-#r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}')  # works
+r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}')  # works
 #####  pf only
 #r = requests.get(f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}') # ?
 #####  batt / inv
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}')  # works
 ##### batt / pf
-r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}')  # no pf cmd
+#r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}')  # no pf cmd
 ##### batt / pf / inv
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}')  # works
 
