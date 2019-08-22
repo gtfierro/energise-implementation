@@ -439,9 +439,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                           (np.sqrt(((self.batt_cmd[i] + P_PV)**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
-                              f"pf_ctrl={pf_ctrl}")
-                #urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
+                #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
+                #              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 2: #mode 2: PV calculated
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
@@ -455,8 +455,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
-                              f"pf_ctrl={pf_ctrl}")
+                #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
+                #              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 3: #mode 3: PV only
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
                 Inv_Pperc_max = 97
@@ -473,8 +474,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                               (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
-                              f"pf_ctrl={pf_ctrl}")
+                #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
+                #              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
         for i in range(nphases):
