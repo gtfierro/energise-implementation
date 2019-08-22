@@ -498,25 +498,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 1:
             if self.iteration_counter < 5:
-                print('here1')
                 pcmd = self.Pcmd_kVA[0]
                 qcmd = 0
                 t = time.time()
                 self.cmd_epoch.append(t)
                 #commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print('here2')
                 #print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
-                print('here PQ')
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-                print('here Vcalc')
                 self.test_phase_shift.append(angle[0])
                 self.Pcmd_store.append(pcmd)
                 self.Qcmd_store.append(qcmd)
-                print('here end')
             elif 4 < self.iteration_counter < 10:
                 pcmd = self.Pcmd_kVA[1]
                 qcmd = 0
