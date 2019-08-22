@@ -903,6 +903,11 @@ pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #th
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
 
+#pmu123Channels = ['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'] #HERE is this okay that this is a numpyarray now? depends on Gabes code, hopefully fine
+#pmu123PChannels = ['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'] #these also have current channels, but dont need them
+#pmu4Channels = ['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']
+#refChannels = ['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']
+
 nlpbc = len(lpbcidx)
 
 #cfg file is used to build each LPBC, this is a template that is modified below for each LPBC
@@ -924,10 +929,10 @@ for key in lpbcidx:
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = 5 # JASPER CHANGE RATE HERE
-        cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
+        cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]).tolist()
         #cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
-        cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]] #listen to the correct references
+        cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]].tolist() #listen to the correct references
         currentMeasExists = True
     elif actType == 'load':
         cfg['rate'] = 4
