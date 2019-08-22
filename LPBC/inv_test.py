@@ -336,7 +336,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('pq 1')
         for plug in range(nphases):
             phase_idx = plug_to_V_idx[plug] #assumes plug to V map is the same for uPMUp123 voltage, uPMU123 current and uPMU123 voltage
+            print('pq 2.1')
             V_mag[phase_idx] = local_phasors[nphases*2 + plug][-1]['magnitude'] #pulls out vmeas from uPMU123 not uPMUP123
+            print('pq 2.2')
             V_ang[phase_idx] = local_phasors[nphases*2 + plug][-1]['angle']
             I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude']
             I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle']
