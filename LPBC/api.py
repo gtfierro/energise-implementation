@@ -28,11 +28,11 @@ inv_id = 2 # [1,2,3]
 import requests
 
 # load racks:
-#r = requests.get('http://131.243.41.118:9090/control_enable’)
-#r = requests.get('http://131.243.41.118:9090/control_disable’)
+#r = requests.get('http://131.243.41.118:9090/control_enable')
+#r = requests.get('http://131.243.41.118:9090/control_disable')
 
-#r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}’)
-#r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}’)
+r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}')
+#r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}')
 
 # inverter
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}')  # works
