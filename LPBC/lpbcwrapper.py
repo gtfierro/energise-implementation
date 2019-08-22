@@ -20,6 +20,7 @@ from PIcontroller import *
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
+#HHERE scan for mutable copy bugs
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
     def __init__(self, cfg, busId, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
@@ -42,11 +43,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         elif controller == 'LQR':
             pass
             #TODO for Keith:
-            Zsk = #load from folder
+            #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
+            Zskinit = #load from folder #HHERE
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*10^-1 #controll costs (P and Q)
             use_Zsk_est = 1
-            self.controller = PIcontroller(nphases,timesteplength,Qcost,Rcost,VmagRef,VangRef,Zskinit,use_Zsk_est,currentMeasExists)
+            self.controller = PIcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists)
         else:
             error('error in controller type')
 
@@ -79,8 +81,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.VmagRef_pu = np.zeros(nphases)
 
         #Just need to decide what to call unintialized values (probably np.zero if more than 1 dimension)
-        #Targets received from SPBC
-        self.VangTarg = 'initialize'    #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
+        #Targets received from SPBC, right now VmagTarg as relative not abosolute
+        self.VangTarg = 'initialize' #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
         self.VmagTarg = 'initialize' #all angles should be in radians
         # self.VmagTarg_pu = np.zeros(nphases) #rn SPBC sends targets in relative_pu, so these aren't needed
         # self.VmagTarg_relative = np.zeros(nphases)
@@ -160,7 +162,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
 
 
-    def targetExtraction(self,phasor_target):
+    def targetExtraction(self,phasor_target): #HERE this hasnt been validated
         #this implies A,B,C order to measurements from SPBC
         Vmag_targ_dict = dict()
         Vang_targ_dict = dict()
@@ -235,7 +237,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.Vang == 'initialize':
             self.Vang = np.zeros(nphases)
             # loops through every phase with actuation
-            for phase in range(nphases): #this is in a,b,c ordering, but not necessarily a,b,c
+            for phase in range(nphases): #phases descrived by a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
                 # Initialize: Extract measurements from most recent timestamps only for first iteration
                 V_mag_local = ordered_local[phase][-1]['magnitude']
                 V_ang_local = ordered_local[phase][-1]['angle'] - self.ametek_phase_shift
@@ -248,7 +250,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # loops through each set of voltage measurements for each phase
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
-        for phase in range(nphases): #plug is the number of the PMU plug (0, 1 or 2)
+        for phase in range(nphases):
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]):
                 # extract most recent ordered_local uPMU reading
@@ -291,7 +293,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             ref[plug] = reference_phasors[plug + nphases][-dataWindowLength:] #plug + nphases selects the current data rather than the voltage data
         if self.Iang == 'initialize':
             self.Iang = np.zeros(nphases)
-            for phase in range(nphases): #this is in a,b,c ordering, but not necessarily a,b,c
+            for phase in range(nphases): #this is in a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
                 # Initialize: Extract measurements from most recent timestamps only for first iteration
                 self.Imag[phase] = ordered_local[phase][-1]['magnitude']
                 I_ang_local = ordered_local[phase][-1]['angle']
@@ -308,6 +310,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
     def phasorI_estFromScmd(self, Vmag_relative_pu, Vang, Pcmd_pu, Qcmd_pu):
+        '''
+        Vang is relative, so its base 0 for all phases (not +/- 2pi/3) so Vcomp will be will be deflected from (1,0)
+        Scomp_est is constructed to be deflected from (1,0)
+        so Icomp_est will be deflected from (1,0)
+        '''
         Vcomp = Vmag_relative_pu*np.cos(Vang) + Vmag_relative_pu*np.sin(Vang)*1j #Vmag_relative is local - ref, so positive current/power flow is into the network: true because commands are positive for power injections
         Scomp_est = Pcmd_pu + Qcmd_pu*1j #this could be delta S to give delta I_est directly, but the same delta I_est is ultimately attained subtracting I_est_prev later on
         Icomp_est = np.conj(Scomp_est/Vcomp) #this will do element_wise computation bc they're arrays
@@ -330,10 +337,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             V_ang[phase_idx] = local_phasors[nphases*2 + plug][-1]['angle']
             I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude']
             I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle']
-            theta[phase_idx] = V_ang[phase_idx] - I_ang[phase_idx]
+            theta[phase_idx] = np.radians(V_ang[phase_idx] - I_ang[phase_idx]) #angle comes in in degrees, theta is calced for each phase, so there shouldnt be any 2pi/3 offsets
             # P = (VI)cos(theta), Q = (VI)sin(theta)
-            Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(np.radians(theta[phase_idx])))/1000
-            Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(np.radians(theta[phase_idx])))/1000
+            Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(theta[phase_idx]))/1000
+            Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(theta[phase_idx]))/1000
         return (Pact_kVA,Qact_kVA)
 
 
@@ -608,19 +615,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
+            self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
 
             self.phasor_error_ang = self.VangTarg - self.Vang #HERE check SPBC is sending angles in radians
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
+
+            #HERE VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
+            self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu
 
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
                 (self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                 self.Imag_pu = self.Imag / self.localIbase
-                self.Icomp_pu =  self.Imag_pu*np.cos(self.Iang) + self.Imag_pu*np.sin(self.Iang)*1j #Assmued current is positive into the Ametek (postive for positive injection)
+                self.Icomp_pu =  self.Imag_pu*np.cos(self.Iang) + self.Imag_pu*np.sin(self.Iang)*1j #Assmued current is positive into the Ametek (postive for positive injection), and Iangs are relative and thus base 0 for all phases
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  # calculate P/Q from actuators
                 self.Pact_pu = self.Pact / self.localkVAbase
                 self.Qact_pu = self.Qact / self.localkVAbase
-            else:
+            else: #HHERE this and phasorI_estFromScmd should be moved into LQRcontroller, if no Imeas is given, then it uses Iest
                 self.Icomp_est = self.phasorI_estFromScmd(self.Vmag_relative_pu, self.Vang, self.Pcmd_pu, self.Qcmd_pu) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
                 self.Icomp_pu_est = self.Icomp_est / self.localIbase
                 self.Icomp_pu = self.Icomp_pu_est
@@ -638,8 +649,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(Vmag,Vang,Icomp,self.iteration_counter) #Vang must be in radians
-                #TODO for Keith: insert LOR controller step here
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,VangRef=0,self.saturated,self.Icomp_pu) #all Vangs must be in radians
+                #HHERE
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase
@@ -757,7 +768,6 @@ elif testcase == '13bal':
     for key in lpbcidx: #makes them all three phase inverters
         acts_to_phase_dict[key] = np.asarray(['A','B','C']) #3 phase default #['A','',''] or ['','C',''] or ['A','B','C','A','B','C'] or ['A','','','A','',''] are also examples, ['A','C','B'] and ['B','B','B'] are not allowed (yet)
         actType_dict[key] = 'inverter' #'inverter' or 'load'
-
 #TODO: set test case here
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation

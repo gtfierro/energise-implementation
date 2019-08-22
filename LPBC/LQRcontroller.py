@@ -7,15 +7,16 @@ from numpy.linalg import inv
 #all voltages, powers and impedances in pu
 
 class LQRcontroller:
-    def __init__(self,nphases,timesteplength,Qcost,Rcost,VmagRef,VangRef,Zskinit,use_Zsk_est,currentMeasExists=1,Gt=np.asmatrix(np.eye(self.nphases))*.01,lpAlpha=.1,lam=.99,controllerUpdateCadence=1,linearizeplant=1):
+    def __init__(self,nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,Gt=None,lpAlpha=.1,lam=.99,controllerUpdateCadence=1,linearizeplant=1):
         self.nphases = nphases
-        self.VmagRef = VmagRef # = 0 if Vmag is given as relative already
-        self.VangRef = VangRef
+        self.VmagRef = np.NaN # = 0 if Vmag is given as relative already #HHERE does this work with offsets below? dont think so..
+        self.VangRef = np.NaN
         self.V0 = np.hstack((self.VmagRef,self.VangRef))
         self.VmagTarg = np.NaN
         self.VangTarg = np.NaN
         self.timesteplength = timesteplength
         self.currentMeasExists = currentMeasExists
+        self.iteration_counter = 0
 
         #Controller Parameters
         self.Qcost = Qcost
@@ -30,7 +31,10 @@ class LQRcontroller:
 
         self.use_Zsk_est = use_Zsk_est
         self.Zskest = Zskinit
-        self.Gt = Gt
+        if Gt == None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
+            self.Gt = np.asmatrix(np.eye(self.nphases))*.01
+        else:
+            self.Gt = Gt
         (self.A, self.B) = self.makeABmatrices(Zskinit,timesteplength)
         self.K = np.asmatrix(np.zeros((2*nphases,4*nphases)))
 
@@ -43,29 +47,41 @@ class LQRcontroller:
 
 ####################################################
 
+    def setVref(self,VmagRef,VangRef):
+        self.VmagRef = VmagRef
+        self.VangRef = VangRef
+        self.V0 = np.hstack((self.VmagRef,self.VangRef))
+        return self.V0
+
+
     def setVtarget(self,VmagTarg,VangTarg):
         self.VmagTarg = VmagTarg
         self.VangTarg = VangTarg
         return
+
 
     def makeABmatrices(self,Zsk,timesteplength):
         A = np.vstack((np.zeros((2*self.nphases,4*self.nphases)),np.hstack((timesteplength*np.eye(2*self.nphases),np.eye(2*self.nphases)))))
         R = np.real(Zsk)
         X = np.imag(Zsk)
         B = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R)),np.zeros((2*self.nphases,2*self.nphases))))
-        self.A = np.asmatrix(A)
-        self.B = np.asmatrix(B)
-        return (self.A,self.B)
+        A = np.asmatrix(A)
+        B = np.asmatrix(B)
+        return (A,B)
 
-    def updateZskAndB(self):
-        error('not built')
-        return
 
-    def updateController(self):
-        S = np.asmatrix(dare(self.A,self.B,self.Qcost,self.Rcost))
-        self.K = -(self.Rcost+self.B.T*S*self.B).I*self.B.T*S*self.A; # neg for neg feedback
-        # K = cl.lqr(A,B,Qcost,Rcost) #continuous only, I think
-        return self.K
+    def updateB(self, Zsk):
+        R = np.real(self.Zskest)
+        X = np.imag(self.Zskest)
+        ze = np.asmatrix(np.zeros((2*self.nphases,2*self.nphases)))
+        B = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R)),np.asmatrix(np.zeros((2*self.nphases,2*self.nphases))))) #all the entries are numpy matrices so this makes a numpy matrix
+        return B
+
+
+    def updateController(self,A,B,Q,R):
+        S = np.asmatrix(dare(A,B,Q,R)) #from scipy
+        K = -(R+B.T*S*B).I*B.T*S*A # neg for neg feedback
+        return K
 
 
     def calcGtAndZskinit(self,Zsk):
@@ -79,28 +95,33 @@ class LQRcontroller:
         return
 
 
-    def LQRupdate(self,Vmag,Vang,Icomp,iteration_counter): #HHERE shape of Vmag after asmatrix
-        #Internal Controller Accounting
-        #set statek to Vmag and Vang and increment integrator
+    def LQRupdate(self,Vmag,Vang,VmagTarg,VangTarg,VmagRef,VangRef,saturated=0,Icomp=np.NaN):
+        '''
+        Internal Controller Accounting and feedback calculation
+        set statek to Vmag and Vang and increment integrator
+        Vang must be base 0 (ie not +/- 2pi/3), which it is bc its a relative angle
+        and Icomp must be deflected from (1,0), which it is because its computed from relative angles
+        all vectors are row vectors so they can be converted back into 1-d arrays easily
+        '''
         Vcomp = Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j
-        Vmag = np.asmatrix(Vmag)
+        Vmag = np.asmatrix(Vmag) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
         Vang = np.asmatrix(Vang)
         Vcomp = np.asmatrix(Vcomp)
         Icomp = np.asmatrix(Icomp)
+
+        self.V0 = self.setVtarget(VmagTarg,VangTarg)
+        self.setVref(VmagRef,VangRef)
+        self.saturated = saturated
+        self.iteration_counter += 1
 
         if self.saturated:
             self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
         else:
             self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
 
-        R = np.real(self.Zskest)
-        X = np.imag(self.Zskest)
-        Babbrev = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R))))
-        if np.mod(iteration_counter-1,self.controllerUpdateCadence) == 0:
-            self.K = self.updateController()
 
-        #DOBC
         if self.linearizeplant:
+            Babbrev = self.B[:self.nphases*2,:]
             ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
         else:
             ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
@@ -134,10 +155,13 @@ class LQRcontroller:
                     self.Zskest = self.Zskestinit
                     self.Gt = self.Gt*.1
                     print('reset impedance estimator')
+            self.B = self.updateB(self.Zskest)
 
         #save measurements for next round
-        self.IcompPrev = Icomp;
-        self.VcompPrev = Vcomp;
+        self.IcompPrev = Icomp
+        self.VcompPrev = Vcomp
+        if np.mod(self.iteration_counter-1,self.controllerUpdateCadence) == 0:
+            self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
 
         #LQR defines u as positive for power flowing out of the network (due to the signs of the PF linearization)
         #but general LPBC convention is power is defined as postive into the network
