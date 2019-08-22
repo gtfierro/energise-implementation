@@ -868,6 +868,7 @@ for key in lpbcidx:
                 pmu123P_plugs_dict[key].append(plug)
         pmu123_plugs_dict[key] = np.asarray(sorted(pmu123_plugs_dict[key])) #orders the PMU channels in 0,1,2 ordering. This is expected by plug_to_phase_dict, which is sorted implicitly when it is built by inserting into [plug] position (then subsequently reduced to an idx)
         pmu123P_plugs_dict[key] = np.asarray(sorted(pmu123P_plugs_dict[key]))
+        print('plugtodict',pmu123_plugs_dict[key])
     elif actType_dict[key] == 'load':
         pmu4_plugs_dict[key] = []
         for i in np.arange(3): #actuator i
