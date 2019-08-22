@@ -225,3 +225,33 @@ def sim_pause():
         print('client closed [pause]')
     
     return
+
+def upmu(upmu,sw_value):
+
+    IP = '131.243.41.14'
+    PORT = 503
+    id = 2
+    
+    if upmu == '123p':
+        register = int(2)
+    if upmu == '4':
+        register = int(3)
+
+    client = ModbusClient(IP, port=PORT)
+    try:
+        client.write_registers(register, int(sw_value), unit=id)
+        print(f'uPMU{upmu} to {sw_value} ~~ time:',client.read_input_registers(1, count=1, unit=id).registers[0])
+        print('epoch:',time.time())
+        print(dt.datetime.fromtimestamp(time.time()))
+        print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])     
+        
+    except Exception as e:
+        print(e)
+        
+    finally:
+        client.close()
+        print('client closed [uPMU]')
+    
+    return
+    
+    
