@@ -46,8 +46,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #HERE JASPER!        TO INIT: responseInverters = requests.get("http://131.243.41.47:9090/control?P_ctrl=97,Batt_ctrl=0")
         self.Pcmd_kVA = [0, 1, 2, 3.3]
         self.Pcmd_kVA_t2 = [0, -1, -2, -3.3]
-        self.Qcmd_kVA = [0, 1, 2, 3, 4]
-        self.Qcmd_kVA_t2 = [0, -1, -2, -3, -4]
+        self.Qcmd_kVA = [0, .1, .2, .3, .4]
+        self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
         self.test = 1 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
@@ -491,9 +491,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target):
-        print(self.iteration_counter)
+        print('interation:', self.iteration_counter)
         #to change phases see acts_to_phase_dict
-        print(len(reference_phasors[0]))
+        print('length ref:', len(reference_phasors[0]))
 
         if self.test == 1:
             if self.iteration_counter < 5:
@@ -503,7 +503,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -518,7 +518,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -533,7 +533,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -548,7 +548,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -565,7 +565,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -580,7 +580,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -595,7 +595,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -610,7 +610,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -622,12 +622,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.test == 3.1:
 
             if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
-                pcmd = 2000
+                pcmd = 200
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA[self.q_count], self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 self.q_count += 1
 
             if self.iteration_counter < 25:
@@ -637,12 +637,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 3.2:
             if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
-                pcmd = 2000
+                pcmd = 200
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA_t2[self.q_count], self.Pact)
                 self.inv_time.append(time.time() - t)
-                print(commandReceipt)
+                print('command receipt:',commandReceipt)
                 self.q_count += 1
 
             if self.iteration_counter < 25:
@@ -715,6 +715,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         self.iteration_counter += 1
+        
+        return
 
 
 
