@@ -24,11 +24,11 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = 1500 # (+) is charging!
+Batt_ctrl = 0 # (+) is charging!
 pf_ctrl = 1
 inv_id = 3 # [1,2,3]
 
-inv_perc = 100
+inv_perc = 97
 
 # load racks:
 #r = requests.get('http://131.243.41.118:9090/control_enable')
@@ -39,11 +39,11 @@ inv_perc = 100
 
 # inverter
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}')  # works
-r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}')  # works
+#r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}')  # works
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}')  # works
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}')  # works
 
-#r = requests.get(f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}')
+r = requests.get(f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}')
 
 print(r)
 print('api cmd', dt.datetime.now())
