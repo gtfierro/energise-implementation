@@ -1,0 +1,8 @@
+namespace = "GyDX55sFnbr9yCB-mPyXsy4kAUPUY8ftpWX62s6UcnvfIQ=="
+local_channels = ['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3']
+reference_channels = ['uPMU_123p/L1','uPMU_123p/L2','uPMU_123p/L3']
+entity = 'lpbc_1.ent'
+wavemq = '127.0.0.1:4516'
+rate = 5 # number of seconds between calls to 'step'
+name = 'lpbc_675'
+spbc = 'spbc-jasper-1'
