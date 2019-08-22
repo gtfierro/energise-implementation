@@ -325,6 +325,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #just uses the most recent current and voltage measurements, doesnt need a match w reference
     def PQ_solver(self, local_phasors, nphases, plug_to_V_idx):
         # Initialize
+        print(f'pq nphases {nphases}')
         V_mag = [0.0] * nphases
         V_ang = [0.0] * nphases
         I_mag = [0.0] * nphases
@@ -332,6 +333,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         theta = [0.0] * nphases
         Pact_kVA = np.asarray([0.0] * nphases)
         Qact_kVA = np.asarray([0.0] * nphases)
+        print('pq 1')
         for plug in range(nphases):
             phase_idx = plug_to_V_idx[plug] #assumes plug to V map is the same for uPMUp123 voltage, uPMU123 current and uPMU123 voltage
             V_mag[phase_idx] = local_phasors[nphases*2 + plug][-1]['magnitude'] #pulls out vmeas from uPMU123 not uPMUP123
@@ -339,10 +341,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude']
             I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle']
             theta[phase_idx] = V_ang[phase_idx] - I_ang[phase_idx]
+            print('pq 2')
             # P = (VI)cos(theta), Q = (VI)sin(theta)
             # [CHECK - JASPER]
             Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(np.radians(theta[phase_idx])))/1000
             Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(np.radians(theta[phase_idx])))/1000
+            print('pq 3')
         return (Pact_kVA,Qact_kVA)
 
 
