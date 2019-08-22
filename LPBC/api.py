@@ -16,6 +16,7 @@ load racks:
         
 '''
 import requests
+import time
 import datetime as dt
 
 
@@ -24,11 +25,13 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = 0 # (+) is charging!
-pf_ctrl = 1
+Batt_ctrl = 500 # (+) is charging!
+pf_ctrl = 0.8
 inv_id = 3 # [1,2,3]
 
 inv_perc = 97
+
+t0 = time.time()
 
 # load racks:
 #r = requests.get('http://131.243.41.118:9090/control_enable')
@@ -37,13 +40,22 @@ inv_perc = 97
 #r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}')
 #r = requests.get(f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}')
 
-# inverter
+# INVERTER
+
+##### batt only
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}')  # works
+#####  pf only
+#r = requests.get(f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}') # ?
+#####  batt / inv
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}')  # works
-#r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}')  # works
+##### batt / pf
+r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}')  # no pf cmd
+##### batt / pf / inv
 #r = requests.get(f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}')  # works
 
-r = requests.get(f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}')
+##### inv perc
+#r = requests.get(f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}')
 
+print(f'time to execute: {time.time()-t0}')
 print(r)
 print('api cmd', dt.datetime.now())

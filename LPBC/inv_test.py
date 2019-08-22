@@ -340,6 +340,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle']
             theta[phase_idx] = V_ang[phase_idx] - I_ang[phase_idx]
             # P = (VI)cos(theta), Q = (VI)sin(theta)
+            # [CHECK - JASPER]
             Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(np.radians(theta[phase_idx])))/1000
             Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(np.radians(theta[phase_idx])))/1000
         return (Pact_kVA,Qact_kVA)
@@ -492,6 +493,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def step(self, local_phasors, reference_phasors, phasor_target):
         print(self.iteration_counter)
         #to change phases see acts_to_phase_dict
+        print(len(reference_phasors[0]))
 
         if self.test == 1:
             if self.iteration_counter < 5:
@@ -920,7 +922,8 @@ for key in lpbcidx:
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = 5 # JASPER CHANGE RATE HERE
-        cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
+        cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
+        #cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]] #listen to the correct references
         currentMeasExists = True
