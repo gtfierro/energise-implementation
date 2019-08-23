@@ -68,7 +68,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.nphases = nphases #TODO
         self.iteration_counter = 0
         self.ametek_phase_shift = 0
-        self.Qcmd_kVA = np.zeros(nphases) #Pcmd comes from the feedback controller
+        #self.Qcmd_kVA = np.zeros(nphases) #Pcmd comes from the feedback controller
         self.Pcmd_pu = np.zeros(nphases)  #both Pcmd and Pact are in the local power setting (not the amplified OpalRT setting which is just multiplied by localSratio)
         self.Qcmd_pu = np.zeros(nphases)
 
