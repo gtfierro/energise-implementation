@@ -428,6 +428,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         urls = []
         commandReceipt = np.zeros(nphases)
         if self.mode == 1: #1: PV as disturbance
+            print('http start')
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
@@ -442,7 +443,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
-                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},inv_id={inv}")
+                print('http append')
         if self.mode == 2: #mode 2: PV calculated
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
@@ -458,7 +460,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
-                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},inv_id={inv}")
         if self.mode == 3: #mode 3: PV only
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
                 Inv_Pperc_max = 97
@@ -480,6 +482,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
+        print('http end')
         for i in range(nphases):
             if results[i].status_code == 200:
                 commandReceipt[i] = 'success'
