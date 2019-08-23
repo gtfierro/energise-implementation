@@ -50,7 +50,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA = [0, .1, .2, .3, .4]
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
-        self.test = 3.1 # see picture on white board (1, 2, 3.1, 3.2)
+        self.test = 1 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
@@ -626,7 +626,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter < 25:
                 pcmd = 200
                 qcmd = self.Qcmd_kVA[self.q_count]
-                print(qcmd)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 #commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA_t2[self.q_count], self.Pact)
@@ -711,6 +710,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qcmd'] = self.Qcmd_store
                 df['Pact'] = self.P_act_store
                 df['Qact'] = self.Q_act_store
+                df['PV'] = self.P_PV_store
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
@@ -736,6 +736,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qcmd'] = self.Qcmd_store
                 df['Pact'] = self.P_act_store
                 df['Qact'] = self.Q_act_store
+                df['PV'] = self.P_PV_store
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
