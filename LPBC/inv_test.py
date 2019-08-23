@@ -684,7 +684,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qact'] = self.Q_act_store
                 
                 # write df to csv
-                df.to_csv(path_to)
+                df.to_csv('inv_test_results/'+path_to)
                 
                 print('wrote to csv')
                 print('~~~ END ~~~')
@@ -709,7 +709,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qact'] = self.Q_act_store
                 
                 # write df to csv
-                df.to_csv(path_to)
+                df.to_csv('inv_test_results/'+path_to)
                 
                 print('wrote to csv')
                 print('~~~ END ~~~')
