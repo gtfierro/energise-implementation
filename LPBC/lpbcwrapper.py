@@ -36,10 +36,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.controller = 'PI' #set controller to 'PI' or 'LQR'
 
         if self.controller == 'PI':
-            Kp_ang=0.01
-            Ki_ang=0.3
-            Kp_mag=0.01
-            Ki_mag=0.3
+            # controller gains must be list, even if single phase. can use different gains for each phase
+            # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
+            kp_ang=[0.01]
+            ki_ang=[0.3]
+            kp_mag=[0.01]
+            ki_mag=[0.3]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif controller == 'LQR':
             pass
@@ -159,7 +161,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
-        self.inv_s_max = 7600.
+        self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
@@ -419,25 +421,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i])) #in mode 1 the battery is controlled directly
                 if abs(self.batt_cmd[i]) > self.batt_max:
-                    self.batt_cmd[i] = int(np.sign(Pcmd_VA) * self.batt_max)
-                if ((self.batt_cmd[i] + P_PV)**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
-                    Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV)**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
-                pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0)*abs(self.batt_cmd[i] + P_PV)) / \
+                    self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
+                if ((self.batt_cmd[i] + P_PV[i])**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
+                    Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
+                pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0)*abs(self.batt_cmd[i] + P_PV[i])) / \
                           (np.sqrt(((self.batt_cmd[i] + P_PV)**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
-                              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
         if self.mode == 2: #mode 2: PV calculated
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i] - P_PV[i])) #in mode 2 the battery and PV are controlled jointly
                 if abs(self.batt_cmd[i]) > self.batt_max:
-                    self.batt_cmd[i] = int(np.sign(Pcmd_VA) * self.batt_max)
+                    self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
                 if (self.batt_cmd[i]**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - self.batt_cmd[i]**2)
                 pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0)*abs(self.batt_cmd[i])) / \
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
-                              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
         if self.mode == 3: #mode 3: PV only
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
                 Inv_Pperc_max = 97
@@ -452,8 +452,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0) *abs(Pcmd_VA[i])) / \
                               (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
-                              f"pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
         for i in range(nphases):
@@ -550,9 +549,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def initializeActuators(self, mode):
         if mode == 0:
             return
-        if mode == 1 or mode == 2:
+        elif mode == 1 or mode == 2:
             responseInverters = requests.get("http://131.243.41.47:9090/control?P_ctrl=97,Batt_ctrl=0")
-        if mode == 3:
+        elif mode == 3:
             responseInverters = requests.get("http://131.243.41.47:9090/control?P_ctrl=0,Batt_ctrl=0")
         #responseLoads = requests.get(f"http://131.243.41.118:9090/control?P_ctrl=0")
         if responseInverters.status_code != 200 or responseLoads.status_code != 200:
@@ -562,7 +561,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def statusforSPBC(self, phases, phasor_error_mag_pu, phasor_error_ang, ICDI_sigP, ICDI_sigQ, Pmax_pu, Qmax_pu):
         status = {}
-        status['phases'] = phases #This has to be a list (cant just be a string) #HERE may create an error cause its a numpy array currently
+        # status's keys should be lists
+        status['phases'] = phases
         status['phasor_errors'] = {
                 'V': list(phasor_error_mag_pu.ravel()), #ravel flatens the dimensions
                 'delta': list(phasor_error_ang.ravel())
