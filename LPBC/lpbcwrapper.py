@@ -22,8 +22,6 @@ from PIcontroller import *
 
 #HHERE scan for mutable copy bugs
 
-#HHERE impedance estimation needs to take into account power scaling from
-
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
     def __init__(self, cfg, busId, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
         super().__init__(cfg)
@@ -311,17 +309,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (self.Iang, self.Imag)
 
 
-    def phasorI_estFromScmd(self, Vmag_relative, Vang, Pcmd, Qcmd):
-        '''
-        Vang is relative, so its base 0 for all phases (not +/- 2pi/3) so Vcomp will be will be deflected from (1,0)
-        Scomp_est is constructed to be deflected from (1,0)
-        so Icomp_est will be deflected from (1,0)
-        '''
-        Vcomp = Vmag_relative*np.cos(Vang) + Vmag_relative*np.sin(Vang)*1j #Vmag_relative is local - ref, so positive current/power flow is into the network: true because commands are positive for power injections
-        Scomp_est = Pcmd + Qcmd*1j #this could be delta S to give delta I_est directly, but the same delta I_est is ultimately attained subtracting I_est_prev later on
-        Icomp_est = np.conj(Scomp_est/Vcomp) #this will do element_wise computation bc they're arrays
-        return (Icomp_est)
-
 
     #just uses the most recent current and voltage measurements, doesnt need a match w reference
     def PQ_solver(self, local_phasors, nphases, plug_to_V_idx):
@@ -388,9 +375,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.actType == 'inverters':
                     self.Pmax_pu[phase] = Pact_pu[phase]
                 elif self.actType == 'load':
-                    self.Pmax_pu[phase] = (self.loadrackPlimit/2 * self.localSratio)/(self.network_kVAbase *1000) #HHERE Sratio double counted??
+                    self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
-                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.network_kVAbase *1000)
+                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
             else:
                 self.ICDI_sigP[phase] = False
                 self.Pmax_pu[phase] = np.NaN
@@ -404,7 +391,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
-                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.network_kVAbase *1000)
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
             else:
                 self.ICDI_sigQ[phase] = False
                 self.Qmax_pu[phase] = np.NaN
@@ -619,7 +606,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
 
-            self.phasor_error_ang = self.VangTarg - self.Vang #HERE check SPBC is sending angles in radians
+            self.phasor_error_ang = self.VangTarg - self.Vang
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
             #HERE VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
@@ -633,10 +620,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  # calculate P/Q from actuators
                 self.Pact_pu = self.Pact / self.localkVAbase
                 self.Qact_pu = self.Qact / self.localkVAbase
-            else: #HHERE this and phasorI_estFromScmd should be moved into LQRcontroller, if no Imeas is given, then it uses Iest
-                self.Icomp_pu_est = self.phasorI_estFromScmd(self.Vmag_relative_pu, self.Vang, self.Pcmd_pu, self.Qcmd_pu) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
-                # self.Icomp_pu_est = self.Icomp_est / self.localIbase #HHERE needed?
-                self.Icomp_pu = self.Icomp_pu_est
+            else:
+                self.Icomp_pu = np.NaN
 
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, self.Pact_pu, self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
@@ -654,7 +639,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,VangRef=0,self.saturated,self.Icomp_pu) #all Vangs must be in radians
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
-            self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio
+            self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
@@ -792,8 +777,8 @@ plug_to_phase_dict = dict()
 
 #this is HIL specific
 localSratio_dict = dict()
-inverterScaling = 500/3.3 #or 15*500/3.3 HHERE Jasper
-loadScaling = 1
+inverterScaling = 500/3.3
+loadScaling = 350
 
 for key in lpbcidx:
     #act_idxs assumes that, for each lpbc with multiple actuators, the actuators are dispatched in A, B, C order
@@ -861,7 +846,7 @@ entitydict[4] = 'lpbc_5.ent'
 entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
-pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3']) #HERE is this okay that this is a numpyarray now? depends on Gabes code, hopefully fine
+pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
@@ -887,19 +872,19 @@ for key in lpbcidx:
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = 5
-        cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
+        cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
-        cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key], 3 + pmu0_plugs_dict[key]] #assumes current and voltage plugs are connected the same way
+        cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key], 3 + pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
     elif actType == 'load':
         cfg['rate'] = 5
-        cfg['local_channels'] = pmu4Channels[pmu4_plugs_dict[key]]
-        cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]]
+        cfg['local_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]])
+        cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]])
         currentMeasExists = False
     elif actType == 'modbus':
         cfg['rate'] = 5
-        cfg['local_channels'] = pmu123PChannels[pmu123P_plugs_dict[key]]
-        cfg['reference_channels'] = refChannels[pmu0_plugs_dict[key]]
+        cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
+        cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
         currentMeasExists = False
     else:
         error('actType Error')

@@ -19,8 +19,8 @@ class LQRcontroller:
         self.iteration_counter = 0
 
         #Controller Parameters
-        self.Qcost = Qcost
-        self.Rcost = Rcost
+        self.Qcost = np.asmatrix(Qcost)
+        self.Rcost = np.asmatrix(Rcost)
         self.controllerUpdateCadence = controllerUpdateCadence
         self.saturated = 0
 
@@ -41,8 +41,10 @@ class LQRcontroller:
         self.state = np.asmatrix(np.zeros(4*nphases))
         self.u = np.asmatrix(np.zeros(2*nphases))
         self.d = np.asmatrix(np.zeros(2*nphases))
-        self.IcompPrev = np.NaN
-        self.VcompPrev = np.NaN
+        self.IcompPrev = np.asmatrix(np.zeros(nphases,dtype=np.complex_)) #these will make row matrices
+        self.VcompPrev = np.asmatrix(np.zeros(nphases,dtype=np.complex_))
+        self.PcommandPrev = np.zeros(nphases) #want this as an np array
+        self.QcommandPrev = np.zeros(nphases)
 
 
 ####################################################
@@ -95,51 +97,46 @@ class LQRcontroller:
         return
 
 
+    def phasorI_estFromScmd(self, Vmag_relative, Vang, Pcmd, Qcmd):
+        '''
+        Vang is relative, so its base 0 for all phases (not +/- 2pi/3) so Vcomp will be will be deflected from (1,0)
+        all entries of Scomp_est are deflected from (1,0)
+        so all entries of Icomp_est will be deflected from (1,0)
+        want the operations to be element_wise so pass in arrays not matrices
+        '''
+        Vcomp = Vmag_relative*np.cos(Vang) + Vmag_relative*np.sin(Vang)*1j #Vmag_relative is local - ref, so positive current/power flow is into the network: true because commands are positive for power injections
+        Scomp_est = Pcmd + Qcmd*1j #this could be delta S to give delta I_est directly, but the same delta I_est is ultimately attained subtracting I_est_prev later on
+        Icomp_est = np.conj(Scomp_est/Vcomp) #this will do element_wise computation bc they're arrays
+        return (Icomp_est)
+
+
     def LQRupdate(self,Vmag,Vang,VmagTarg,VangTarg,VmagRef,VangRef,saturated=0,Icomp=np.NaN):
         '''
         Internal Controller Accounting and feedback calculation
+        Expects 1-d arrays
         set statek to Vmag and Vang and increment integrator
         Vang must be base 0 (ie not +/- 2pi/3), which it is bc its a relative angle
         and Icomp must be deflected from (1,0), which it is because its computed from relative angles
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        Vcomp = Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j
+        if Icomp == np.NaN:
+            Vmag_relative_pu = Vmag - VmagRef
+            Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
+            Icomp = np.asmatrix(Icomp_est)
+        else:
+            Icomp = np.asmatrix(Icomp)
+        Vcomp = np.asmatrix(Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j)
         Vmag = np.asmatrix(Vmag) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
         Vang = np.asmatrix(Vang)
-        Vcomp = np.asmatrix(Vcomp)
-        Icomp = np.asmatrix(Icomp)
+        VmagTarg = np.asmatrix(VmagTarg)
+        VangTarg = np.asmatrix(VangTarg)
+        VmagRef = np.asmatrix(VmagRef)
+        VangRef = np.asmatrix(VangRef)
 
         self.V0 = self.setVtarget(VmagTarg,VangTarg)
         self.setVref(VmagRef,VangRef)
         self.saturated = saturated
         self.iteration_counter += 1
-
-        if self.saturated:
-            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
-        else:
-            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
-
-
-        if self.linearizeplant:
-            Babbrev = self.B[:self.nphases*2,:]
-            ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
-        else:
-            ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
-        if iteration_counter != 1: #iteration_counter is 1 in the first call
-            dm = ueff.T - self.u #dm for d measurement
-            self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
-        else:
-            dm = ueff;
-            self.d = dm;
-
-        #update uref
-        if self.linearizeplant:
-            uref = (np.linalg.pinv(Babbrev)*(np.hstack((self.VmagTarg,self.VangTarg))-self.V0).T).T;
-        else:
-            uref = self.pfEqns3phase(VmagTarg,VangTarg,Zskest) #havent built these yet
-
-        #Feedback Control input for next round
-        self.u = (self.K*self.state.T).T + uref - self.d
 
         #Estimate Zeff
         if self.use_Zsk_est == 1 and (currentMeasExists == 1 or saturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
@@ -149,13 +146,40 @@ class LQRcontroller:
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
                 err = dtVt - self.Zskest*dtIt
                 self.Zskest = np.asmatrix(self.Zskest.H + self.Gt*dtIt*err.H).H
-                self.Zskest = (self.Zskest + self.Zskest.T)/2;
+                self.Zskest = (self.Zskest + self.Zskest.T)/2
             for p in np.arange(self.nphases):
                 if np.real(self.Zskest[p,p]) < 0:
                     self.Zskest = self.Zskestinit
                     self.Gt = self.Gt*.1
                     print('reset impedance estimator')
             self.B = self.updateB(self.Zskest)
+
+        if self.saturated:
+            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
+        else:
+            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
+
+        #DOBC
+        if self.linearizeplant:
+            Babbrev = self.B[:self.nphases*2,:]
+            ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
+        else:
+            ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
+        if iteration_counter != 1: #iteration_counter is 1 in the first call
+            dm = ueff.T - self.u #dm for d measurement
+            self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
+        else:
+            dm = ueff
+            self.d = dm
+
+        #update uref
+        if self.linearizeplant:
+            uref = (np.linalg.pinv(Babbrev)*(np.hstack((self.VmagTarg,self.VangTarg))-self.V0).T).T
+        else:
+            uref = self.pfEqns3phase(VmagTarg,VangTarg,Zskest) #havent built these yet
+
+        #Feedback Control input for next round
+        self.u = (self.K*self.state.T).T + uref - self.d
 
         #save measurements for next round
         self.IcompPrev = Icomp
@@ -168,4 +192,6 @@ class LQRcontroller:
         #returns powers in pu, I believe
         Plpbc = np.asarray(-self.u[0,0:self.nphases])
         Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])
+        self.PcommandPrev = Plpbc #used if no I measurement is available
+        self.QcommandPrev = Qlpbc
         return (Plpbc,Qlpbc)
