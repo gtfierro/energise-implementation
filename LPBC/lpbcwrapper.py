@@ -85,6 +85,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.phasor_error_mag_pu = np.zeros(nphases)
         self.VmagRef = np.zeros(nphases)
         self.VmagRef_pu = np.zeros(nphases)
+        self.VangRef = np.zeros(nphases)
 
         #Just need to decide what to call unintialized values (probably np.zero if more than 1 dimension)
         #Targets received from SPBC, right now VmagTarg as relative not abosolute
@@ -161,7 +162,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
-        self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
+        # self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
+        self.inv_s_max = 8350. * 0.97
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
@@ -404,7 +406,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
 
-
     def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact):
         # hostname: http://131.243.41.47:
         # port: 9090
@@ -640,7 +641,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,VangRef=0,self.saturated,self.Icomp_pu) #all Vangs must be in radians
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,self.VangRef,self.saturated,self.Icomp_pu) #all Vangs must be in radians
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
