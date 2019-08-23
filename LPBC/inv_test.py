@@ -49,7 +49,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA = [0, .1, .2, .3, .4]
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
-        self.test = 1 # see picture on white board (1, 2, 3.1, 3.2)
+        self.test = 3.1 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
@@ -668,9 +668,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter == 19:
                 "DO WRITE TO CSV HERE"
                 # set path name according to time of creation#
-                date = dt.datetime.now()
+                date = dt.datetime.fromtimestamp(time.time())
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
-                path_to = f'{month}-{day}-{hour}{minute}_HIL_cal_T{self.test}'
+                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
                 
                 # create df
                 df = pd.DataFrame()         
@@ -693,9 +693,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter == 24:
                 "DO WRITE TO CSV HERE"
                 # set path name according to time of creation#
-                date = dt.datetime.now()
+                date = dt.datetime.fromtimestamp(time.time())
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
-                path_to = f'{month}-{day}-{hour}{minute}_HIL_cal_T{self.test}'
+                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
                 
                 # create df
                 df = pd.DataFrame()         
@@ -716,8 +716,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         self.iteration_counter += 1
-        
-        print('end loop')
         
         return
 
