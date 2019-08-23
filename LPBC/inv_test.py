@@ -634,6 +634,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.q_count += 1
 
             if self.iteration_counter < 25:
+                pcmd = 200
+                qcmd = self.Qcmd_kVA[self.q_count]
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -654,6 +656,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.q_count += 1
 
             if self.iteration_counter < 25:
+                pcmd = 200
+                qcmd = self.Qcmd_kVA[self.q_count]
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
