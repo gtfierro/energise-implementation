@@ -5,6 +5,7 @@ from pyxbos.drivers import pbc  #https://github.com/gtfierro/xboswave/tree/maste
 # above imports LPBCProcess, SPBCProcess, EnergiseMessage, LPBCStatus, LPBCCommand, SPBC, EnergiseError
 import sys
 import numpy as np
+import pandas as pd
 import warnings
 import logging
 import requests
@@ -23,7 +24,7 @@ from PIcontroller import *
 #HHERE scan for mutable copy bugs
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -44,7 +45,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             pass
             #TODO for Keith:
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
-            Zskinit = #load from folder #HHERE
+            Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
+            Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
+            Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()'))))
+            Zskinit = np.asmatrix(Zsk_df.values) #HERE just wrote this
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*10^-1 #controll costs (P and Q)
             use_Zsk_est = 1
@@ -890,7 +894,7 @@ for key in lpbcidx:
         error('actType Error')
     cfg['spbc'] = 'spbc-jasper-1'
     timesteplength = cfg['rate']
-    lpbcdict[key] = lpbcwrapper(cfg, key, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
+    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
 
 run_loop() #defined in XBOSProcess
 
