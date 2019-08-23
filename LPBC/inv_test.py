@@ -622,7 +622,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Qcmd_store.append(qcmd)
 
         if self.test == 3.1:
-
+            
+            if self.iteration_counter < 25:
+                pcmd = 200
+                qcmd = self.Qcmd_kVA[self.q_count]
+                t = time.time()
+                self.cmd_epoch.append(t)
+                #commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA_t2[self.q_count], self.Pact)
+                self.inv_time.append(time.time() - t)
+                #print('command receipt:',commandReceipt)
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
+                self.P_act_store.append(self.Pact)
+                self.Q_act_store.append(self.Qact)
+                self.Pcmd_store.append(pcmd)
+                self.Qcmd_store.append(qcmd)
+            if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
+                self.q_count += 1
+            '''
             if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
                 pcmd = 200
                 qcmd = self.Qcmd_kVA[self.q_count]
@@ -644,28 +660,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 
                 self.cmd_epoch.append('n/a')
                 self.inv_time.append('n/a')
+            '''
 
         if self.test == 3.2:
-            if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
+            if self.iteration_counter < 25:
                 pcmd = 200
+                qcmd = self.Qcmd_kVA_t2[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
                 #commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA_t2[self.q_count], self.Pact)
                 self.inv_time.append(time.time() - t)
                 #print('command receipt:',commandReceipt)
-                self.q_count += 1
-
-            if self.iteration_counter < 25:
-                pcmd = 200
-                qcmd = self.Qcmd_kVA[self.q_count]
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 self.Pcmd_store.append(pcmd)
                 self.Qcmd_store.append(qcmd)
-                
-                self.cmd_epoch.append('n/a')
-                self.inv_time.append('n/a')
+            if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
+                self.q_count += 1
 
         '''
         #empty lists for storing and writing to csv
