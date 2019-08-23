@@ -51,7 +51,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
         self.test = 1 # see picture on white board (1, 2, 3.1, 3.2)
-        self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
+        self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
         self.cmd_epoch =[]
@@ -508,6 +508,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
+                print('http here')
                 print('command receipt:',commandReceipt)
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
