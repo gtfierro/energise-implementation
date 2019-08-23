@@ -161,7 +161,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
-        self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
+        # self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
+        self.inv_s_max = 8350. * 0.97
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
@@ -402,7 +403,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.ICDI_sigQ[phase] = False
                 self.Qmax_pu[phase] = np.NaN
         return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-
 
 
     def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact):
