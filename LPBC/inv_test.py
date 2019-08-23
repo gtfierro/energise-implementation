@@ -19,6 +19,7 @@ from PIcontroller import *
 
 import time
 import datetime as dt
+import pytz
 import pandas as pd
 
 ## PATH NAME OF CSV ##
@@ -668,7 +669,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter == 19:
                 "DO WRITE TO CSV HERE"
                 # set path name according to time of creation#
-                date = dt.datetime.fromtimestamp(time.time())
+                date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
                 path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
                 
@@ -676,7 +677,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    df['cmd_datetime'] = dt.datetime.fromtimestamp(i)
+                    df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
                 df['phase_shift'] = self.test_phase_shift
                 df['Pcmd'] = self.Pcmd_store
                 df['Qcmd'] = self.Qcmd_store
@@ -693,7 +694,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter == 24:
                 "DO WRITE TO CSV HERE"
                 # set path name according to time of creation#
-                date = dt.datetime.fromtimestamp(time.time())
+                date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
                 path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
                 
@@ -701,8 +702,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    df['cmd_datetime'] = dt.datetime.fromtimestamp(i)
-                df['phase_shift'] = self.test_phase_shift
+                    df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
+                #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd'] = self.Pcmd_store
                 df['Qcmd'] = self.Qcmd_store
                 df['Pact'] = self.P_act_store
