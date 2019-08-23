@@ -626,6 +626,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter < 25:
                 pcmd = 200
                 qcmd = self.Qcmd_kVA[self.q_count]
+                print(qcmd)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 #commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, self.Qcmd_kVA_t2[self.q_count], self.Pact)
@@ -636,7 +637,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Q_act_store.append(self.Qact)
                 self.Pcmd_store.append(pcmd)
                 self.Qcmd_store.append(qcmd)
-            if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
+            if self.iteration_counter in np.arange(4,25,5):
                 self.q_count += 1
             '''
             if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
@@ -676,7 +677,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Q_act_store.append(self.Qact)
                 self.Pcmd_store.append(pcmd)
                 self.Qcmd_store.append(qcmd)
-            if self.iteration_counter == 0 or  self.iteration_counter == 5 or  self.iteration_counter == 10 or self.iteration_counter == 15 or self.iteration_counter == 20:
+            if self.iteration_counter in np.arange(4,25,5):
                 self.q_count += 1
 
         '''
