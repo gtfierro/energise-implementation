@@ -124,6 +124,8 @@ class LQRcontroller:
             Vmag_relative = Vmag - VmagRef
             print('self.PcommandPrev : ' + str(self.PcommandPrev))
             print('self.QcommandPrev : ' + str(self.QcommandPrev))
+            print('Vmag_relative : ' + str(Vmag_relative))
+            print('Vang : ' + str(Vang))
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             Icomp = np.asmatrix(Icomp_est)
             print('Icompest : ' + str(Icomp))
@@ -154,9 +156,6 @@ class LQRcontroller:
             if self.iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
-                print('shapelam : ' + str(np.shape(self.lam)))
-                self.lam = np.squeeze(self.lam)
-                print('shapelam : ' + str(np.shape(self.lam)))
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
                 err = dtVt - self.Zskest*dtIt
                 self.Zskest = np.asmatrix(self.Zskest.H + self.Gt*dtIt*err.H).H
