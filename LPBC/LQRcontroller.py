@@ -207,7 +207,7 @@ class LQRcontroller:
         print('Zskest : ' + str(self.Zskest))
         print('A : ' + str(self.A))
         print('B : ' + str(self.B))
-        print('Babbrev : ' + str(self.Babbrev))
+        print('Babbrev : ' + str(Babbrev))
         print('uref : ' + str(self.uref))
         print('state' + str(self.state))
         print('u : ' + str(self.u))
