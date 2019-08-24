@@ -733,8 +733,9 @@ Tells each LPBC whether it sends commands to loads or inverters
 
 '''
 
-acts_to_phase_dict = dict()
-actType_dict = dict()
+
+# SPBCname = 'spbc-jasper-1'
+SPBCname = 'spbc-example-jasper'
 
 #Manual entry here to determine test case, phases, etc.
 #Test Case
@@ -743,6 +744,8 @@ actType_dict = dict()
 #testcase = '13bal'
 testcase = 'manual'
 
+acts_to_phase_dict = dict()
+actType_dict = dict()
 if testcase == '37':
     subkVAbase = 2500
 elif testcase == '13unb':
@@ -894,7 +897,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         localSratio = CILscaling
     else:
         error('actType Error')
-    cfg['spbc'] = 'spbc-jasper-1'
+    cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
 
