@@ -159,6 +159,7 @@ class LQRcontroller:
                 print(np.shape(dtIt))
                 print(np.shape(dtVt))
                 print(np.shape(self.Gt))
+                self.lam = self.lam[0][0]
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
                 err = dtVt - self.Zskest*dtIt
                 self.Zskest = np.asmatrix(self.Zskest.H + self.Gt*dtIt*err.H).H
