@@ -595,7 +595,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             pass
             #HHERE commented out for debugging
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
-        print('phasor_target + ' + str(phasor_target)) #HERE debugging
+        print('phasor_target : ' + str(phasor_target)) #HERE debugging
 
         if phasor_target is None and self.VangTarg == 'initialize':
             print("Iteration", self.iteration_counter, ": No target received by SPBC")

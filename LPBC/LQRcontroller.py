@@ -147,7 +147,7 @@ class LQRcontroller:
             self.onesaturated = 0
 
         #Estimate Zeff
-        if self.use_Zsk_est == 1 and (currentMeasExists == 1 or self.onesaturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
+        if self.use_Zsk_est == 1 and (self.currentMeasExists == 1 or self.onesaturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
             if iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
