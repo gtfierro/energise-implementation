@@ -122,12 +122,13 @@ class LQRcontroller:
         '''
         if np.isnan(Icomp):
             Vmag_relative = Vmag - VmagRef
+            print('self.PcommandPrev : ' + str(self.PcommandPrev))
+            print('self.QcommandPrev : ' + str(self.QcommandPrev))
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             Icomp = np.asmatrix(Icomp_est)
             print('Icompest : ' + str(Icomp))
         else:
             Icomp = np.asmatrix(Icomp)
-        print('Icomp : ' + str(Icomp))
         Vcomp = np.asmatrix(Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j)
         Vmag = np.asmatrix(Vmag) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
         Vang = np.asmatrix(Vang)
@@ -151,17 +152,11 @@ class LQRcontroller:
         #Estimate Zeff
         if self.use_Zsk_est == 1 and (self.currentMeasExists == 1 or self.onesaturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
             if self.iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
-                print(np.shape(Icomp))
-                print(np.shape(self.IcompPrev))
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
+                print('shapelam : ' + str(np.shape(self.lam)))
                 self.lam = np.squeeze(self.lam)
-                print('typelam : ' + str(type(self.lam)))
-                print('nphases : ' + str(self.nphases))
-                print(np.shape(self.lam))
-                print(np.shape(dtIt))
-                print(np.shape(dtIt*dtIt.H))
-                print(np.shape(self.Gt))
+                print('shapelam : ' + str(np.shape(self.lam)))
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
                 err = dtVt - self.Zskest*dtIt
                 self.Zskest = np.asmatrix(self.Zskest.H + self.Gt*dtIt*err.H).H
