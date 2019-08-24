@@ -197,8 +197,8 @@ class LQRcontroller:
         self.u = (self.K*self.state.T).T + uref - self.d
 
         #save measurements for next round
-        self.IcompPrev = Icomp
-        self.VcompPrev = Vcomp
+        self.IcompPrev = Icomp.copy()
+        self.VcompPrev = Vcomp.copy()
         if np.mod(self.iteration_counter-1,self.controllerUpdateCadence) == 0:
             self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
 
@@ -207,8 +207,8 @@ class LQRcontroller:
         #returns powers in pu, I believe
         Plpbc = np.asarray(-self.u[0,0:self.nphases])
         Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])
-        self.PcommandPrev = Plpbc #used if no I measurement is available
-        self.QcommandPrev = Qlpbc
+        self.PcommandPrev = Plpbc.copy() #used if no I measurement is available
+        self.QcommandPrev = Qlpbc.copy()
 
         #sanity check for debugging
         print('Zskest : ' + str(self.Zskest))
