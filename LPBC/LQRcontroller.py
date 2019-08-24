@@ -121,7 +121,7 @@ class LQRcontroller:
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
         if np.isnan(Icomp):
-            Vmag_relative_pu = Vmag - VmagRef
+            Vmag_relative = Vmag - VmagRef
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             Icomp = np.asmatrix(Icomp_est)
             print('Icompest : ' + str(Icomp))
