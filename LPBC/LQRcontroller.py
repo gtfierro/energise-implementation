@@ -148,7 +148,7 @@ class LQRcontroller:
 
         #Estimate Zeff
         if self.use_Zsk_est == 1 and (self.currentMeasExists == 1 or self.onesaturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
-            if iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
+            if self.iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
@@ -173,7 +173,7 @@ class LQRcontroller:
             ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
         else:
             ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
-        if iteration_counter != 1: #iteration_counter is 1 in the first call
+        if self.iteration_counter != 1: #iteration_counter is 1 in the first call
             dm = ueff.T - self.u #dm for d measurement
             self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
         else:
