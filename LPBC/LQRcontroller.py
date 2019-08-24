@@ -157,7 +157,7 @@ class LQRcontroller:
                 print('nphases : ' + str(self.nphases))
                 print(np.shape(self.lam))
                 print(np.shape(dtIt))
-                print(np.shape(dtVt))
+                print(np.shape(dtIt*dtIt.H))
                 print(np.shape(self.Gt))
                 self.lam = self.lam[0][0]
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
