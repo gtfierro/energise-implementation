@@ -39,9 +39,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        self.controller = 'LQR' #set controller to 'PI' or 'LQR'
+        self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
 
-        if self.controller == 'PI':
+        if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             kp_ang=[0.01]
@@ -49,7 +49,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             kp_mag=[0.01]
             ki_mag=[0.3]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
-        elif self.controller == 'LQR':
+        elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
             if testcase == 'manual': #HHERE for debugging
@@ -618,12 +618,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            print('RUNNING LPBC')
+
             (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
-            print('STILL RUNNING LPBC')
+
             self.phasor_error_ang = self.VangTarg - self.Vang
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
@@ -643,11 +643,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, self.Pact_pu, self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
-            print('STILL STILL RUNNING LPBC')
+
             #run control loop
-            if self.controller == 'PI':
+            if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-            elif self.controller == 'LQR':
+            elif self.controllerType == 'LQR':
                 print('CALLING LQRupdate')
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 print('Pcmd : ' + str(self.Pcmd_pu))
