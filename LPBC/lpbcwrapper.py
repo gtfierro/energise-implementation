@@ -658,9 +658,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 print(self.commandReceipt)
             elif self.actType == 'modbus':
+                pass
                 #HHERE commented this out for debugging on hardware
                 # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                print(result)
+                # print(result)
             else:
                 error('actType error')
 
