@@ -48,7 +48,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             kp_mag=[0.01]
             ki_mag=[0.3]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
-        elif controller == 'LQR':
+        elif self.controller == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
