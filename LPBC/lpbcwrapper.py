@@ -588,6 +588,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
+            pass
             #HHERE commented out for debugging
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
 
