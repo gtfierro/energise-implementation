@@ -172,7 +172,7 @@ class LQRcontroller:
             Babbrev = self.B[:self.nphases*2,:]
             ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
         else:
-            ueff = self.pfEqns3phase(Vmag,Vang,Zskest) #havent built these yet #ueff through Zeff would give Vmeas
+            ueff = self.pfEqns3phase(Vmag,Vang,self.Zskest) #havent built these yet #ueff through Zeff would give Vmeas
         if self.iteration_counter != 1: #iteration_counter is 1 in the first call
             dm = ueff.T - self.u #dm for d measurement
             self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
@@ -184,7 +184,7 @@ class LQRcontroller:
         if self.linearizeplant:
             uref = (np.linalg.pinv(Babbrev)*(np.hstack((self.VmagTarg,self.VangTarg))-self.V0).T).T
         else:
-            uref = self.pfEqns3phase(VmagTarg,VangTarg,Zskest) #havent built these yet
+            uref = self.pfEqns3phase(VmagTarg,VangTarg,self.Zskest) #havent built these yet
 
         #Feedback Control input for next round
         self.u = (self.K*self.state.T).T + uref - self.d
