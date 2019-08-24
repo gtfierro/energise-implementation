@@ -7,7 +7,7 @@ from numpy.linalg import inv
 #all voltages, powers and impedances in pu
 
 class LQRcontroller:
-    def __init__(self,nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,Gt=None,lpAlpha=.1,lam=.99,controllerUpdateCadence=1,linearizeplant=1):
+    def __init__(self,nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1):
         self.nphases = nphases
         self.VmagRef = np.NaN # = 0 if Vmag is given as relative already #HHERE does this work with offsets below? dont think so..
         self.VangRef = np.NaN
@@ -22,12 +22,11 @@ class LQRcontroller:
         self.Qcost = np.asmatrix(Qcost)
         self.Rcost = np.asmatrix(Rcost)
         self.controllerUpdateCadence = controllerUpdateCadence
-        self.saturated = 0
 
         self.lpAlpha = lpAlpha # low pass filter alpha, larger changes disturbance faster (more noise sensitive)
         self.linearizeplant = linearizeplant
 
-        self.lam = lam # 0 < lam < 1, smaller lam cahnges state faster (more noise sensitive)
+        self.lam = lam # 0 < lam < 1, smaller lam changes Zskest faster
 
         self.use_Zsk_est = use_Zsk_est
         self.Zskest = Zskinit
@@ -110,7 +109,7 @@ class LQRcontroller:
         return (Icomp_est)
 
 
-    def LQRupdate(self,Vmag,Vang,VmagTarg,VangTarg,VmagRef,VangRef,saturated=0,Icomp=np.NaN):
+    def LQRupdate(self,Vmag,Vang,VmagTarg,VangTarg,VmagRef,VangRef,sat_arrayP,sat_arrayQ,Icomp=np.NaN):
         '''
         Internal Controller Accounting and feedback calculation
         Expects 1-d arrays
@@ -135,11 +134,18 @@ class LQRcontroller:
 
         self.V0 = self.setVtarget(VmagTarg,VangTarg)
         self.setVref(VmagRef,VangRef)
-        self.saturated = saturated
         self.iteration_counter += 1
+        if np.sum(sat_arrayP) + np.sum(sat_arrayQ) > 0: #these are 1 if unsaturated
+            self.allsaturated = 0 #for turning off the integrator
+        else:
+            self.allsaturated = 1
+        if np.sum(sat_arrayP) + np.sum(sat_arrayQ) < self.nphases*2: #these are 1 if unsaturated
+            self.onesaturated = 1 #for turning off Zskest
+        else:
+            self.onesaturated = 0
 
         #Estimate Zeff
-        if self.use_Zsk_est == 1 and (currentMeasExists == 1 or saturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
+        if self.use_Zsk_est == 1 and (currentMeasExists == 1 or self.onesaturated == 0): #only run Zsk est if you have a current measurement or the actuators arent saturated
             if iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
@@ -154,7 +160,7 @@ class LQRcontroller:
                     print('reset impedance estimator')
             self.B = self.updateB(self.Zskest)
 
-        if self.saturated:
+        if self.allsaturated:
             self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
         else:
             self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))

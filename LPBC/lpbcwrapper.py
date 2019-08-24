@@ -18,10 +18,15 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 from PIcontroller import *
 #from APC import *
 
+#HHERE postive P charges the battery
+#but positive power factor injects Q
+
+#HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
+
+#HHERE the battery P commands have weird step size issues
+#a solution would be turnign down the scaling offsetting the measurements by a set ammount that is pre-designed to meet the phasor target
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
-
-#HHERE scan for mutable copy bugs
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
     def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
@@ -45,16 +50,18 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif controller == 'LQR':
             pass
-            #TODO for Keith:
+            #TODO for Keith: HHERE
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
-            Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()'))))
-            Zskinit = np.asmatrix(Zsk_df.values) #HERE just wrote this
+            Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
+            Zskinit = np.asmatrix(Zsk_df.values)
+            #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*10^-1 #controll costs (P and Q)
-            use_Zsk_est = 1
-            self.controller = PIcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists)
+            lpAlpha=.1 #DOBC parameter, larger alpha changes estimate faster
+            lam=.99 #Zskest parameter, smaller lam changes estimate faster
+            self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
 
@@ -134,7 +141,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Icomp_pu = np.zeros(nphases,dtype=np.complex_)
 
         #saturation variables
-        self.saturated = 0 #1 if all actuators are saturated
         self.sat_arrayP = np.ones(nphases) #logic vectors which are 1 if a given phase is not saturated, and zero if it is
         self.sat_arrayQ = np.ones(nphases) #if no current measurements, then these will just stay zero and saturated == 0
         self.Pmax_pu = np.asarray([np.NaN] * nphases) #this signal is used by the SPBC if ICDI is true, otherwise its a nan
@@ -168,6 +174,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
+
 
 
     def targetExtraction(self,phasor_target): #HERE this hasnt been validated
@@ -242,6 +249,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             phase_idx = plug_to_V_idx[plug]
             ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
             ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
+            #small chance theres a problem here w copying a mutable data type and not using .copy()
         if self.Vang == 'initialize':
             self.Vang = np.zeros(nphases)
             # loops through every phase with actuation
@@ -491,7 +499,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbus(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, local_S_ratio ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, local_S_ratio ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
@@ -631,17 +639,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, self.Pact_pu, self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
-            if np.sum(self.sat_arrayP) + np.sum(self.sat_arrayQ) > 0: #these are 1 if unsaturated
-                self.saturated = 0
-            else:
-                self.saturated = 1
-            #if saturated, Iang and Imag from measurements are still legit, but Icomp_est is not legit because the s commanded was not actually enacted
-
             #run control loop
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,self.VangRef,self.saturated,self.Icomp_pu) #all Vangs must be in radians
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,self.VangRef,self.sat_arrayP,self.sat_arrayQ,self.Icomp_pu) #all Vangs must be in radians
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -656,7 +658,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 print(self.commandReceipt)
             elif self.actType == 'modbus':
-                result = self.modbus(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                #HHERE commented this out for debugging on hardware
+                # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
                 print(result)
             else:
                 error('actType error')
@@ -780,10 +783,6 @@ pmu4_plugs_dict = dict()
 
 plug_to_phase_dict = dict()
 
-#this is HIL specific
-localSratio_dict = dict()
-inverterScaling = 500/3.3
-loadScaling = 350
 
 for key in lpbcidx:
     #act_idxs assumes that, for each lpbc with multiple actuators, the actuators are dispatched in A, B, C order
@@ -819,7 +818,6 @@ for key in lpbcidx:
                 pmu123P_plugs_dict[key].append(plug)
         pmu123_plugs_dict[key] = np.asarray(sorted(pmu123_plugs_dict[key])) #orders the PMU channels in 0,1,2 ordering. This is expected by plug_to_phase_dict, which is sorted implicitly when it is built by inserting into [plug] position (then subsequently reduced to an idx)
         pmu123P_plugs_dict[key] = np.asarray(sorted(pmu123P_plugs_dict[key]))
-        localSratio_dict[key] = inverterScaling
     elif actType_dict[key] == 'load':
         pmu4_plugs_dict[key] = []
         for i in np.arange(3): #actuator i
@@ -829,7 +827,6 @@ for key in lpbcidx:
                 plug_to_phase_dict[key][plug] = phase #places the phase for that wave channel in the plug_to_phase mapping that gets sent to the PMUs
                 pmu4_plugs_dict[key].append(plug) #places the PMU measurement corresponding to actuator i on the WAVE channe
         pmu4_plugs_dict[key] = np.asarray(sorted(pmu123_plugs_dict[key])) #orders the PMU channels in 0,1,2 ordering. This is expected by plug_to_phase_dict, which is sorted implicitly
-        localSratio_dict[key] = loadScaling
     elif actType_dict[key] == 'modbus':
         pmu123P_plugs_dict[key] = []
         for i in np.arange(3): #actuator i
@@ -839,7 +836,6 @@ for key in lpbcidx:
                 plug_to_phase_dict[key][plug] = phase #places the phase for that wave channel in the plug_to_phase mapping that gets sent to the PMUs
                 pmu123P_plugs_dict[key].append(plug)
         pmu123P_plugs_dict[key] = np.asarray(sorted(pmu123P_plugs_dict[key]))
-        localSratio_dict[key] = 1
 #entity corresponds to a given piece of hardware (eg a server), putting multiple entities so that the lpbcs could go on different pieces of hardware
 #these entity files are on the server (Leo)
 entitydict = dict()
@@ -861,6 +857,12 @@ nlpbc = len(lpbcidx)
 #cfg file is used to build each LPBC, this is a template that is modified below for each LPBC
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
+#this is HIL specific
+localSratio_dict = dict()
+inverterScaling = 500/3.3
+loadScaling = 350
+CILscaling = 1
+
 lpbcdict = dict()
 for key in lpbcidx:
     #kVbase = np.NaN #should get this from the SPBC so lpbcwrapper doesnt have to run feeder (which requires networkx)
@@ -881,16 +883,19 @@ for key in lpbcidx:
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key], 3 + pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
+        localSratio_dict[key] = inverterScaling
     elif actType == 'load':
         cfg['rate'] = 5
         cfg['local_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]])
         currentMeasExists = False
+        localSratio_dict[key] = loadScaling
     elif actType == 'modbus':
         cfg['rate'] = 5
         cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
         currentMeasExists = False
+        localSratio_dict[key] = CILscaling
     else:
         error('actType Error')
     cfg['spbc'] = 'spbc-jasper-1'
