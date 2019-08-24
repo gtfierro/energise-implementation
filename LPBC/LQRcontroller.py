@@ -128,7 +128,7 @@ class LQRcontroller:
             print('Vang : ' + str(Vang))
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             #HERE Vmag_relative cant be 0 bc then I est will be inf
-            Icomp_est = np.ones(self.nphases) #HHERE just for debugging
+            # Icomp_est = np.ones(self.nphases) #just for debugging when netowrk is powered down
             Icomp = np.asmatrix(Icomp_est)
             print('Icompest : ' + str(Icomp))
         else:
