@@ -28,7 +28,9 @@ class LQRcontroller:
         self.lpAlpha = lpAlpha # low pass filter alpha, larger changes disturbance faster (more noise sensitive)
         self.linearizeplant = linearizeplant
 
+        print('typelam : ' + str(type(lam)))
         self.lam = lam # 0 < lam < 1, smaller lam changes Zskest faster
+        print('typelam : ' + str(type(self.lam)))
 
         self.use_Zsk_est = use_Zsk_est
         self.Zskest = Zskinit
@@ -151,6 +153,7 @@ class LQRcontroller:
             if self.iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
+                print('typelam : ' + str(type(self.lam)))
                 print('nphases : ' + str(self.nphases))
                 print(np.shape(self.lam))
                 print(np.shape(dtIt))
