@@ -202,4 +202,19 @@ class LQRcontroller:
         Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])
         self.PcommandPrev = Plpbc #used if no I measurement is available
         self.QcommandPrev = Qlpbc
+
+        print('Zskest : ' + str(Zskest))
+        print('A : ' + str(self.A))
+        print('B : ' + str(self.B))
+        print('Babbrev : ' + str(self.Babbrev))
+        print('uref : ' + str(self.uref))
+        print('state' + str(self.state))
+        print('u : ' + str(self.u))
+        print('d : ' + str(self.d))
+        print('IcompPrev' + str(self.IcompPrev))
+        print('VcompPrev' + str(self.VcompPrev))
+        print('K : ' + str(self.K))
+        print('PcommandPrev : ' + str(self.PcommandPrev))
+        print('QcommandPrev : ' + str(self.QcommandPrev))
+
         return (Plpbc,Qlpbc)
