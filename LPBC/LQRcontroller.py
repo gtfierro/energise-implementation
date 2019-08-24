@@ -204,7 +204,7 @@ class LQRcontroller:
         self.QcommandPrev = Qlpbc
 
         #sanity check for debugging
-        print('Zskest : ' + str(Zskest))
+        print('Zskest : ' + str(self.Zskest))
         print('A : ' + str(self.A))
         print('B : ' + str(self.B))
         print('Babbrev : ' + str(self.Babbrev))
