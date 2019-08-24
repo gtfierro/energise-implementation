@@ -203,6 +203,7 @@ class LQRcontroller:
         self.PcommandPrev = Plpbc #used if no I measurement is available
         self.QcommandPrev = Qlpbc
 
+        #sanity check for debugging
         print('Zskest : ' + str(Zskest))
         print('A : ' + str(self.A))
         print('B : ' + str(self.B))

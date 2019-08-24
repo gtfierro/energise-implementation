@@ -647,7 +647,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
+                print('CALLING LQRupdate')
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
+                print('Pcmd : ' + str(self.Pcmd_pu))
+                print('Qcmd : ' + str(self.Qcmd_pu))
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
