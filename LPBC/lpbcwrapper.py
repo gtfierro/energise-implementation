@@ -861,7 +861,7 @@ loadScaling = 350
 CILscaling = 1
 
 lpbcdict = dict()
-for key in lpbcidx:
+for lpbcCounter, key in enumerate(lpbcidx):
     #kVbase = np.NaN #should get this from the SPBC so lpbcwrapper doesnt have to run feeder (which requires networkx)
     #kVAbase = subkVAbase #this should also come from SPBC, once it does you can take it out from here
     act_idxs = np.nonzero(acts_to_phase_dict[key])[0]
