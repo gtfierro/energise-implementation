@@ -38,7 +38,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        self.controller = 'PI' #set controller to 'PI' or 'LQR'
+        self.controller = 'LQR' #set controller to 'PI' or 'LQR'
 
         if self.controller == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
