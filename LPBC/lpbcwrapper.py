@@ -16,6 +16,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 from PIcontroller import *
+from LQRcontroller import *
 #from APC import *
 
 #HHERE postive P charges the battery
