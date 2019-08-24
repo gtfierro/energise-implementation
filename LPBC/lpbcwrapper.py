@@ -49,8 +49,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             ki_mag=[0.3]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif controller == 'LQR':
-            pass
-            #TODO for Keith: HHERE
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
@@ -622,7 +620,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.phasor_error_ang = self.VangTarg - self.Vang
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
-            #HERE VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
+            #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
             self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu
 
             #get current measurements, determine saturation if current measurements exist
@@ -643,7 +641,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controller == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controller == 'LQR':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu,self.Vang,self.VmagTarg_pu,self.VangTarg,self.VmagRef_pu,self.VangRef,self.sat_arrayP,self.sat_arrayQ,self.Icomp_pu) #all Vangs must be in radians
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -858,7 +856,6 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-localSratio_dict = dict()
 inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 1
@@ -870,7 +867,6 @@ for key in lpbcidx:
     act_idxs = np.nonzero(acts_to_phase_dict[key])[0]
     nphases = len(act_idxs)
     actType = actType_dict[key]
-    localSratio = localSratio_dict[key]
     plug_to_phase_map = plug_to_phase_dict[key]
     plug_to_phase_idx = plug_to_phase_map[np.nonzero(plug_to_phase_map)]
     cfg = cfg_file_template
@@ -883,19 +879,19 @@ for key in lpbcidx:
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key], 3 + pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
-        localSratio_dict[key] = inverterScaling
+        localSratio = inverterScaling
     elif actType == 'load':
         cfg['rate'] = 5
         cfg['local_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]])
         currentMeasExists = False
-        localSratio_dict[key] = loadScaling
+        localSratio = loadScaling
     elif actType == 'modbus':
         cfg['rate'] = 5
         cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
         currentMeasExists = False
-        localSratio_dict[key] = CILscaling
+        localSratio = CILscaling
     else:
         error('actType Error')
     cfg['spbc'] = 'spbc-jasper-1'

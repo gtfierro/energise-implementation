@@ -6,10 +6,12 @@ from numpy.linalg import inv
 #using matrices rather than nd.arrays bc ecah controller only needs 2 dimensions, makes math easier
 #all voltages, powers and impedances in pu
 
+#HHERE how to account for P and Q commands not being true
+
 class LQRcontroller:
     def __init__(self,nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1):
         self.nphases = nphases
-        self.VmagRef = np.NaN # = 0 if Vmag is given as relative already #HHERE does this work with offsets below? dont think so..
+        self.VmagRef = np.NaN
         self.VangRef = np.NaN
         self.V0 = np.hstack((self.VmagRef,self.VangRef))
         self.VmagTarg = np.NaN
