@@ -151,6 +151,10 @@ class LQRcontroller:
             if self.iteration_counter != 1: # There arent any previous measurements at t=1, so you cant update Zeff
                 dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
                 dtIt = (Icomp - self.IcompPrev).T
+                print('nphases : ' + str(nphases))
+                print(np.shape(self.lam))
+                print(np.shape(dtIt))
+                print(np.shape(self.Gt))
                 self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
                 err = dtVt - self.Zskest*dtIt
                 self.Zskest = np.asmatrix(self.Zskest.H + self.Gt*dtIt*err.H).H
