@@ -602,7 +602,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         self.iteration_counter += 1
-        print('iteration counter bus ' + str(self.busId) ' : ' + str(self.iteration_counter)
+        print('iteration counter bus ' + str(self.busId) ' : ' + str(self.iteration_counter))
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
