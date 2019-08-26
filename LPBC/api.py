@@ -30,7 +30,7 @@ Batt_ctrl = 0 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 3 # [1,2,3]
 
-inv_perc = 10
+inv_perc = 5
 
 
 if np.abs(pf_ctrl) < 0.85:
@@ -55,7 +55,7 @@ t0 = time.time()
 # INVERTER
 
 ##### batt only
-#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
+command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
@@ -66,7 +66,7 @@ t0 = time.time()
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 
 if loop == 0:
     r = requests.get(command)
