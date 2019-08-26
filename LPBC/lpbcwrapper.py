@@ -19,13 +19,21 @@ from PIcontroller import *
 from LQRcontroller import *
 #from APC import *
 
-#HHERE postive P charges the battery
-#but positive power factor injects Q
 
 #HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
+#address this with internal feedback for Q command (interal PI controller), based on what was actually sent out?
 
 #HHERE the battery P commands have weird step size issues
 #a solution would be turnign down the scaling offsetting the measurements by a set ammount that is pre-designed to meet the phasor target
+
+#HHERE check measurements and commands align with below
+'''
+Flexlab comands and measurements:
+PMU measures positive INTO the battery for both P and Q (inverter looks like an inductor for positive Q measurent)
+Battery P commands are positive into the battery
+Inverter Pmax limiting is ambigious to direction
+Inverter power factor commands are for Q only, defined positive for reactive power into the network, or OUT of the battery (this is the oppposite of how the PMU measures it)
+'''
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
@@ -62,7 +70,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Rcost = np.eye(nphases*2)*10e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
-            use_Zsk_est = 1
+            use_Zsk_est = 0
             self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
@@ -295,7 +303,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if flag[phase] == 0:
                     break
             if flag[phase] == 1:
-                print("Phase", phase, ", Iteration ", self.iteration_counter, ": No timestamp found")
+                print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
         return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
@@ -350,6 +358,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(theta[phase_idx]))/1000
         return (Pact_kVA,Qact_kVA)
 
+
+    def checkSaturationWoImeas(self, nphases, Vcomp, VPcmd_kVA, Qcmd_kVA,):
+        # compare self.VcompPrev w Vcomp and if it keeps missing in the same direction declare that its saturated
+        #could be confused by Q offset
+        pass
+        return
 
 
     def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA,):
@@ -588,21 +602,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         self.iteration_counter += 1
-        print(self.iteration_counter)
+        print('iteration counter bus ' + str(self.busId) ' : ' + str(self.iteration_counter))
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
             pass
             #HHERE commented out for debugging
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
-        print('phasor_target : ' + str(phasor_target)) #HERE debugging
 
         if phasor_target is None and self.VangTarg == 'initialize':
-            print("Iteration", self.iteration_counter, ": No target received by SPBC")
+            print('No target received by SPBC bus ' + str(self.busId))
             return #don't need to return a status, when there isnt one to report
         else:
             if phasor_target is None:
-                print("Iteration", self.iteration_counter, ": No target received by SPBC: Using last received target")
+                print('No target received by SPBC: Using last received target ' + str(self.busId))
             else:
                 #get targets and bases from phasor_target, sent by the SPBC
                 #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
@@ -652,8 +665,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-                print('Pcmd : ' + str(self.Pcmd_pu))
-                print('Qcmd : ' + str(self.Qcmd_pu))
+            print('Pcmd bus ' + str(self.busId) ' : ' + str(self.Pcmd_pu))
+            print('Qcmd bus ' + str(self.busId) ' : ' + str(self.Qcmd_pu))
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -661,23 +674,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
-                    print(self.commandReceipt)
+                    print('inverter command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
                 else:
                     disp('couldnt send inverter commands because no current measurement available')
             elif self.actType == 'load':
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                print(self.commandReceipt)
+                print('load command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
             elif self.actType == 'modbus':
-                pass
-                #HHERE commented this out for debugging on hardware
-                # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                # print(result)
+                result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                print('Opal command receipt bus ' + str(self.busId) ' : ' + str(result))
             else:
                 error('actType error')
 
-
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print('STATUS',status)
+            print('Status bus' + str(self.busId) ' : ' + str(status))
+            print('phasor_target bus ' + str(self.busId) ' : ' + str(phasor_target))
+            print('Vmag_pu bus ' + str(self.busId) ' : ' + str(self.Vmag_pu))
+            print('Vang bus ' + str(self.busId) ': ' : ' + str(self.Vang))
             return status
 
 

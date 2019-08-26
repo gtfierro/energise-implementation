@@ -31,6 +31,7 @@ class LQRcontroller:
         self.lam = lam # 0 < lam < 1, smaller lam changes Zskest faster
 
         self.use_Zsk_est = use_Zsk_est
+        self.Zskestinit = Zskinit
         self.Zskest = Zskinit
         if Gt == None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
@@ -122,15 +123,11 @@ class LQRcontroller:
         '''
         if np.isnan(Icomp):
             Vmag_relative = Vmag - VmagRef
-            print('self.PcommandPrev : ' + str(self.PcommandPrev))
-            print('self.QcommandPrev : ' + str(self.QcommandPrev))
-            print('Vmag_relative : ' + str(Vmag_relative))
-            print('Vang : ' + str(Vang))
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             #HERE Vmag_relative cant be 0 bc then I est will be inf
             # Icomp_est = np.ones(self.nphases) #just for debugging when netowrk is powered down
             Icomp = np.asmatrix(Icomp_est)
-            print('Icompest : ' + str(Icomp))
+            # print('Icompest : ' + str(Icomp))
         else:
             Icomp = np.asmatrix(Icomp)
         Vcomp = np.asmatrix(Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j)
@@ -205,24 +202,24 @@ class LQRcontroller:
         #LQR defines u as positive for power flowing out of the network (due to the signs of the PF linearization)
         #but general LPBC convention is power is defined as postive into the network
         #returns powers in pu, I believe
-        Plpbc = np.asarray(-self.u[0,0:self.nphases])
-        Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])
+        Plpbc = np.asarray(-self.u[0,0:self.nphases])[0]
+        Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])[0]
         self.PcommandPrev = Plpbc.copy() #used if no I measurement is available
         self.QcommandPrev = Qlpbc.copy()
 
         #sanity check for debugging
-        print('Zskest : ' + str(self.Zskest))
-        print('A : ' + str(self.A))
-        print('B : ' + str(self.B))
-        print('Babbrev : ' + str(Babbrev))
-        print('uref : ' + str(uref))
-        print('state' + str(self.state))
-        print('u : ' + str(self.u))
-        print('d : ' + str(self.d))
-        print('IcompPrev' + str(self.IcompPrev))
-        print('VcompPrev' + str(self.VcompPrev))
-        print('K : ' + str(self.K))
-        print('PcommandPrev : ' + str(self.PcommandPrev))
-        print('QcommandPrev : ' + str(self.QcommandPrev))
+        # print('Zskest : ' + str(self.Zskest))
+        # print('A : ' + str(self.A))
+        # print('B : ' + str(self.B))
+        # print('Babbrev : ' + str(Babbrev))
+        # print('uref : ' + str(uref))
+        # print('state' + str(self.state))
+        # print('u : ' + str(self.u))
+        # print('d : ' + str(self.d))
+        # print('IcompPrev' + str(self.IcompPrev))
+        # print('VcompPrev' + str(self.VcompPrev))
+        # print('K : ' + str(self.K))
+        # print('PcommandPrev : ' + str(self.PcommandPrev))
+        # print('QcommandPrev : ' + str(self.QcommandPrev))
 
         return (Plpbc,Qlpbc)
