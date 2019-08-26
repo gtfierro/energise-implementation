@@ -45,7 +45,7 @@ t0 = time.time()
 #~~~~~~~~~~~
 # LOAD RACKS:
 
-#command = 'http://131.243.41.118:9090/control_enable'
+command = 'http://131.243.41.118:9090/control_enable'
 #command = 'http://131.243.41.118:9090/control_disable'
 
 #command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
@@ -66,7 +66,7 @@ t0 = time.time()
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 
 if loop == 0:
     r = requests.get(command)

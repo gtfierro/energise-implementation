@@ -521,13 +521,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter < 5:
                 pcmd = self.Pcmd_kVA[0]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('http here')
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -537,12 +537,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 4 < self.iteration_counter < 10:
                 pcmd = self.Pcmd_kVA[1]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -552,12 +552,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 9 < self.iteration_counter < 15:
                 pcmd = self.Pcmd_kVA[2]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -567,12 +567,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 14 < self.iteration_counter < 20:
                 pcmd = self.Pcmd_kVA[3]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -727,11 +727,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 for i in df.cmd_epoch:
                     df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
                 df['phase_shift'] = self.test_phase_shift
-                df['Pcmd'] = self.Pcmd_store
-                df['Qcmd'] = self.Qcmd_store
-                df['Pact'] = self.P_act_store
-                df['Qact'] = self.Q_act_store
-                df['PV'] = self.P_PV_store
+                df['Pcmd [kW]'] = self.Pcmd_store
+                df['Qcmd [kVAR]'] = self.Qcmd_store
+                df['Pact [kW]'] = self.P_act_store
+                df['Qact [kVAR]'] = self.Q_act_store
+                df['PV [kW]'] = self.P_PV_store/1000
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
@@ -753,11 +753,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 for i in df.cmd_epoch:
                     df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
                 #df['phase_shift'] = self.test_phase_shift
-                df['Pcmd'] = self.Pcmd_store
-                df['Qcmd'] = self.Qcmd_store
-                df['Pact'] = self.P_act_store
-                df['Qact'] = self.Q_act_store
-                df['PV'] = self.P_PV_store
+                df['Pcmd [kW]'] = self.Pcmd_store
+                df['Qcmd [kVAR]'] = self.Qcmd_store
+                df['Pact [kW]'] = self.P_act_store
+                df['Qact [kVAR]'] = self.Q_act_store
+                df['PV [kW]'] = self.P_PV_store/1000
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
