@@ -731,7 +731,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))_)
+                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific')))
                 df['cmd_datetime(PST)'] = cmd_datetime
                 #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd [kW]'] = self.Pcmd_store
@@ -761,7 +761,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))_)
+                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific')))
                 df['cmd_datetime(PST)'] = cmd_datetime
                 #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd [kW]'] = self.Pcmd_store
