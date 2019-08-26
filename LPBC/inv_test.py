@@ -436,7 +436,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA) * self.batt_max)
                 if ((self.batt_cmd[i] + P_PV[i])**2 + Qcmd_VA**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
-                    Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
+                    Qcmd_VA = np.sign(Qcmd_VA) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
                 pf_ctrl = ((np.sign(Qcmd_VA) * -1.0)*abs(self.batt_cmd[i] + P_PV[i])) / \
                           (np.sqrt(((self.batt_cmd[i] + P_PV[i])**2) + (Qcmd_VA**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
