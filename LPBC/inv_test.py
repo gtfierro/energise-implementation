@@ -726,7 +726,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
                     df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
-                df['phase_shift'] = self.test_phase_shift
+                #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd [kW]'] = self.Pcmd_store
                 df['Qcmd [kVAR]'] = self.Qcmd_store
                 df['Pact [kW]'] = self.P_act_store
