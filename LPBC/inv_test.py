@@ -164,7 +164,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
         self.inv_s_max = 7600.
-        self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
+        #self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
+        self.batt_cmd = np.ones(nphases)
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
 
@@ -429,6 +430,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         commandReceipt = np.zeros(nphases)
         if self.mode == 1: #1: PV as disturbance
             print('http start')
+            print('Q',Qcmd_VA,' P',Pcmd_VA)
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
