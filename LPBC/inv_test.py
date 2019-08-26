@@ -445,6 +445,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
+                if pf_ctrl < 0.01:
+                    pf_ctrl = 1
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
                 print('http append')
         if self.mode == 2: #mode 2: PV calculated
@@ -474,7 +476,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA**2))) #self.batt_cmd is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
-                    
+                if pf_ctrl < 0.01:
+                    pf_ctrl = 1                    
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
@@ -493,6 +496,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = ((np.sign(Qcmd_VA) * -1.0) *abs(Pcmd_VA)) / \
                               (np.sqrt((Pcmd_VA ** 2) + (Qcmd_VA ** 2)))
                 if self.test == 1 or self.test == 2:
+                    pf_ctrl = 1
+                if pf_ctrl < 0.01:
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
