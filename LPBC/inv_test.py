@@ -731,7 +731,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qcmd [kVAR]'] = self.Qcmd_store
                 df['Pact [kW]'] = self.P_act_store
                 df['Qact [kVAR]'] = self.Q_act_store
-                df['PV [kW]'] = self.P_PV_store/1000
+                P_PV_kW_store = [x / 1000 for x in self.P_PV_store]
+                df['PV [kW]'] = P_PV_kW_store
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
@@ -757,7 +758,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 df['Qcmd [kVAR]'] = self.Qcmd_store
                 df['Pact [kW]'] = self.P_act_store
                 df['Qact [kVAR]'] = self.Q_act_store
-                df['PV [kW]'] = self.P_PV_store/1000
+                P_PV_kW_store = [x / 1000 for x in self.P_PV_store]
+                df['PV [kW]'] = P_PV_kW_store
                 
                 # write df to csv
                 df.to_csv('inv_test_results/'+path_to)
