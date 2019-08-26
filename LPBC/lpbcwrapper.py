@@ -520,7 +520,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
             print('abs(Pcmd_VA[phase]) : ' +  str(abs(Pcmd_VA[phase])))
-            print('ORT_max_kVA : ' + str(ORT_max_kVA))
+            print('ORT_max_VA : ' + str(ORT_max_VA))
             print('local_S_ratio : ' + str(local_S_ratio))
             if abs(Pcmd_VA[phase]) > ORT_max_VA/local_S_ratio:
                 Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/local_S_ratio

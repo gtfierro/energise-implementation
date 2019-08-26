@@ -205,8 +205,8 @@ class LQRcontroller:
         #LQR defines u as positive for power flowing out of the network (due to the signs of the PF linearization)
         #but general LPBC convention is power is defined as postive into the network
         #returns powers in pu, I believe
-        Plpbc = np.asarray(-self.u[0,0:self.nphases])
-        Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])
+        Plpbc = np.asarray(-self.u[0,0:self.nphases])[0]
+        Qlpbc = np.asarray(-self.u[0,self.nphases:2*self.nphases])[0]
         self.PcommandPrev = Plpbc.copy() #used if no I measurement is available
         self.QcommandPrev = Qlpbc.copy()
 
