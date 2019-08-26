@@ -48,7 +48,7 @@ t0 = time.time()
 #command = 'http://131.243.41.118:9090/control_enable'
 #command = 'http://131.243.41.118:9090/control_disable'
 
-#command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
+command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 #command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}'
 
 #~~~~~~~~~~~
@@ -57,7 +57,7 @@ t0 = time.time()
 ##### batt only
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
-command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
+#command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf

@@ -30,8 +30,8 @@ if dummy_ref == True:
     print('WARNING: dummy_ref ON')
 if constant_phasor == True:
     # set phasor target values here (not relative)
-    cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
-    #cons_Vmag = [0.988,0.988,0.988]
+    #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
+    cons_Vmag = [0.98,0.98,0.98]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     cons_Vang = [-2,-122,118] # [INPUT HERE]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
