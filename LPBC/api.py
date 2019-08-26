@@ -55,7 +55,7 @@ t0 = time.time()
 # INVERTER
 
 ##### batt only
-command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
+#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv

@@ -720,12 +720,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
                 path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
+                cmd_datetime = []
                 
                 # create df
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
+                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))_)
+                df['cmd_datetime(PST)'] = cmd_datetime
                 #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd [kW]'] = self.Pcmd_store
                 df['Qcmd [kVAR]'] = self.Qcmd_store
@@ -748,12 +750,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
                 path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
+                cmd_datetime = []
                 
                 # create df
                 df = pd.DataFrame()         
                 df['cmd_epoch'] = self.cmd_epoch
                 for i in df.cmd_epoch:
-                    df['cmd_datetime(PST)'] = pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))
+                    cmd_datetime.append(pytz.utc.localize(dt.datetime.fromtimestamp(i)).astimezone(pytz.timezone('US/Pacific'))_)
+                df['cmd_datetime(PST)'] = cmd_datetime
                 #df['phase_shift'] = self.test_phase_shift
                 df['Pcmd [kW]'] = self.Pcmd_store
                 df['Qcmd [kVAR]'] = self.Qcmd_store
