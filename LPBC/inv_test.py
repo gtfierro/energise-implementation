@@ -427,7 +427,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #initialize parallel API command:
         session = FuturesSession()
         urls = []
-        commandReceipt = np.zeros(nphases)
+        commandReceipt = np.zeros(nphases).tolist()
         if self.mode == 1: #1: PV as disturbance
             print('http start')
             print('Q',Qcmd_VA,' P',Pcmd_VA)
