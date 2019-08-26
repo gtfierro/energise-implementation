@@ -431,7 +431,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.mode == 1: #1: PV as disturbance
             print('http start')
             print('Q',Qcmd_VA,' P',Pcmd_VA)
-            P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
+            P_PV = Pact*1000 - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA)) #in mode 1 the battery is controlled directly
@@ -462,7 +462,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
                     '''
-            P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
+            P_PV = Pact*1000 - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA - P_PV[i])) #in mode 2 the battery and PV are controlled jointly
