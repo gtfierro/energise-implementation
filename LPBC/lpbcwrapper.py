@@ -19,13 +19,21 @@ from PIcontroller import *
 from LQRcontroller import *
 #from APC import *
 
-#HHERE postive P charges the battery
-#but positive power factor injects Q
 
 #HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
+#address this with internal feedback for Q command (interal PI controller), based on what was actually sent out?
 
 #HHERE the battery P commands have weird step size issues
 #a solution would be turnign down the scaling offsetting the measurements by a set ammount that is pre-designed to meet the phasor target
+
+#HHERE check measurements and commands align with below
+'''
+Flexlab comands and measurements:
+PMU measures positive INTO the battery for both P and Q (inverter looks like an inductor for positive Q measurent)
+Battery P commands are positive into the battery
+Inverter Pmax limiting is ambigious to direction
+Inverter power factor commands are for Q only, defined positive for reactive power into the network, or OUT of the battery (this is the oppposite of how the PMU measures it)
+'''
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
@@ -351,6 +359,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (Pact_kVA,Qact_kVA)
 
 
+    def checkSaturationWoImeas(self, nphases, Vcomp, VPcmd_kVA, Qcmd_kVA,):
+        # compare self.VcompPrev w Vcomp and if it keeps missing in the same direction declare that its saturated
+        #could be confused by Q offset
+        pass
+        return
+
 
     def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA,):
         Pcmd = Pcmd_kVA * 1000
@@ -595,7 +609,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             pass
             #HHERE commented out for debugging
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
-        print('phasor_target : ' + str(phasor_target)) #HERE debugging
+        # print('phasor_target : ' + str(phasor_target)) #HERE debugging
 
         if phasor_target is None and self.VangTarg == 'initialize':
             print("Iteration", self.iteration_counter, ": No target received by SPBC")
@@ -669,9 +683,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(self.commandReceipt)
             elif self.actType == 'modbus':
                 pass
-                #HHERE commented this out for debugging on hardware
-                # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                # print(result)
+                result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                print(result)
             else:
                 error('actType error')
 
