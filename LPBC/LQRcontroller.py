@@ -123,15 +123,11 @@ class LQRcontroller:
         '''
         if np.isnan(Icomp):
             Vmag_relative = Vmag - VmagRef
-            print('self.PcommandPrev : ' + str(self.PcommandPrev))
-            print('self.QcommandPrev : ' + str(self.QcommandPrev))
-            print('Vmag_relative : ' + str(Vmag_relative))
-            print('Vang : ' + str(Vang))
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             #HERE Vmag_relative cant be 0 bc then I est will be inf
             # Icomp_est = np.ones(self.nphases) #just for debugging when netowrk is powered down
             Icomp = np.asmatrix(Icomp_est)
-            print('Icompest : ' + str(Icomp))
+            # print('Icompest : ' + str(Icomp))
         else:
             Icomp = np.asmatrix(Icomp)
         Vcomp = np.asmatrix(Vmag*np.cos(Vang) + Vmag*np.sin(Vang)*1j)
@@ -212,18 +208,18 @@ class LQRcontroller:
         self.QcommandPrev = Qlpbc.copy()
 
         #sanity check for debugging
-        print('Zskest : ' + str(self.Zskest))
-        print('A : ' + str(self.A))
-        print('B : ' + str(self.B))
-        print('Babbrev : ' + str(Babbrev))
-        print('uref : ' + str(uref))
-        print('state' + str(self.state))
-        print('u : ' + str(self.u))
-        print('d : ' + str(self.d))
-        print('IcompPrev' + str(self.IcompPrev))
-        print('VcompPrev' + str(self.VcompPrev))
-        print('K : ' + str(self.K))
-        print('PcommandPrev : ' + str(self.PcommandPrev))
-        print('QcommandPrev : ' + str(self.QcommandPrev))
+        # print('Zskest : ' + str(self.Zskest))
+        # print('A : ' + str(self.A))
+        # print('B : ' + str(self.B))
+        # print('Babbrev : ' + str(Babbrev))
+        # print('uref : ' + str(uref))
+        # print('state' + str(self.state))
+        # print('u : ' + str(self.u))
+        # print('d : ' + str(self.d))
+        # print('IcompPrev' + str(self.IcompPrev))
+        # print('VcompPrev' + str(self.VcompPrev))
+        # print('K : ' + str(self.K))
+        # print('PcommandPrev : ' + str(self.PcommandPrev))
+        # print('QcommandPrev : ' + str(self.QcommandPrev))
 
         return (Plpbc,Qlpbc)

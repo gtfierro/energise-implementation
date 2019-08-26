@@ -303,7 +303,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if flag[phase] == 0:
                     break
             if flag[phase] == 1:
-                print("Phase", phase, ", Iteration ", self.iteration_counter, ": No timestamp found")
+                print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
         return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
@@ -602,21 +602,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         self.iteration_counter += 1
-        print(self.iteration_counter)
+        print('iteration counter bus ' + str(self.busId) ' : ' + str(self.iteration_counter)
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
             pass
             #HHERE commented out for debugging
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
-        # print('phasor_target : ' + str(phasor_target)) #HERE debugging
 
         if phasor_target is None and self.VangTarg == 'initialize':
-            print("Iteration", self.iteration_counter, ": No target received by SPBC")
+            print('No target received by SPBC bus ' + str(self.busId))
             return #don't need to return a status, when there isnt one to report
         else:
             if phasor_target is None:
-                print("Iteration", self.iteration_counter, ": No target received by SPBC: Using last received target")
+                print('No target received by SPBC: Using last received target ' + str(self.busId))
             else:
                 #get targets and bases from phasor_target, sent by the SPBC
                 #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
@@ -666,8 +665,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-                print('Pcmd : ' + str(self.Pcmd_pu))
-                print('Qcmd : ' + str(self.Qcmd_pu))
+            print('Pcmd bus ' + str(self.busId) ' : ' + str(self.Pcmd_pu))
+            print('Qcmd bus ' + str(self.busId) ' : ' + str(self.Qcmd_pu))
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are postive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -675,22 +674,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
-                    print(self.commandReceipt)
+                    print('inverter command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
                 else:
                     disp('couldnt send inverter commands because no current measurement available')
             elif self.actType == 'load':
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                print(self.commandReceipt)
+                print('load command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
             elif self.actType == 'modbus':
-                pass
                 result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                print(result)
+                print('Opal command receipt bus ' + str(self.busId) ' : ' + str(result))
             else:
                 error('actType error')
 
-
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print('STATUS',status)
+            print('Status bus' + str(self.busId) ' : ' + str(status))
+            print('phasor_target bus ' + str(self.busId) ' : ' + str(phasor_target))
+            print('Vmag_pu bus ' + str(self.busId) ' : ' + str(self.Vmag_pu))
+            print('Vang bus ' + str(self.busId) ': ' : ' + str(self.Vang))
             return status
 
 
