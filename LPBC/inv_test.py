@@ -645,7 +645,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.test == 3.1:
             
             if self.iteration_counter < 25:
-                pcmd = 200
+                pcmd = 400
                 qcmd = self.Qcmd_kVA[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
@@ -685,7 +685,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 3.2:
             if self.iteration_counter < 25:
-                pcmd = 200
+                pcmd = 400
                 qcmd = self.Qcmd_kVA_t2[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
