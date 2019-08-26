@@ -432,20 +432,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
-                self.batt_cmd[i] = int(round(Pcmd_VA[i])) #in mode 1 the battery is controlled directly
+                self.batt_cmd[i] = int(round(Pcmd_VA)) #in mode 1 the battery is controlled directly
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA) * self.batt_max)
-                if ((self.batt_cmd[i] + P_PV)**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
+                if ((self.batt_cmd[i] + P_PV[i])**2 + Qcmd_VA**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
-                pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0)*abs(self.batt_cmd[i] + P_PV[i])) / \
-                          (np.sqrt(((self.batt_cmd[i] + P_PV)**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
+                pf_ctrl = ((np.sign(Qcmd_VA) * -1.0)*abs(self.batt_cmd[i] + P_PV[i])) / \
+                          (np.sqrt(((self.batt_cmd[i] + P_PV[i])**2) + (Qcmd_VA**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
-                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},inv_id={inv}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
                 print('http append')
         if self.mode == 2: #mode 2: PV calculated
+            '''
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
             for i, inv in zip(range(nphases), act_idxs):
@@ -458,23 +459,37 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
+                    '''
+            P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
+            self.P_PV_store.append(P_PV)
+            for i, inv in zip(range(nphases), act_idxs):
+                self.batt_cmd[i] = int(round(Pcmd_VA - P_PV[i])) #in mode 2 the battery and PV are controlled jointly
+                if abs(self.batt_cmd[i]) > self.batt_max:
+                    self.batt_cmd[i] = int(np.sign(Pcmd_VA) * self.batt_max)
+                if (self.batt_cmd[i]**2 + Qcmd_VA**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
+                    Qcmd_VA = np.sign(Qcmd_VA) * np.sqrt((self.inv_s_max)**2 - self.batt_cmd[i]**2)
+                pf_ctrl = ((np.sign(Qcmd_VA) * -1.0)*abs(self.batt_cmd[i])) / \
+                          (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA**2))) #self.batt_cmd is ~ the full P flowing through the inverter
+                if self.test == 1 or self.test == 2:
+                    pf_ctrl = 1
+                    
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
-                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},inv_id={inv}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 3: #mode 3: PV only
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
                 Inv_Pperc_max = 97
                 #in mode 3 p_ctrl is used instead of battery control, to control PV
-                if Pcmd_VA[i] < 0:
-                    Pcmd_VA[i] = 0
-                self.invPperc_ctrl[i] = (Pcmd_VA[i] / self.inv_s_max) * 100 #invPperc_ctrl cannot be negative
+                if Pcmd_VA < 0:
+                    Pcmd_VA = 0
+                self.invPperc_ctrl[i] = (Pcmd_VA / self.inv_s_max) * 100 #invPperc_ctrl cannot be negative
                 if self.invPperc_ctrl[i] > Inv_Pperc_max:
                     self.invPperc_ctrl[i] = Inv_Pperc_max
                     pf_ctrl = 1
                     # pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0) * Inv_Pperc_max
                 else:
-                    pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0) *abs(Pcmd_VA[i])) / \
-                              (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
+                    pf_ctrl = ((np.sign(Qcmd_VA) * -1.0) *abs(Pcmd_VA)) / \
+                              (np.sqrt((Pcmd_VA ** 2) + (Qcmd_VA ** 2)))
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
