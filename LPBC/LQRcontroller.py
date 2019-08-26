@@ -31,6 +31,7 @@ class LQRcontroller:
         self.lam = lam # 0 < lam < 1, smaller lam changes Zskest faster
 
         self.use_Zsk_est = use_Zsk_est
+        self.Zskestinit = Zskinit
         self.Zskest = Zskinit
         if Gt == None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
