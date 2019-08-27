@@ -528,14 +528,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, local_S_ratio ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
+        print('localSratio : ' + str(localSratio))
+        print('ORT_max_VA : ' + str(ORT_max_VA))
         for phase in range(nphases):
-            if abs(Pcmd_VA[phase]) > ORT_max_VA/local_S_ratio:
-                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/local_S_ratio
-            if abs(Qcmd_VA[phase]) > ORT_max_VA/local_S_ratio:
-                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/local_S_ratio
+            print('Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+            if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
+                print('here')
+                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
+            if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
+                print('hhere')
+                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         IP = '131.243.41.14'
         PORT = 504
         id = 2
