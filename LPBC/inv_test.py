@@ -497,7 +497,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                               (np.sqrt((Pcmd_VA ** 2) + (Qcmd_VA ** 2)))
                 if self.test == 1 or self.test == 2:
                     pf_ctrl = 1
-                if pf_ctrl < 0.01:
+                if np.abs(pf_ctrl) < 0.01:
                     pf_ctrl = 1
                 #urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},"
                 #              f"pf_ctrl={pf_ctrl}")
