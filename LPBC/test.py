@@ -2,6 +2,19 @@
 import pandas as pd
 import numpy as np
 
+import sys
+
+nphases = 3
+Vang = np.asarray([np.NaN]*nphases)
+Vang[0] = 1
+print(Vang)
+if any(np.isnan(Vang)):
+    print('here')
+print('hhere')
+
+sys.exit()
+
+
 testcase = '13bal'
 busId = '611'
 
