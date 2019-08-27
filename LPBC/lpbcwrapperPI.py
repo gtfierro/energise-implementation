@@ -665,6 +665,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.phasor_error_ang = self.VangTarg - self.Vang
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
             self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
+            print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
+            print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
 
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
@@ -718,8 +720,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 error('actType error')
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
-            print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
             return status
 
 
@@ -919,6 +919,8 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 500/3.3
 
+rate = 1
+
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
     #kVbase = np.NaN #should get this from the SPBC so lpbcwrapper doesnt have to run feeder (which requires networkx)
@@ -933,20 +935,20 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['name'] = key
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
-        cfg['rate'] = 5
+        cfg['rate'] = rate
         cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key], 3 + pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
         localSratio = inverterScaling
     elif actType == 'load':
-        cfg['rate'] = 5
+        cfg['rate'] = rate
         cfg['local_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]])
         currentMeasExists = False
         localSratio = loadScaling
     elif actType == 'modbus':
-        cfg['rate'] = 5
+        cfg['rate'] = rate
         cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
         currentMeasExists = False
