@@ -56,8 +56,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        # self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
-        self.controllerType = 'PI'
+        self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
+        # self.controllerType = 'PI'
 
         if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
@@ -908,7 +908,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/3.3
 loadScaling = 350
-CILscaling = 1
+CILscaling = 500/3.3
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
