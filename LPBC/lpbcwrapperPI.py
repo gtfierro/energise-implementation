@@ -410,7 +410,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
-        self.Psat = np.append(self.Psat, (sat_arrayP), axis=1)
+        self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
             if phase in np.where(~self.Psat.any(axis=1))[0]: #if each row doesnt have a 1 in it, then send ICDI for that phase
@@ -424,7 +424,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 self.ICDI_sigP[phase] = False
                 self.Pmax_pu[phase] = np.NaN
-        self.Qsat = np.append(self.Qsat, (sat_arrayQ), axis=1)
+        self.Qsat = np.append(self.Qsat, np.expand_dims(sat_arrayQ), axis=1)
         self.Qsat = self.Qsat[:, 1:]
         for phase in range(nphases):
             if phase in np.where(~self.Qsat.any(axis=1))[0]:
