@@ -50,7 +50,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA = [0, .1, .2, .3, .4]
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
-        self.test = 3.1 # see picture on white board (1, 2, 3.1, 3.2)
+        self.test = 2 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
@@ -589,12 +589,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.iteration_counter < 5:
                 pcmd = self.Pcmd_kVA_t2[0]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)                
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -604,12 +604,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 4 < self.iteration_counter < 10:
                 pcmd = self.Pcmd_kVA_t2[1]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)   
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -619,12 +619,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 9 < self.iteration_counter < 15:
                 pcmd = self.Pcmd_kVA_t2[2]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)   
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -634,12 +634,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif 14 < self.iteration_counter < 20:
                 pcmd = self.Pcmd_kVA_t2[3]
                 qcmd = 0
+                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)   
                 t = time.time()
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
                 print('command receipt:',commandReceipt)
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
                 angle = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
@@ -650,7 +650,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.test == 3.1:
             
             if self.iteration_counter < 25:
-                pcmd = .4
+                pcmd = -.4
                 qcmd = self.Qcmd_kVA[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
@@ -994,7 +994,7 @@ for key in lpbcidx:
     cfg['name'] = key
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
-        cfg['rate'] = 20 # JASPER CHANGE RATE HERE
+        cfg['rate'] = 10 # JASPER CHANGE RATE HERE
         #cfg['local_channels'] = np.concatenate([pmu123Channels[pmu123_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]]])
         cfg['local_channels'] = np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]])
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
