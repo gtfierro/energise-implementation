@@ -56,16 +56,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        self.controllerType = 'PI' #set controller to 'PI' or 'LQR'
+        self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
         # self.controllerType = 'PI'
 
         if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
-            kp_ang=[0.01]
-            ki_ang=[0.3]
-            kp_mag=[0.01]
-            ki_mag=[0.3]
+            kp_ang = np.ones(nphases)*0.01
+            ki_ang = np.ones(nphases)*0.3
+            kp_mag = np.ones(nphases)*0.01
+            ki_mag = np.ones(nphases)*0.3
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -685,6 +685,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
                 #run control loop
+                print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+                print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+                print('self.sat_arrayP ' + str(self.sat_arrayP))
+                print('self.sat_arrayQ ' + str(self.sat_arrayQ))                
                 if self.controllerType == 'PI':
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
                 elif self.controllerType == 'LQR':
