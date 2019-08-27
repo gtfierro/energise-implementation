@@ -795,6 +795,7 @@ acts_to_phase_dict = dict()
 actType_dict = dict()
 if testcase == '37':
     # subkVAbase = 2500
+    pass
 elif testcase == '13unb':
     # subkVAbase = 5000
     lpbcidx = ['671','680']
