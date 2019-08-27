@@ -571,6 +571,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
 
         mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
+        print('mtx : ' + str(mtx))
         mtx_register = np.arange(1, 8).tolist()
         try:
             # write switch positions for config
