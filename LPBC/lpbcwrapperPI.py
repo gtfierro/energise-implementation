@@ -63,10 +63,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang=[0.01]
-            ki_ang=[0.3]
-            kp_mag=[0.01]
-            ki_mag=[0.3]
+            kp_ang = np.ones(nphases)*0.01
+            ki_ang = np.ones(nphases)*0.3
+            kp_mag = np.ones(nphases)*0.01
+            ki_mag = np.ones(nphases)*0.3
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -198,7 +198,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
 
-    def targetExtraction(self,phasor_target): 
+    def targetExtraction(self,phasor_target):
         #this implies A,B,C order to measurements from SPBC
         Vmag_targ_dict = dict()
         Vang_targ_dict = dict()
