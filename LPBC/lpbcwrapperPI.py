@@ -198,7 +198,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
 
-    def targetExtraction(self,phasor_target): #HERE this hasnt been validated
+    def targetExtraction(self,phasor_target): 
         #this implies A,B,C order to measurements from SPBC
         Vmag_targ_dict = dict()
         Vang_targ_dict = dict()
