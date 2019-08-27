@@ -684,20 +684,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #run control loop
             if self.controllerType == 'PI':
-                print('here')
                 print(self.nphases)
                 print(self.phasor_error_mag_pu)
                 print(self.phasor_error_ang)
                 print(self.sat_arrayP)
                 print(self.sat_arrayQ)
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-                print('hhere')
             elif self.controllerType == 'LQR':
                 if self.currentMeasExists:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-            print('hhhere')
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
@@ -720,13 +717,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
-            print('hhhhere')
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            # print('Status bus' + str(self.busId) + ' : ' + str(status))
-            print('phasor_target bus ' + str(self.busId) + ' : ' + str(phasor_target))
             print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
             print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
-            print('hhhhhere')
             return status
 
 
