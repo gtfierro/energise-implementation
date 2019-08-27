@@ -676,8 +676,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-            print('Pcmd bus ' + str(self.busId) ' : ' + str(self.Pcmd_pu))
-            print('Qcmd bus ' + str(self.busId) ' : ' + str(self.Qcmd_pu))
+            print('Pcmd bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
+            print('Qcmd bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -685,23 +685,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
-                    print('inverter command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
+                    print('inverter command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
                 else:
                     disp('couldnt send inverter commands because no current measurement available')
             elif self.actType == 'load':
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                print('load command receipt bus ' + str(self.busId) ' : ' + str(self.commandReceipt))
+                print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
             elif self.actType == 'modbus':
                 result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                print('Opal command receipt bus ' + str(self.busId) ' : ' + str(result))
+                print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
 
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print('Status bus' + str(self.busId) ' : ' + str(status))
-            print('phasor_target bus ' + str(self.busId) ' : ' + str(phasor_target))
-            print('Vmag_pu bus ' + str(self.busId) ' : ' + str(self.Vmag_pu))
-            print('Vang bus ' + str(self.busId) ': ' : ' + str(self.Vang))
+            print('Status bus' + str(self.busId) + ' : ' + str(status))
+            print('phasor_target bus ' + str(self.busId) + ' : ' + str(phasor_target))
+            print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
+            print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
             return status
 
 
