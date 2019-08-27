@@ -530,15 +530,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
-        print('localSratio : ' + str(localSratio))
-        print('ORT_max_VA : ' + str(ORT_max_VA))
         for phase in range(nphases):
-            print('Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+            print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+            print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+            print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
             if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('here')
+                print('Pcmd over Opal limit')
                 Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
             if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('hhere')
+                print('Qcmd over Opal limit')
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         IP = '131.243.41.14'
         PORT = 504
@@ -648,10 +648,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
-                print('self.localSratio : ' + str(self.localSratio))
-                print('self.network_kVAbase : ' + str(self.network_kVAbase))
                 self.localkVAbase = self.network_kVAbase/self.localSratio
                 self.localIbase = self.localkVAbase/self.localkVbase
+                print('self.localSratio : ' + str(self.localSratio))
+                print('self.localkVAbase : ' + str(self.localkVAbase))
+                print('self.localkVbase : ' + str(self.localkVbase))
 
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
