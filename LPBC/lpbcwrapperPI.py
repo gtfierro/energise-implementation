@@ -663,7 +663,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
                 #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
                 (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-                any(self.Vang == np.NaN): #HHERE
+                if any(self.Vang == np.NaN): 
                     print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
                     return
                 self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
