@@ -685,6 +685,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #run control loop
             if self.controllerType == 'PI':
                 print('here')
+                print(self.nphases)
+                print(self.phasor_error_mag_pu)
+                print(self.phasor_error_ang)
+                print(self.sat_arrayP)
+                print(self.sat_arrayQ)
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
                 print('hhere')
             elif self.controllerType == 'LQR':
