@@ -7,6 +7,8 @@ import sys
 nphases = 3
 Vang = np.asarray([np.NaN]*nphases)
 Vang[0] = 1
+Vang[1] = 1
+Vang[2] = 1
 print(Vang)
 if any(np.isnan(Vang)):
     print('here')

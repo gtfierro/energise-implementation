@@ -57,7 +57,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #HERE put in optional accumulator term for PI controller
 
         self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
-        # self.controllerType = 'PI'
 
         if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
@@ -261,6 +260,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
         ref = [0] * nphases
         flag = [1] * nphases #used to check if a phasor match was found
+        Vmeas_all_phases = 1
         # Extract latest nPhasorReadings readings from local and ref uPMUs, and put local in phase-order (ref is assumed to be in phase-order)
         for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
             if len(local_phasors[plug]) > self.nPhasorReadings:
@@ -318,7 +318,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     break
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
-        return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) #returns the self. variables bc in case a match isnt found, they're already initialized
+                Vmeas_all_phases = 0
+        return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
 
@@ -662,9 +663,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # calculate relative voltage phasor
                 #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
                 #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-                (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                 if any(np.isnan(self.Vang)):
                     print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
+                    return
+                if Vmeas_all_phases == 0:
+                    print('Didnt receive a measurement for each phase, not acting')
                     return
                 self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
                 self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
@@ -673,6 +677,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
                 self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
                 print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
+                print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
+                print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
                 print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
 
                 #get current measurements, determine saturation if current measurements exist
