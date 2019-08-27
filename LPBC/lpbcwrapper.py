@@ -44,6 +44,8 @@ load_cmd is still postive into the network (for just P)
 modbus is positive out of the network (switched internally)
 '''
 
+#HHERE put in t
+
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
@@ -613,7 +615,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         self.iteration_counter += 1
-        print('iteration counter bus ' + str(self.busId) ' : ' + str(self.iteration_counter))
+        print('iteration counter bus ' + str(self.busId) + ' : ' + str(self.iteration_counter))
 
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
