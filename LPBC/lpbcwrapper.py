@@ -682,8 +682,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-            print('Pcmd bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
-            print('Qcmd bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
+            print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
