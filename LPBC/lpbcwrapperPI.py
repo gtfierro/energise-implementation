@@ -17,8 +17,6 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 from PIcontroller import *
 from LQRcontroller import *
-#from APC import *
-
 
 #HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
 #address this with internal feedback for Q command (interal PI controller), based on what was actually sent out?
@@ -59,10 +57,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #HERE put in optional accumulator term for PI controller
 
         self.controllerType = 'PI' #set controller to 'PI' or 'LQR'
+        # self.controllerType = 'PI'
 
         if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
+            print('made a PI controller')
             kp_ang=[0.01]
             ki_ang=[0.3]
             kp_mag=[0.01]
@@ -84,6 +84,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             use_Zsk_est = 0
             self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
+            print('error making controller')
             error('error in controller type')
 
         self.ametek_phase_shift = 0 #in degrees
@@ -528,14 +529,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, local_S_ratio ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
-            if abs(Pcmd_VA[phase]) > ORT_max_VA/local_S_ratio:
-                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/local_S_ratio
-            if abs(Qcmd_VA[phase]) > ORT_max_VA/local_S_ratio:
-                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/local_S_ratio
+            print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+            print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+            print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
+            if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
+                print('Pcmd over Opal limit')
+                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
+            if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
+                print('Qcmd over Opal limit')
+                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         IP = '131.243.41.14'
         PORT = 504
         id = 2
@@ -571,6 +577,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
 
         mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
+        print('mtx : ' + str(mtx))
         mtx_register = np.arange(1, 8).tolist()
         try:
             # write switch positions for config
@@ -645,6 +652,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.localkVbase = self.kVbase/self.localVratio
                 self.localkVAbase = self.network_kVAbase/self.localSratio
                 self.localIbase = self.localkVAbase/self.localkVbase
+                print('self.localSratio : ' + str(self.localSratio))
+                print('self.localkVAbase : ' + str(self.localkVAbase))
+                print('self.localkVbase : ' + str(self.localkVbase))
 
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
@@ -681,8 +691,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
                 else:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-            print('Pcmd bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
-            print('Qcmd bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
+            print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -789,9 +801,10 @@ testcase = 'manual'
 acts_to_phase_dict = dict()
 actType_dict = dict()
 if testcase == '37':
-    subkVAbase = 2500
+    # subkVAbase = 2500
+    pass
 elif testcase == '13unb':
-    subkVAbase = 5000
+    # subkVAbase = 5000
     lpbcidx = ['671','680']
     key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #phase on the network (in simulation)
@@ -800,7 +813,7 @@ elif testcase == '13unb':
     acts_to_phase_dict[key] = np.asarray(['','','C']) #the nonzero entries correspond to the actuator indices
     actType_dict[key] = 'load'
 elif testcase == '13bal':
-    subkVAbase = 5000
+    # subkVAbase = 5000
     lpbcidx = ['675'] #may have to set these manually
     for key in lpbcidx: #makes them all three phase inverters
         acts_to_phase_dict[key] = np.asarray(['A','B','C']) #3 phase default #['A','',''] or ['','C',''] or ['A','B','C','A','B','C'] or ['A','','','A','',''] are also examples, ['A','C','B'] and ['B','B','B'] are not allowed (yet)
@@ -903,7 +916,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/3.3
 loadScaling = 350
-CILscaling = 1
+CILscaling = 500/3.3
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
