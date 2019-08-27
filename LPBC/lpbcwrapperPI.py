@@ -395,13 +395,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             error('actType error')
         "Checking for P saturation (anti-windup control)"
         # initialize saturation counter for each phase
-        sat_arrayP = np.ones((nphases,1)) #
+        sat_arrayP = np.ones(nphases) #
         # stop integrator for saturated phases
         for i in indexP:
             sat_arrayP[i] = 0 #0 where saturated
         "Checking for Q saturation (anti-windup control)"
         # initialize saturation counter for each phase
-        sat_arrayQ = np.ones((nphases,1))
+        sat_arrayQ = np.ones(nphases)
         # stop integrator for saturated phases
         for i in indexQ:
             sat_arrayQ[i] = 0
