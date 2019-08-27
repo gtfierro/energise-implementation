@@ -639,6 +639,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
                 #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
                 (self.VmagTarg_relative_pu, self.VangTarg, self.kVbase, self.network_kVAbase, self.status_phases) = self.targetExtraction(phasor_target)
+                print('VmagTarg_relative_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_relative_pu))
+                print('VangTarg bus ' + str(self.busId) + ' : ' + str(self.VangTarg))
+                print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
+                print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
+                print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
                 self.kVbase  = np.asarray(self.kVbase)
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
