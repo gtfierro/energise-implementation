@@ -698,7 +698,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 error('actType error')
 
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print('Status bus' + str(self.busId) + ' : ' + str(status))
+            # print('Status bus' + str(self.busId) + ' : ' + str(status))
             print('phasor_target bus ' + str(self.busId) + ' : ' + str(phasor_target))
             print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
             print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
