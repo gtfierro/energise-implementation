@@ -644,6 +644,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
+                print('self.localSratio : ' + str(self.localSratio))
+                print('self.network_kVAbase : ' + str(self.network_kVAbase))
                 self.localkVAbase = self.network_kVAbase/self.localSratio
                 self.localIbase = self.localkVAbase/self.localkVbase
 
@@ -792,9 +794,9 @@ testcase = 'manual'
 acts_to_phase_dict = dict()
 actType_dict = dict()
 if testcase == '37':
-    subkVAbase = 2500
+    # subkVAbase = 2500
 elif testcase == '13unb':
-    subkVAbase = 5000
+    # subkVAbase = 5000
     lpbcidx = ['671','680']
     key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #phase on the network (in simulation)
@@ -803,7 +805,7 @@ elif testcase == '13unb':
     acts_to_phase_dict[key] = np.asarray(['','','C']) #the nonzero entries correspond to the actuator indices
     actType_dict[key] = 'load'
 elif testcase == '13bal':
-    subkVAbase = 5000
+    # subkVAbase = 5000
     lpbcidx = ['675'] #may have to set these manually
     for key in lpbcidx: #makes them all three phase inverters
         acts_to_phase_dict[key] = np.asarray(['A','B','C']) #3 phase default #['A','',''] or ['','C',''] or ['A','B','C','A','B','C'] or ['A','','','A','',''] are also examples, ['A','C','B'] and ['B','B','B'] are not allowed (yet)
