@@ -84,7 +84,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             use_Zsk_est = 0
             self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
-            print('error making controller')
             error('error in controller type')
 
         self.ametek_phase_shift = 0 #in degrees
@@ -667,6 +666,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
             self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
 
+            print('here')
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
                 (self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx) #HERE in Flexlab this positive flowing out of the Network
@@ -678,11 +678,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Qact_pu = self.Qact / self.localkVAbase
             else:
                 self.Icomp_pu = np.NaN
-
+            print('hhere')
             #HERE sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, -self.Pact, -self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
-
+            print('hhhere')
             #run control loop
             if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
