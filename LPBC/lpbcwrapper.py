@@ -17,8 +17,6 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 from PIcontroller import *
 from LQRcontroller import *
-#from APC import *
-
 
 #HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
 #address this with internal feedback for Q command (interal PI controller), based on what was actually sent out?
@@ -58,7 +56,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
+        # self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
+        self.controllerType = 'PI'
 
         if self.controllerType == 'PI':
             # controller gains must be list, even if single phase. can use different gains for each phase
