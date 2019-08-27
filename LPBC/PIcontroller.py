@@ -17,6 +17,9 @@ class PIcontroller():
     def PIiteration(self, nphases, phasor_error_mag, phasor_error_ang, sat_arrayP, sat_arrayQ):
         for phase in range(nphases):
             print('phase ' + str(phase))
+            print('self.Ki_ang[phase] ' + str(self.Ki_ang[phase]))
+            print('phasor_error_ang[phase] ' + str(phasor_error_ang[phase]))
+            print('sat_arrayP[phase] ' + str(sat_arrayP[phase]))
             currentIntError_ang = (self.Ki_ang[phase] * phasor_error_ang[phase]) * sat_arrayP[phase]
             print('currentIntError_ang ' + str(currentIntError_ang))
             self.intError_ang[phase] += currentIntError_ang
