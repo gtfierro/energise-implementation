@@ -192,6 +192,8 @@ class LQRcontroller:
 
         #Feedback Control input for next round
         self.u = (self.K*self.state.T).T + uref - self.d
+        print('self.state.T : ' + str(self.state.T))
+        print('self.K*self.state.T : ' + str(self.K*self.state.T))
 
         #save measurements for next round
         self.IcompPrev = Icomp.copy()
@@ -208,18 +210,18 @@ class LQRcontroller:
         self.QcommandPrev = Qlpbc.copy()
 
         #sanity check for debugging
-        # print('Zskest : ' + str(self.Zskest))
-        # print('A : ' + str(self.A))
-        # print('B : ' + str(self.B))
-        # print('Babbrev : ' + str(Babbrev))
-        # print('uref : ' + str(uref))
-        # print('state' + str(self.state))
-        # print('u : ' + str(self.u))
-        # print('d : ' + str(self.d))
-        # print('IcompPrev' + str(self.IcompPrev))
-        # print('VcompPrev' + str(self.VcompPrev))
-        # print('K : ' + str(self.K))
-        # print('PcommandPrev : ' + str(self.PcommandPrev))
-        # print('QcommandPrev : ' + str(self.QcommandPrev))
+        print('Zskest : ' + str(self.Zskest))
+        print('A : ' + str(self.A))
+        print('B : ' + str(self.B))
+        print('Babbrev : ' + str(Babbrev))
+        print('uref : ' + str(uref))
+        print('state' + str(self.state))
+        print('u : ' + str(self.u))
+        print('d : ' + str(self.d))
+        print('IcompPrev' + str(self.IcompPrev))
+        print('VcompPrev' + str(self.VcompPrev))
+        print('K : ' + str(self.K))
+        print('PcommandPrev : ' + str(self.PcommandPrev))
+        print('QcommandPrev : ' + str(self.QcommandPrev))
 
         return (Plpbc,Qlpbc)

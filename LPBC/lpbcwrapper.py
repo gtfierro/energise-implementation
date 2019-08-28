@@ -75,10 +75,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zskinit = np.asmatrix(Zsk_df.values)
-            Zskinit = np.asmatrix(np.eye(3) + np.eye(3)*1j) #HHERE 
+            Zskinit = np.asmatrix(np.eye(3) + np.eye(3)*1j)*.1 #HHERE
             #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
-            Rcost = np.eye(nphases*2)*10e-1 #controll costs (P and Q)
+            Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
             use_Zsk_est = 1
