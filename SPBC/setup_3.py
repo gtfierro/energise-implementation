@@ -14,7 +14,7 @@ import string
 import networkx as nx
 from copy import deepcopy
 import pdb
-
+import matplotlib.pyplot as plt
 
 # In[24]:
 
@@ -1058,6 +1058,7 @@ def network_mapper(modeldata,busdict,linedict,transdict,switchdict):
     propogatetrans(network,slacknode)
     
     return network
+
 
 
 # In[41]:
