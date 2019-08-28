@@ -117,7 +117,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     costfn_on_off = 0 # 0=off, 1=on
     
     # set tuning parameters: 0 = off. lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
-    lam1 = 1000
+    lam1 = 1
     lam2 = 0
     lam3 = 0
     

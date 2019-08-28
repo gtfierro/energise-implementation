@@ -151,7 +151,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(60, self.compute_and_announce))
+        schedule(self.call_periodic(30, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
@@ -255,9 +255,12 @@ class myspbc(pbc.SPBCProcess):
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
-                    
-                pmuts = data[-1]['time']
-                print(pmuts)
+                
+                try:
+                    pmutime = data[-1]['time']
+                    print(f'pmu timestamp {pmutime}')
+                except Exception as e:
+                    print(e)
         
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
