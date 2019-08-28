@@ -429,7 +429,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         urls = []
         commandReceipt = np.zeros(nphases).tolist()
         if self.mode == 1: #1: PV as disturbance
-            print('http start')
             print('Q',Qcmd_VA,' P',Pcmd_VA)
             P_PV = Pact*1000 - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
@@ -447,8 +446,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #              f"pf_ctrl={pf_ctrl}")
                 if np.abs(pf_ctrl) < 0.01:
                     pf_ctrl = 1
+                print(f'pf cmd: {pf_ctrl}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
-                print('http append')
         if self.mode == 2: #mode 2: PV calculated
             '''
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
@@ -531,7 +530,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print('http here')
                 print('command receipt:',commandReceipt)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
