@@ -63,9 +63,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
             kp_ang = np.ones(nphases)*0.01
-            ki_ang = np.ones(nphases)*0.3
+            ki_ang = np.ones(nphases)*0.1
             kp_mag = np.ones(nphases)*0.01
-            ki_mag = np.ones(nphases)*0.3
+            ki_mag = np.ones(nphases)*0.1
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -80,7 +80,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Rcost = np.eye(nphases*2)*10e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
-            use_Zsk_est = 0
+            use_Zsk_est = 1
             self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
