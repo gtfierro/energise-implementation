@@ -192,6 +192,8 @@ class LQRcontroller:
 
         #Feedback Control input for next round
         self.u = (self.K*self.state.T).T + uref - self.d
+        print('self.state.T : ' + str(self.state.T))
+        print('self.K*self.state.T : ' + str(self.K*self.state.T))
 
         #save measurements for next round
         self.IcompPrev = Icomp.copy()
