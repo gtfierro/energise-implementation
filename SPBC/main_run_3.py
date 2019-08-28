@@ -153,7 +153,6 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
                     #normalize to 2pi rad by adjusting to 2Pi / 2pi
                     if (bus.phasevec == np.ones((3,timesteps))).all():
                         #obj = obj + lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
-                        print(lam1)
                         obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
                         #obj += ((cp.abs(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.abs(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.abs(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
             
@@ -218,9 +217,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
     constraints = cvx_set_constraints(myfeeder,1) # Second argument turns actuators on/off
     prob = cp.Problem(objective, constraints)
-    result = prob.solve(verbose=True,eps_rel=1e-1,eps_abs=1e-1)
-    print(result)
-    print(objective)
+    result = prob.solve(verbose=False,eps_rel=1e-1,eps_abs=1e-1)
     
     # In[7]:
     
@@ -352,7 +349,6 @@ def plot_results():
         ph2 = list()
         ph3 = list()
         for key, bus in myfeeder.busdict.items():
-            print(key,bus)
         
             ph1.append(np.abs((np.sqrt(bus.Vmagsq_linopt[0,tsp].value)-bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))))
             ph2.append(np.abs((np.sqrt(bus.Vmagsq_linopt[1,tsp].value)-bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))))

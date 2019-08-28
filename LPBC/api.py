@@ -30,7 +30,7 @@ Batt_ctrl = 0 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 3 # [1,2,3]
 
-inv_perc = 5
+inv_perc = 1
 
 
 if np.abs(pf_ctrl) < 0.85:
@@ -48,7 +48,7 @@ t0 = time.time()
 #command = 'http://131.243.41.118:9090/control_enable'
 #command = 'http://131.243.41.118:9090/control_disable'
 
-command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
+#command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 #command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}'
 
 #~~~~~~~~~~~
@@ -57,7 +57,7 @@ command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 ##### batt only
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
-#command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
+command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf

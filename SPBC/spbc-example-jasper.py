@@ -255,6 +255,9 @@ class myspbc(pbc.SPBCProcess):
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
+                    
+                pmuts = data[-1]['time']
+                print(pmuts)
         
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
