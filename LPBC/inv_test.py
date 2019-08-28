@@ -503,7 +503,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
-        print('http end')
         for i in range(nphases):
             if results[i].status_code == 200:
                 commandReceipt[i] = 'success'
@@ -688,7 +687,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 3.2:
             if self.iteration_counter < 25:
-                pcmd = .4
+                pcmd = -.4
                 qcmd = self.Qcmd_kVA_t2[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
@@ -880,7 +879,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # SET PHASES
     actType_dict[key] = 'inverter' #choose: 'inverters', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
