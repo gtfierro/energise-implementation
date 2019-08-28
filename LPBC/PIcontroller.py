@@ -16,13 +16,13 @@ class PIcontroller():
 
     def PIiteration(self, nphases, phasor_error_mag, phasor_error_ang, sat_arrayP, sat_arrayQ):
         for phase in range(nphases):
-            currentIntError_ang = (self.Ki_ang[phase] * phasor_error_ang[phase]) * sat_arrayP[phase]
+            currentIntError_ang = phasor_error_ang[phase] * sat_arrayP[phase]
             self.intError_ang[phase] += currentIntError_ang
-            self.Pcmd_pu[phase] = (self.Kp_ang[phase] * phasor_error_ang[phase]) + self.intError_ang[phase]
+            self.Pcmd_pu[phase] = (self.Kp_ang[phase] * phasor_error_ang[phase]) + self.Ki_ang[phase] * self.intError_ang[phase]
 
-            currentIntError_mag = (self.Ki_mag[phase] * phasor_error_mag[phase]) * sat_arrayQ[phase]
+            currentIntError_mag = phasor_error_mag[phase] * sat_arrayQ[phase]
             self.intError_mag[phase] += currentIntError_mag
-            self.Qcmd_pu[phase] = (self.Kp_mag[phase] * phasor_error_mag[phase]) + self.intError_mag[phase]
+            self.Qcmd_pu[phase] = (self.Kp_mag[phase] * phasor_error_mag[phase]) + self.Ki_mag[phase] * self.intError_mag[phase]
         print('self.intError_ang : ' + str(self.intError_ang))
         print('self.intError_mag : ' + str(self.intError_mag))
         return self.Pcmd_pu, self.Qcmd_pu  # positive for power injections
