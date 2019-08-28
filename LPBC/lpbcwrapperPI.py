@@ -63,10 +63,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang = np.ones(nphases)*0.01
-            ki_ang = np.ones(nphases)*0.1
-            kp_mag = np.ones(nphases)*0.01
-            ki_mag = np.ones(nphases)*0.1
+            kp_ang = np.ones(nphases)*0.001
+            ki_ang = np.ones(nphases)*0.05
+            kp_mag = np.ones(nphases)*0.001
+            ki_mag = np.ones(nphases)*0.05
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -715,9 +715,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
 
                 #HHERE debugging
-                self.Pcmd_pu[1] = 0
-                self.Pcmd_pu[2] = 0
-                self.Qcmd_pu = np.zeros(nphases)
+                # self.Pcmd_pu[1] = 0
+                # self.Pcmd_pu[2] = 0
+                # self.Qcmd_pu = np.zeros(nphases)
 
                 self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
                 self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
