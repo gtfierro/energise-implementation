@@ -55,7 +55,7 @@ t0 = time.time()
 # INVERTER
 
 ##### batt only
-command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
+#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
@@ -66,7 +66,7 @@ command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 
 if loop == 0:
     r = requests.get(command)
