@@ -50,7 +50,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA = [0, .1, .2, .3, .4]
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
-        self.test = 2 # see picture on white board (1, 2, 3.1, 3.2)
+        self.test = 3.2 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
@@ -754,7 +754,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # set path name according to time of creation#
                 date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
-                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
+                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{str(self.test)[0]}_{str(self.test)[2]}'
                 cmd_datetime = []
                 
                 # create df
