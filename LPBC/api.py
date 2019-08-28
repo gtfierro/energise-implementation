@@ -48,7 +48,7 @@ t0 = time.time()
 #command = 'http://131.243.41.118:9090/control_enable'
 #command = 'http://131.243.41.118:9090/control_disable'
 
-command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
+#command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 #command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}'
 
 #~~~~~~~~~~~

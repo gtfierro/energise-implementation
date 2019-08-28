@@ -24,7 +24,7 @@ P1, P2, P3 = 0, 0, 0
 Q1, Q2, Q3 = 0, 0, 0
 
 # set signs of commands through sign_vec
-#           P,Q      1 is positive, 0 is negative
+#           P, Q      1 is positive, 0 is negative
 sign_vec = [0, 0,
             1, 0,
             0, 0]

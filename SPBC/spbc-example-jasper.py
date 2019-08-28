@@ -151,7 +151,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(60, self.compute_and_announce))
+        schedule(self.call_periodic(20, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
@@ -235,7 +235,10 @@ class myspbc(pbc.SPBCProcess):
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
         
+        # ~~~~~~~~~~~~~~~~~~~~~~ #
         # ~~ REFERENCE PHASOR ~~ #
+        # ~~~~~~~~~~~~~~~~~~~~~~ #
+        
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
         refphasor_init = np.ones((phase_size,2))*np.inf
@@ -255,6 +258,16 @@ class myspbc(pbc.SPBCProcess):
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
+                
+# =============================================================================
+#                 try:
+#                     pmutime = int(data[-1]['time'])
+#                     print(f'pmu timestamp {pmutime}')
+#                     pmu_s = pmutime / 1e9
+#                     print(f'pmu latency: {time.time()-pmu_s}')
+#                 except Exception as e:
+#                     print(e)
+# =============================================================================
         
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)

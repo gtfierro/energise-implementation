@@ -50,7 +50,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qcmd_kVA = [0, .1, .2, .3, .4]
         self.Qcmd_kVA_t2 = [0, -.1, -.2, -.3, -.4]
         self.q_count = 0
-        self.test = 2 # see picture on white board (1, 2, 3.1, 3.2)
+        self.test = 3.1 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
         
         #empty lists for storing and writing to csv
@@ -429,7 +429,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         urls = []
         commandReceipt = np.zeros(nphases).tolist()
         if self.mode == 1: #1: PV as disturbance
-            print('http start')
             print('Q',Qcmd_VA,' P',Pcmd_VA)
             P_PV = Pact*1000 - self.batt_cmd #batt_cmd from last round, still in effect
             self.P_PV_store.append(P_PV)
@@ -447,8 +446,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #              f"pf_ctrl={pf_ctrl}")
                 if np.abs(pf_ctrl) < 0.01:
                     pf_ctrl = 1
+                print(f'pf cmd: {pf_ctrl}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
-                print('http append')
         if self.mode == 2: #mode 2: PV calculated
             '''
             P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
@@ -504,7 +503,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
-        print('http end')
         for i in range(nphases):
             if results[i].status_code == 200:
                 commandReceipt[i] = 'success'
@@ -531,7 +529,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cmd_epoch.append(t)
                 commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, pcmd, qcmd, self.Pact)
                 self.inv_time.append(time.time() - t)
-                print('http here')
                 print('command receipt:',commandReceipt)
                 self.P_act_store.append(self.Pact)
                 self.Q_act_store.append(self.Qact)
@@ -650,7 +647,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.test == 3.1:
             
             if self.iteration_counter < 25:
-                pcmd = -.4
+                pcmd = .4
                 qcmd = self.Qcmd_kVA[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
@@ -690,7 +687,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if self.test == 3.2:
             if self.iteration_counter < 25:
-                pcmd = .4
+                pcmd = -.4
                 qcmd = self.Qcmd_kVA_t2[self.q_count]
                 t = time.time()
                 self.cmd_epoch.append(t)
@@ -754,7 +751,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # set path name according to time of creation#
                 date = pytz.utc.localize(dt.datetime.utcnow()).astimezone(pytz.timezone('US/Pacific'))
                 month, day, hour, minute = date.month, date.day, date.hour, date.minute
-                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{self.test}'
+                path_to = f'{month}-{day}-{hour}-{minute}_HIL_cal_T{str(self.test)[0]}_{str(self.test)[2]}'
                 cmd_datetime = []
                 
                 # create df
@@ -882,7 +879,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # SET PHASES
     actType_dict[key] = 'inverter' #choose: 'inverters', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
