@@ -339,7 +339,6 @@ def cons_actuators(feeder,acttoggle):
                         conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-cp.abs(iact.Pgen[idx,ts:ts+1])*inode.kVAbase)*Qsatmul[idx])/inode.kVAbase) #new
                         #conslist.append(cp.abs(iact.Qgen[idx,ts:ts+1]) <= ((iact.Ssched[idx,ts:ts+1]-iact.Psched[idx,ts:ts+1])*Qsatmul)/inode.kVAbase) #old
                     
-                    
                 else:
                     for idx in range(0,3):
                         conslist.append(iact.Pgen[idx,ts] == 0)

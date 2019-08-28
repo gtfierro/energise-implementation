@@ -85,6 +85,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
             sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
             
             # start recording data (sim flag on)
+            client.write_registers(int(1), int(0), unit=id)
             client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
             print('simulation start time:',sim_start)
             print(dt.datetime.fromtimestamp(time.time()))
