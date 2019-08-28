@@ -52,6 +52,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.q_count = 0
         self.test = 3.1 # see picture on white board (1, 2, 3.1, 3.2)
         self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated as act, mode 3: PV only
+        print(self.test)
         
         #empty lists for storing and writing to csv
         self.cmd_epoch =[]
