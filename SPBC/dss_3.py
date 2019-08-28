@@ -556,10 +556,9 @@ def export_Vtargets(feeder):
 def get_targets(feeder):
     
     for key,ibus in feeder.busdict.items():
-        print(ibus.name)
         if ibus.name == 'bus_671':
-            print(ibus.kVbase_phg)
-            print('NL671',ibus.Vmag_NL[0,0]/(ibus.kVbase_phg*1000))
+            #print(ibus.kVbase_phg)
+            #print('NL671',ibus.Vmag_NL[0,0]/(ibus.kVbase_phg*1000))
 
     act_keys = []
     tstep_cur = 0 #need way to call most recent timestep?
