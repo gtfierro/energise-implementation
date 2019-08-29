@@ -81,7 +81,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
-            use_Zsk_est = 1
+            use_Zsk_est = 0
             self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
