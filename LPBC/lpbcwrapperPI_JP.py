@@ -474,7 +474,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                           (np.sqrt(((self.batt_cmd[i] + self.P_PV[i])**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
                 if np.abs(pf_ctrl) < 0.01:
                     pf_ctrl = 1
-                print(f'pf cmd: {pf_ctrl}')
+                print(f'pf cmd: {pf_ctrl}, batt cmd: {batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 2: #mode 2: PV calculated
             self.P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
