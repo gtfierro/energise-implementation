@@ -62,10 +62,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang = np.ones(nphases)*0.01
-            ki_ang = np.ones(nphases)*0.1
-            kp_mag = np.ones(nphases)*0.01
-            ki_mag = np.ones(nphases)*0.1
+            kp_ang = [0.0034]
+            ki_ang = [0.0677]
+            kp_mag = [0.5670]
+            ki_mag = [3.4497]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -189,8 +189,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.batt_max = 3300.
-        # self.inv_s_max = 7600. * 0.97  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
-        self.inv_s_max = 8350. * 0.97
+        self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
+        self.inv_s_max_commands = 8350.
         self.mode = 0 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
@@ -459,27 +459,27 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         urls = []
         commandReceipt = np.zeros(nphases)
         if self.mode == 1: #1: PV as disturbance
-            P_PV = Pact - self.batt_cmd #P_PV is defined as positive into the solar panel (to be consistent w battery convention) #batt_cmd from last round, still in effect
+            P_PV = (Pact*1000) - self.batt_cmd #P_PV is defined as positive into the solar panel (to be consistent w battery convention) #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i])) #in mode 1 the battery is controlled directly
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
                 if ((self.batt_cmd[i] + P_PV[i])**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
-                pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(self.batt_cmd[i] + P_PV[i])) / \
+                pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i] + P_PV[i])) / \
                           (np.sqrt(((self.batt_cmd[i] + P_PV)**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 2: #mode 2: PV calculated
-            P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
+            P_PV = (Pact*1000) - self.batt_cmd #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i] - P_PV[i])) #in mode 2 the battery and PV are controlled jointly
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
                 if (self.batt_cmd[i]**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - self.batt_cmd[i]**2)
-                pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(self.batt_cmd[i])) / \
+                pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i])) / \
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         if self.mode == 3: #mode 3: PV only
             Pcmd_VA = -Pcmd_VA #HERE for inverter control, P is postive into the network (offsets negative at the beginning of this function)
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
@@ -487,15 +487,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #in mode 3 p_ctrl is used instead of battery control, to control PV
                 if Pcmd_VA[i] < 0:
                     Pcmd_VA[i] = 0
-                self.invPperc_ctrl[i] = (Pcmd_VA[i] / self.inv_s_max) * 100 #invPperc_ctrl cannot be negative
+                self.invPperc_ctrl[i] = (Pcmd_VA[i] / self.inv_s_max_commands) * 100 #invPperc_ctrl cannot be negative
                 if self.invPperc_ctrl[i] > Inv_Pperc_max:
                     self.invPperc_ctrl[i] = Inv_Pperc_max
                     pf_ctrl = 1
                     # pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0) * Inv_Pperc_max
                 else:
-                    pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(Pcmd_VA[i])) / \
+                    pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(Pcmd_VA[i])) / \
                               (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
-                urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl}")
+                urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl},inv_id={inv}")
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
         for i in range(nphases):
@@ -622,6 +622,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         status['q_max'] = list(Qmax_pu.ravel())
         return(status)
 
+    def PhasorV_ang_wraparound(self, Vang_relative, nphases):
+        # accounts for special cases where one angle crosses zero while the other is behind zero
+        Vang_relative_wrap = Vang_relative
+        for phase in range(nphases):
+            if abs(Vang_relative[phase]) > 300:
+                if Vang_relative[phase] > 0:
+                    Vang_relative_wrap[phase] = Vang_relative[phase] - 360.
+                elif Vang_relative[phase] < 0:
+                    Vang_relative_wrap[phase] = Vang_relative[phase] + 360.
+        return Vang_relative_wrap
+
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
@@ -670,6 +681,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vmeas_all_phases == 0:
                 print('Didnt receive a measurement for each phase, not acting')
                 return
+            #self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
