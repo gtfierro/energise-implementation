@@ -231,7 +231,7 @@ class myspbc(pbc.SPBCProcess):
 # =============================================================================
                     
         # hardcode lpbc_nodes in
-        lpbc_nodes = [lpbc_nodeIDs] # [INPUT HERE]
+        lpbc_nodes = lpbc_nodeIDs
         
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)

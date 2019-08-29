@@ -388,10 +388,3 @@ def plot_results():
         plt.show()
 
     return
-
-def plot_network(feeder):
-    
-    pos = nx.spectral_layout(myfeeder.network)
-    nx.draw_networkx(myfeeder.network,pos,node_size=50)
-    
-    return
