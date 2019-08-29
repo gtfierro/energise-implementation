@@ -174,7 +174,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #phasor calc
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
+<<<<<<< HEAD
+        self.nPhasorReadings = 60
+=======
         self.nPhasorReadings = 50
+>>>>>>> 03f0cb01684e1797cf65255e619be8c69ad84125
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms
 
         # https config
@@ -299,6 +303,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # loops though every reference uPMU reading starting from most recent
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
+<<<<<<< HEAD
+                    print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+=======
+>>>>>>> 03f0cb01684e1797cf65255e619be8c69ad84125
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
                     if abs(ref_time - local_time) <= self.pmuTimeWindow:
                         local_time_index[phase] = ordered_local[phase].index(local_packet)
