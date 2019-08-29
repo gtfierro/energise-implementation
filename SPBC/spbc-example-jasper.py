@@ -18,7 +18,8 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
+lpbc_phases = ['a'] # [INPUT HERE]
+lpbc_nodeIDs = ['675'] # [INPUT HERE]
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
@@ -230,7 +231,7 @@ class myspbc(pbc.SPBCProcess):
 # =============================================================================
                     
         # hardcode lpbc_nodes in
-        lpbc_nodes = ['675'] # [INPUT HERE]
+        lpbc_nodes = [lpbc_nodeIDs] # [INPUT HERE]
         
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)

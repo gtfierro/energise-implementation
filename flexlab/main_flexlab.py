@@ -72,7 +72,7 @@ filename = 'HIL_switch_matrix_13NF_bal.xlsx'
 filepath = pathname+filename
 
 
-test_ID = 'T5.1' # which test case you want to run
+test_ID = 'T3.1' # which test case you want to run
 sim_length_min = .1 # amount of time to record for in minutes
 # In[run]:
 
