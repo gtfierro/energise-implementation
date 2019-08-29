@@ -52,7 +52,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # INITIALIZATION
         self.busId = busId
-        self.timesteplength = timesteplength
+        # self.integratorTimestepLength = timesteplength
+        self.integratorTimestepLength = .1
 
         #HERE put in optional accumulator term for PI controller
 

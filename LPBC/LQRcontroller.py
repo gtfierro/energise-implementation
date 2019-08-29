@@ -121,7 +121,7 @@ class LQRcontroller:
         and Icomp must be deflected from (1,0), which it is because its computed from relative angles
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        if Icomp == None:
+        if len(Icomp) == 1 and Icomp == None:
             Icomp = [np.NaN]*self.nphases
         if any(np.isnan(Icomp)):
             Vmag_relative = Vmag - VmagRef
