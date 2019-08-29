@@ -52,10 +52,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # INITIALIZATION
         self.busId = busId
-        # self.integratorTimestepLength = timesteplength
-        self.integratorTimestepLength = .1
-
-        #HERE put in optional accumulator term for PI controller
+        # self.integratorTimestepLength = timesteplength #PI accumulator can use this
+        self.integratorTimestepLength = .1 #Hardcoded
 
         self.controllerType = 'PI' #set controller to 'PI' or 'LQR'
 
@@ -78,11 +76,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zskinit = np.asmatrix(Zsk_df.values)
             #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
-            Rcost = np.eye(nphases*2)*10e-1 #controll costs (P and Q)
+            Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
             use_Zsk_est = 0
-            self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
+            self.controller = LQRcontroller(nphases,integratorTimestepLength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
 
@@ -667,7 +665,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
                 self.localkVAbase = self.network_kVAbase/self.localSratio
-                self.localIbase = self.localkVAbase/self.localkVbase
+                self.localIbase = self.localkVAbase/(self.localkVbase * sqrt(3)) #HERE put in sqrt(3) re wikipedia, not sure why this is the convention
                 print('self.localSratio : ' + str(self.localSratio))
                 print('self.localkVAbase : ' + str(self.localkVAbase))
                 print('self.localkVbase : ' + str(self.localkVbase))
@@ -726,7 +724,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
 
-            #HHERE debugging
+            #HHERE debugging PI
             # self.Pcmd_pu[1] = 0
             # self.Pcmd_pu[2] = 0
             # self.Qcmd_pu = np.zeros(nphases)
