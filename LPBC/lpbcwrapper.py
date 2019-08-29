@@ -691,7 +691,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Pact_pu = self.Pact / self.localkVAbase
                 self.Qact_pu = self.Qact / self.localkVAbase
             else:
-                self.Icomp_pu = [np.NaN]
+                self.Icomp_pu = [np.NaN]*self.nphases
 
             #HERE sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, -self.Pact, -self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0

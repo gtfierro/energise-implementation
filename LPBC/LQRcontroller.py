@@ -121,6 +121,7 @@ class LQRcontroller:
         and Icomp must be deflected from (1,0), which it is because its computed from relative angles
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
+        print('Icomp : ' + str(Icomp))
         if any(np.isnan(Icomp)):
             Vmag_relative = Vmag - VmagRef
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
