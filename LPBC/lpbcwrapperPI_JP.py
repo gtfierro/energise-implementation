@@ -301,7 +301,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
                     
-                    print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+                    #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
                     if abs(ref_time - local_time) <= self.pmuTimeWindow:

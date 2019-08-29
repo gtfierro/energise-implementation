@@ -30,7 +30,7 @@ Batt_ctrl = 0 # (+) is charging! (-) discharging
 pf_ctrl = 0.9 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 3 # [1,2,3]
 
-inv_perc = 15
+inv_perc = 30
 
 
 if np.abs(pf_ctrl) < 0.85:
