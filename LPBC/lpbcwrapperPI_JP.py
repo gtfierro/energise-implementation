@@ -389,11 +389,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA,):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
+        Pact_VA = Pact*1000
+        Qact_VA = Qact*1000
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
-            indexP = np.where(abs(Pact + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
+            indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
             # find indicies where Qact + tolerance is less than Qcmd
-            indexQ = np.where(abs(Qact + (0.03 * Qcmd)) < abs(Qcmd))[0]
+            indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
