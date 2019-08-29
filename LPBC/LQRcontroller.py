@@ -95,7 +95,7 @@ class LQRcontroller:
 
 
     def pfEqns3phase(self,VmagTarg,VangTarg,Zskest):
-        error('not built')
+        error('pfEqns3phase not built yet')
         return
 
 
@@ -121,7 +121,7 @@ class LQRcontroller:
         and Icomp must be deflected from (1,0), which it is because its computed from relative angles
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        if np.isnan(Icomp):
+        if any(np.isnan(Icomp)):
             Vmag_relative = Vmag - VmagRef
             Icomp_est = self.phasorI_estFromScmd(Vmag_relative, Vang, self.PcommandPrev, self.QcommandPrev) #this estimate should be valid even if there are other loads on the LPBC node (as long as the loads are uncorrelated with the commands)
             #HERE Vmag_relative cant be 0 bc then I est will be inf
@@ -174,11 +174,11 @@ class LQRcontroller:
         #DOBC
         if self.linearizeplant:
             Babbrev = self.B[:self.nphases*2,:]
-            ueff = np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T
+            ueff = (np.linalg.pinv(Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T).T
         else:
             ueff = self.pfEqns3phase(Vmag,Vang,self.Zskest) #havent built these yet #ueff through Zeff would give Vmeas
         if self.iteration_counter != 1: #iteration_counter is 1 in the first call
-            dm = ueff.T - self.u #dm for d measurement
+            dm = ueff - self.u #dm for d measurement
             self.d = (1-self.lpAlpha)*self.d + self.lpAlpha*dm
         else:
             dm = ueff
@@ -192,8 +192,6 @@ class LQRcontroller:
 
         #Feedback Control input for next round
         self.u = (self.K*self.state.T).T + uref - self.d
-        print('self.state.T : ' + str(self.state.T))
-        print('self.K*self.state.T : ' + str(self.K*self.state.T))
 
         #save measurements for next round
         self.IcompPrev = Icomp.copy()
