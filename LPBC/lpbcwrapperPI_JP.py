@@ -457,7 +457,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #needs an up-to-date Pact, which requires a current measurement
         #HERE Pact is defined as positive out of the network into the inverter (Pact, Pbatt and P_PV are all positive out of the network in flexlab). This convention should be swithced in later implemetations, but shouldnt require changing (too many) signs
         Pcmd_VA = -Pcmd_kVA*1000
-        Qcmd_VA = Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
+        Qcmd_VA = -Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
         #initialize parallel API command:
         session = FuturesSession()
         urls = []
