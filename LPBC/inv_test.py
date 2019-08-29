@@ -649,7 +649,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.test == 3.1:
             
             if self.iteration_counter < 25:
-                pcmd = -.4
+                pcmd = .4
                 qcmd = self.Qcmd_kVA[self.q_count]
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases, self.plug_to_V_idx)
                 t = time.time()
