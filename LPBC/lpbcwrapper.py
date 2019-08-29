@@ -42,6 +42,8 @@ load_cmd is still postive into the network (for just P)
 modbus is positive out of the network (switched internally)
 '''
 
+#HHERE put in t
+
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
@@ -50,9 +52,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # INITIALIZATION
         self.busId = busId
-        self.timesteplength = timesteplength
-
-        #HERE put in optional accumulator term for PI controller
+        # self.integratorTimestepLength = timesteplength #PI accumulator can use this
+        self.integratorTimestepLength = .1 #Hardcoded
 
         self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
 
@@ -73,14 +74,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zskinit = np.asmatrix(Zsk_df.values)
-            Zskinit = np.asmatrix(np.eye(3) + np.eye(3)*1j)*.1 #HHERE
             #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
             use_Zsk_est = 0
-            self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
+            self.controller = LQRcontroller(nphases,integratorTimestepLength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
 
@@ -193,6 +193,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
+        self.P_PV = np.zeros(nphases)
 
 
 
@@ -457,25 +458,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         urls = []
         commandReceipt = np.zeros(nphases)
         if self.mode == 1: #1: PV as disturbance
-            P_PV = Pact - self.batt_cmd #P_PV is defined as positive into the solar panel (to be consistent w battery convention) #batt_cmd from last round, still in effect
+            self.P_PV = Pact - self.batt_cmd #P_PV is defined as positive into the solar panel (to be consistent w battery convention) #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i])) #in mode 1 the battery is controlled directly
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
-                if ((self.batt_cmd[i] + P_PV[i])**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
-                    Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
-                pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(self.batt_cmd[i] + P_PV[i])) / \
-                          (np.sqrt(((self.batt_cmd[i] + P_PV)**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
+                if ((self.batt_cmd[i] + self.P_PV[i])**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
+                    Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + self.P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
+                pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i] + self.P_PV[i])) / \
+                          (np.sqrt(((self.batt_cmd[i] + self.P_PV[i])**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
                 urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
         if self.mode == 2: #mode 2: PV calculated
-            P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
+            self.P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
-                self.batt_cmd[i] = int(round(Pcmd_VA[i] - P_PV[i])) #in mode 2 the battery and PV are controlled jointly
+                self.batt_cmd[i] = int(round(Pcmd_VA[i] - self.P_PV[i])) #in mode 2 the battery and PV are controlled jointly
                 if abs(self.batt_cmd[i]) > self.batt_max:
                     self.batt_cmd[i] = int(np.sign(Pcmd_VA[i]) * self.batt_max)
                 if (self.batt_cmd[i]**2 + Qcmd_VA[i]**2) > (self.inv_s_max)**2: #if Qcmd is over the max, set it to the max for the given P command (favors P over Q)
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - self.batt_cmd[i]**2)
-                pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(self.batt_cmd[i])) / \
+                pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i])) / \
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
                 urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},Batt_ctrl={self.batt_cmd[i]},pf_ctrl={pf_ctrl}")
         if self.mode == 3: #mode 3: PV only
@@ -491,7 +492,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 1
                     # pf_ctrl = ((np.sign(Qcmd_VA[i]) * -1.0) * Inv_Pperc_max
                 else:
-                    pf_ctrl = (np.sign(Qcmd_VA[i]) * abs(Pcmd_VA[i])) / \
+                    pf_ctrl = (np.sign(Qcmd_VA[i])*-1. * abs(Pcmd_VA[i])) / \
                               (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
                 urls.append(f"http://131.243.41.47:9090/control?inv_id={inv},P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={pf_ctrl}")
         responses = map(session.get, urls)
@@ -620,6 +621,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         status['q_max'] = list(Qmax_pu.ravel())
         return(status)
 
+    def PhasorV_ang_wraparound(self, Vang_relative, nphases):
+        # accounts for special cases where one angle crosses zero while the other is behind zero
+        Vang_relative_wrap = Vang_relative
+        for phase in range(nphases):
+            if abs(Vang_relative[phase]) > 300:
+                if Vang_relative[phase] > 0:
+                    Vang_relative_wrap[phase] = Vang_relative[phase] - 360.
+                elif Vang_relative[phase] < 0:
+                    Vang_relative_wrap[phase] = Vang_relative[phase] + 360.
+        return Vang_relative_wrap
+
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
@@ -653,7 +665,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
                 self.localkVAbase = self.network_kVAbase/self.localSratio
-                self.localIbase = self.localkVAbase/self.localkVbase
+                self.localIbase = self.localkVAbase/(self.localkVbase * sqrt(3)) #HERE put in sqrt(3) re wikipedia, not sure why this is the convention
                 print('self.localSratio : ' + str(self.localSratio))
                 print('self.localkVAbase : ' + str(self.localkVAbase))
                 print('self.localkVbase : ' + str(self.localkVbase))
@@ -668,6 +680,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vmeas_all_phases == 0:
                 print('Didnt receive a measurement for each phase, not acting')
                 return
+            self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
@@ -711,6 +724,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
 
+            #HHERE debugging PI
+            # self.Pcmd_pu[1] = 0
+            # self.Pcmd_pu[2] = 0
+            # self.Qcmd_pu = np.zeros(nphases)
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
@@ -928,7 +945,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 10
+rate = 1
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
