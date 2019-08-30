@@ -393,7 +393,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qact_VA = Qact*1000
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
-            indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
+            #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
+            indexP = np.where(abs(Pact_VA + 100) < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
             indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
         elif self.actType == 'load':
