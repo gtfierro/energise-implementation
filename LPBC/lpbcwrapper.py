@@ -668,7 +668,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
                 self.localkVAbase = self.network_kVAbase/self.localSratio
-                self.localIbase = self.localkVAbase/(self.localkVbase * sqrt(3)) #HERE put in sqrt(3) re wikipedia, not sure why this is the convention
+                self.localIbase = self.localkVAbase/(self.localkVbase * np.sqrt(3)) #HERE put in sqrt(3) re wikipedia, not sure why this is the convention
                 print('self.localSratio : ' + str(self.localSratio))
                 print('self.localkVAbase : ' + str(self.localkVAbase))
                 print('self.localkVbase : ' + str(self.localkVbase))
