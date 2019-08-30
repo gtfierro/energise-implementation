@@ -207,7 +207,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         phaseB = False
         phaseC = False
         status_phases = []
-        print(f'phasor_target[phasor_targets] {phasor_target['phasor_targets']}')
+        print('phasor_target[phasor_targets] ' + str(phasor_target['phasor_targets']))
         for i in np.arange(nphases):
             print('i ' + str(i))
             print('phasor_target[phasor_targets][i] ' + str(phasor_target['phasor_targets'][i]))
