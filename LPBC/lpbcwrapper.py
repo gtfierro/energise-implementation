@@ -384,7 +384,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA,):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
-        if self.actType == 'inverters':
+        if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             indexP = np.where(abs(Pact + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
             # find indicies where Qact + tolerance is less than Qcmd
@@ -419,7 +419,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         for phase in range(nphases):
             if phase in np.where(~self.Psat.any(axis=1))[0]: #if each row doesnt have a 1 in it, then send ICDI for that phase
                 self.ICDI_sigP[phase] = True
-                if self.actType == 'inverters':
+                if self.actType == 'inverter':
                     self.Pmax_pu[phase] = Pact_pu[phase]
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase  *1000) #Sratio double counted in localkVAbase
@@ -433,7 +433,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         for phase in range(nphases):
             if phase in np.where(~self.Qsat.any(axis=1))[0]:
                 self.ICDI_sigQ[phase] = True
-                if self.actType == 'inverters':
+                if self.actType == 'inverter':
                     self.Qmax_pu[phase] = Qact_pu[phase]
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
