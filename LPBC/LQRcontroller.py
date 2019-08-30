@@ -9,14 +9,14 @@ from numpy.linalg import inv
 #HHERE how to account for P and Q commands not being true
 
 class LQRcontroller:
-    def __init__(self,nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1):
+    def __init__(self,nphases,integratorTimestepLength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1):
         self.nphases = nphases
         self.VmagRef = np.NaN
         self.VangRef = np.NaN
         self.V0 = np.hstack((self.VmagRef,self.VangRef))
         self.VmagTarg = np.NaN
         self.VangTarg = np.NaN
-        self.timesteplength = timesteplength
+        self.integratorTimestepLength = integratorTimestepLength
         self.currentMeasExists = currentMeasExists
         self.iteration_counter = 0
 
@@ -37,7 +37,7 @@ class LQRcontroller:
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
         else:
             self.Gt = Gt
-        (self.A, self.B) = self.makeABmatrices(Zskinit,timesteplength)
+        (self.A, self.B) = self.makeABmatrices(Zskinit,integratorTimestepLength)
         self.K = np.asmatrix(np.zeros((2*nphases,4*nphases)))
 
         self.state = np.asmatrix(np.zeros(4*nphases))
@@ -64,8 +64,8 @@ class LQRcontroller:
         return
 
 
-    def makeABmatrices(self,Zsk,timesteplength):
-        A = np.vstack((np.zeros((2*self.nphases,4*self.nphases)),np.hstack((timesteplength*np.eye(2*self.nphases),np.eye(2*self.nphases)))))
+    def makeABmatrices(self,Zsk,integratorTimestepLength):
+        A = np.vstack((np.zeros((2*self.nphases,4*self.nphases)),np.hstack((integratorTimestepLength*np.eye(2*self.nphases),np.eye(2*self.nphases)))))
         R = np.real(Zsk)
         X = np.imag(Zsk)
         B = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R)),np.zeros((2*self.nphases,2*self.nphases))))
@@ -171,7 +171,7 @@ class LQRcontroller:
         if self.allsaturated:
             self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
         else:
-            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
+            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.integratorTimestepLength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
 
         #DOBC
         if self.linearizeplant:
