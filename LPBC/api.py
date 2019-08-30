@@ -26,9 +26,9 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = -1000 # (+) is charging! (-) discharging
-pf_ctrl = 0.9 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
-inv_id = 3 # [1,2,3]
+Batt_ctrl = -2500 # (+) is charging! (-) discharging
+pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
+inv_id = 1 # [1,2,3]
 
 inv_perc = 30
 
@@ -55,11 +55,11 @@ t0 = time.time()
 # INVERTER
 
 ##### batt only
-command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
+#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
-#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
+command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}'  # no pf cmd? had no enable command
 ##### batt / pf / inv
@@ -83,7 +83,7 @@ if loop == 1:
     print(r)
     print('api cmd:', command, dt.datetime.now())
 
-def set1p():
+def inv1p():
     t0 = time.time()
     command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={1}'
     r = requests.get(command)
@@ -92,7 +92,7 @@ def set1p():
     print('api cmd:', command, dt.datetime.now())
     return
     
-def resetinv(invp):
+def invreset(invp):
     t0 = time.time()
     command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={invp}' #84%
     r = requests.get(command)
