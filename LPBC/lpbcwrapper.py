@@ -80,7 +80,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
             lam = .99 #Zskest parameter, smaller lam changes estimate faster
             use_Zsk_est = 0
-            self.controller = LQRcontroller(nphases,integratorTimestepLength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
+            self.controller = LQRcontroller(nphases,self.integratorTimestepLength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
         else:
             error('error in controller type')
 
@@ -207,7 +207,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         phaseB = False
         phaseC = False
         status_phases = []
+        print('phasor_target[phasor_targets] ' + str(phasor_target['phasor_targets']))
         for i in np.arange(nphases):
+            print('i ' + str(i))
+            print('phasor_target[phasor_targets][i] ' + str(phasor_target['phasor_targets'][i]))
             if 'ph_A' in phasor_target['phasor_targets'][i]['channelName']:
                 phaseA = True
                 phase = 'A'
