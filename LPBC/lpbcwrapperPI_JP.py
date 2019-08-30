@@ -394,11 +394,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+100: {abs(Pact_VA - P_PV +100)}, abs(Pcmd): {abs(Pcmd)[0]}')
+            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)[0]}')
             indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
             #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
-            print(f'QactVA+250: {abs(Qact_VA + 250)}, abs(Qcmd): {abs(Qcmd)[0]}')
+            print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)[0]}')
             indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -725,8 +725,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 self.Icomp_pu = [np.NaN]*self.nphases
 
-            #HERE sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, -self.Pact, -self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
