@@ -79,10 +79,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             
             #3.3
-            kp_ang = [0.0034,0.0034,0.0034]
-            ki_ang = [0.0677,0.0677,0.0677]
-            kp_mag = [0.1750,0.3063,0.8331]
-            ki_mag = [3.5004,3.5004,3.5004]
+            alph = .5
+            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+            kp_mag = [0.1750*alph,0.3063*alph,0.8331*alph]
+            ki_mag = [3.5004*alph,3.5004*alph,3.5004*alph]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -413,11 +414,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)[0]}')
+            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)}')
             indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
             #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
-            print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)[0]}')
+            print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)}')
             indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
