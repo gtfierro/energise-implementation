@@ -26,7 +26,7 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = 0 # (+) is charging! (-) discharging
+Batt_ctrl = -1000 # (+) is charging! (-) discharging
 pf_ctrl = 0.9 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 3 # [1,2,3]
 
@@ -55,7 +55,7 @@ t0 = time.time()
 # INVERTER
 
 ##### batt only
-#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
+command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv

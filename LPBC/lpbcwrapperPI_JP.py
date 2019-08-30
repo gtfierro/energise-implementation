@@ -62,10 +62,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang = [0.0034*.5]
-            ki_ang = [0.0677*.5]
-            kp_mag = [0.5670]
-            ki_mag = [3.4497]
+            kp_ang = [0.00108*.8,0.0342*0.8]
+            ki_ang = [0.0618*.8,0.0677*0.8]
+            kp_mag = [0.6901,1.6522]
+            ki_mag = [3.46,3.5004]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -871,7 +871,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx
+    acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
