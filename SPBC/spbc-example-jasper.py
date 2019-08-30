@@ -20,7 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
-angle_unit = 'radians'
+angle_unit = 'degrees' # [INPUT HERE] - 'degrees' or 'radians'
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
