@@ -62,8 +62,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang = [0.0034*20]
-            ki_ang = [0.0677*20]
+            kp_ang = [0.0034*.5]
+            ki_ang = [0.0677*.5]
             kp_mag = [0.5670]
             ki_mag = [3.4497]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
@@ -313,7 +313,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
                         # calculates relative phasors
-                        self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
+                        if self.controllerType == 'LQR':
+                            self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
+                        elif self.controllerType == 'PI':
+                            self.Vang[phase] = V_ang_local - V_ang_ref
                         self.Vmag[phase] = V_mag_local
                         self.VmagRef[phase] = V_mag_ref
                         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
@@ -394,9 +397,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            indexP = np.where(abs(Pact_VA - P_PV +100) < abs(Pcmd))[0] #specific to step size of inverters
+            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+100: {abs(Pact_VA - P_PV +100)}, abs(Pcmd): {abs(Pcmd)[0]}')
+            indexP = np.where(abs(Pact_VA - P_PV +500) < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
-            indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
+            #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
+            print(f'QactVA+250: {abs(Qact_VA + 250)}, abs(Qcmd): {abs(Qcmd)[0]}')
+            indexQ = np.where(abs(Qact_VA + 250) < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
@@ -697,7 +703,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vmeas_all_phases == 0:
                 print('Didnt receive a measurement for each phase, not acting')
                 return
-            #self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
+            self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
@@ -711,7 +717,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
-                if self.controller == 'LQR':
+                if self.controllerType == 'LQR':
                     (self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx) #HERE in Flexlab this positive flowing out of the Network
                     self.Imag_pu = self.Imag / self.localIbase #this takes into account Sratio
                     self.Icomp_pu = self.Imag_pu*np.cos(self.Iang) + self.Imag_pu*np.sin(self.Iang)*1j #Assumed current is positive into the Ametek (postive for positive injection), and Iangs are relative and thus base 0 for all phases
