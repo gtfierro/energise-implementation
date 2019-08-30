@@ -31,8 +31,8 @@ class LQRcontroller:
         self.lam = lam # 0 < lam < 1, smaller lam changes Zskest faster
 
         self.use_Zsk_est = use_Zsk_est
-        self.Zskestinit = Zskinit
-        self.Zskest = Zskinit
+        self.Zskestinit = np.asmatrix(Zskinit)
+        self.Zskest = np.asmatrix(Zskinit)
         if Gt == None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
         else:
@@ -121,7 +121,7 @@ class LQRcontroller:
         and Icomp must be deflected from (1,0), which it is because its computed from relative angles
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        if len(Icomp) == 1 and Icomp == None:
+        if Icomp == None:
             Icomp = [np.NaN]*self.nphases
         if any(np.isnan(Icomp)):
             Vmag_relative = Vmag - VmagRef
