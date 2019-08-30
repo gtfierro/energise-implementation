@@ -397,10 +397,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+100: {abs(Pact_VA - P_PV +100)}, abs(Pcmd): {abs(Pcmd)}')
-            indexP = np.where(abs(Pact_VA - P_PV +100) < abs(Pcmd))[0] #specific to step size of inverters
+            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+100: {abs(Pact_VA - P_PV +100)}, abs(Pcmd): {abs(Pcmd)[0]}')
+            indexP = np.where(abs(Pact_VA - P_PV +500) < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
-            indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
+            #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
+            print(f'QactVA+250: {abs(Qact_VA + 250}, abs(Qcmd): {abs(Qcmd)[0]}')
+            indexQ = np.where(abs(Qact_VA + 250) < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
