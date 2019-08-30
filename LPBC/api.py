@@ -92,9 +92,9 @@ def set1p():
     print('api cmd:', command, dt.datetime.now())
     return
     
-def resetinv():
+def resetinv(invp):
     t0 = time.time()
-    command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={50}' #84%
+    command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={invp}' #84%
     r = requests.get(command)
     print(f'time to execute: {time.time()-t0}')
     print(r)

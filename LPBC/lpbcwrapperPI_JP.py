@@ -62,8 +62,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            kp_ang = [0.0034]
-            ki_ang = [0.0677]
+            kp_ang = [0.0034*.5]
+            ki_ang = [0.0677*.5]
             kp_mag = [0.5670]
             ki_mag = [3.4497]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
@@ -397,6 +397,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
+            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+100: {abs(Pact_VA - P_PV +100)}, abs(Pcmd): {abs(Pcmd)}')
             indexP = np.where(abs(Pact_VA - P_PV +100) < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
             indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
