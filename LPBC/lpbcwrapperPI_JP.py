@@ -227,6 +227,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 phaseA = True
                 phase = 'A'
                 status_phases.append('ph_A')
+            print(phasor_target['phasor_targets'])
             Vmag_targ_dict[phase] = phasor_target['phasor_targets'][i]['magnitude']
             Vang_targ_dict[phase] = phasor_target['phasor_targets'][i]['angle']
             kvbase_dict[phase] = phasor_target['phasor_targets'][i]['kvbase']['value']

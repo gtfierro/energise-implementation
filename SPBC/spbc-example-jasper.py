@@ -18,9 +18,9 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b'] # [INPUT HERE]
+lpbc_phases = ['a','b','c'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
-angle_unit = 'degrees' # [INPUT HERE] - 'degrees' or 'radians'
+angle_unit = 'radians' # [INPUT HERE] - 'degrees' or 'radians'
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
@@ -33,9 +33,9 @@ if dummy_ref == True:
 if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
-    cons_Vmag = [1,1,1]
+    cons_Vmag = [0.99,0.99,0.99]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
+    cons_Vang = [0+2,-120+2,120+2] # [INPUT HERE]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
