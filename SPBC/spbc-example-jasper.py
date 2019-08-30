@@ -20,6 +20,7 @@ print('phases on network:',phase_size)
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
+angle_unit = 'radians'
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
@@ -343,7 +344,10 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['phase'].append('ph_A')
                             #computed_targets[lpbcID]['channels'].append('L1')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'radians':
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'degrees':
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             
@@ -353,7 +357,10 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['phase'].append('ph_B')
                             #computed_targets[lpbcID]['channels'].append('L2')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'radians':
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'degrees':
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                         
@@ -362,7 +369,10 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['phase'].append('ph_C')
                             #computed_targets[lpbcID]['channels'].append('L3')
                             computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
-                            computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'radians':
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                            if angle_unit == 'degrees':
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             

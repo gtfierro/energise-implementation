@@ -386,7 +386,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return
 
 
-    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA,):
+    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
@@ -394,7 +394,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            indexP = np.where(abs(Pact_VA + 100) < abs(Pcmd))[0] #specific to step size of inverters
+            indexP = np.where(abs(Pact_VA - P_PV +100) < abs(Pcmd))[0] #specific to step size of inverters
             # find indicies where Qact + tolerance is less than Qcmd
             indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
         elif self.actType == 'load':
@@ -723,7 +723,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Icomp_pu = [np.NaN]*self.nphases
 
             #HERE sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, -self.Pact, -self.Qact, self.Pcmd_kVA, self.Qcmd_kVA)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, -self.Pact, -self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
