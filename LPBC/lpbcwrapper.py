@@ -73,7 +73,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Zskpath = 'Zsks/Zsks_pu_' + '13bal' + '/Zsk_bus' + str(busId) + '.csv'
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
-            Zskinit = np.asmatrix(Zsk_df.values)
+            Zskinit = np.eye(nphases)*.01
             #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
