@@ -74,7 +74,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zskinit = Zsk_df.values #HERE may need an np.asmatrix here
-            Zskinit = np.eye(nphases)*.01
+            # Zskinit = np.eye(nphases)*.01
             #LQR controller params
             Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
             Rcost = np.eye(nphases*2)*1e-1 #controll costs (P and Q)
@@ -208,10 +208,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         phaseB = False
         phaseC = False
         status_phases = []
-        print('phasor_target[phasor_targets] ' + str(phasor_target['phasor_targets']))
         for i in np.arange(nphases):
-            print('i ' + str(i))
-            print('phasor_target[phasor_targets][i] ' + str(phasor_target['phasor_targets'][i]))
             if 'ph_A' in phasor_target['phasor_targets'][i]['channelName']:
                 phaseA = True
                 phase = 'A'
