@@ -77,8 +77,9 @@ class LQRcontroller:
     def updateB(self, Zsk):
         R = np.real(self.Zskest)
         X = np.imag(self.Zskest)
-        ze = np.asmatrix(np.zeros((2*self.nphases,2*self.nphases)))
+        # ze = np.asmatrix(np.zeros((2*self.nphases,2*self.nphases)))
         B = np.vstack((np.hstack((-R, -X)),np.hstack((-X, R)),np.asmatrix(np.zeros((2*self.nphases,2*self.nphases))))) #all the entries are numpy matrices so this makes a numpy matrix
+        B = np.asmatrix(B)
         return B
 
 
@@ -193,7 +194,8 @@ class LQRcontroller:
             uref = self.pfEqns3phase(VmagTarg,VangTarg,self.Zskest) #havent built these yet
 
         #Feedback Control input for next round
-        self.u = (self.K*self.state.T).T + uref - self.d
+        # self.u = (self.K*self.state.T).T + uref - self.d
+        self.u = (self.K*self.state.T).T + uref #HHERE
 
         #save measurements for next round
         self.IcompPrev = Icomp.copy()
