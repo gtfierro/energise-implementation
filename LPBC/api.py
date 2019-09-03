@@ -26,11 +26,11 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = -2500 # (+) is charging! (-) discharging
+Batt_ctrl = -2000 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 1 # [1,2,3]
 
-inv_perc = 30
+inv_perc = 50
 
 
 if np.abs(pf_ctrl) < 0.85:
