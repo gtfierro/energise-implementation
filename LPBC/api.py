@@ -16,7 +16,7 @@ load racks:
         
 '''
 import requests
-import numpy
+import numpy as np
 import time
 import datetime as dt
 
@@ -26,11 +26,11 @@ P_ctrl = 0
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = -2000 # (+) is charging! (-) discharging
+Batt_ctrl = 500 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
-inv_id = 1 # [1,2,3]
+inv_id = 3 # [1,2,3]
 
-inv_perc = 50
+inv_perc = 10
 
 
 if np.abs(pf_ctrl) < 0.85:
@@ -59,14 +59,14 @@ t0 = time.time()
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
-command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
+#command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}'  # no pf cmd? had no enable command
 ##### batt / pf / inv
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 
 if loop == 0:
     r = requests.get(command)
