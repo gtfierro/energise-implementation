@@ -676,14 +676,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
         log_actuation= {}
-
+        
         log_actuation['phases'] = phases
-        log_actuation['P_cmd'] = P_cmd.tolist()
+        log_actuation['P_cmd'] = P_cmd.tolist() 
         log_actuation['Q_cmd'] = Q_cmd.tolist()
         log_actuation['P_act'] = P_act.tolist()
         log_actuation['Q_act'] = Q_act.tolist()
-        log_actuation['P_PV'] = P_PV.tolist()
-        log_actuation['Batt_cmd'] = Batt_cmd.tolist()
+        log_actuation['P_PV'] = (P_PV/1000).tolist()
+        log_actuation['Batt_cmd'] = (Batt_cmd/1000).tolist()
         log_actuation['pf_ctrl'] = pf_ctrl.tolist()
 
         return log_actuation
