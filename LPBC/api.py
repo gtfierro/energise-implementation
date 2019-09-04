@@ -22,7 +22,7 @@ import datetime as dt
 
 
 # load rack values:
-P_ctrl = 0
+P_ctrl = 1000
 group_id = 0 # [0,1,2]
 
 # inverter values:
@@ -48,7 +48,7 @@ t0 = time.time()
 #command = 'http://131.243.41.118:9090/control_enable'
 #command = 'http://131.243.41.118:9090/control_disable'
 
-#command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
+command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 #command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl},group_id={group_id}'
 
 #~~~~~~~~~~~
@@ -66,7 +66,7 @@ t0 = time.time()
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 
 if loop == 0:
     r = requests.get(command)

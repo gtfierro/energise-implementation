@@ -88,6 +88,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
             client.write_registers(int(1), int(0), unit=id)
             client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
             print('simulation start time:',sim_start)
+            print('epoch:',time.time())
             print(dt.datetime.fromtimestamp(time.time()))
                 
             #for sw in mtx:
@@ -101,7 +102,9 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
                     break                
             print('simulation end time',sim_cur)
             client.write_registers(int(1), int(0), unit=id)
-            print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0])
+            print('epoch:',time.time())
+            print(dt.datetime.fromtimestamp(time.time()))
+            print('All Done.',client.read_input_registers(1, count=1, unit=id).registers[0],'[sim_start_stop]')
             
         except Exception as e:
             print(e)
@@ -255,4 +258,11 @@ def upmu(upmu,sw_value):
     
     return
     
+def set_switches(dfsw_in,dfsw_out,test_ID,sim_length_min):
     
+        
+    IP = '131.243.41.14'
+    PORT = 503
+    id = 2
+
+    return
