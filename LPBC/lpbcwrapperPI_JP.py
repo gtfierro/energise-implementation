@@ -982,7 +982,7 @@ for key in lpbcidx:
                 phase = acts_to_phase_dict[key][i]
                 plug_to_phase_dict[key][plug] = phase #places the phase for that wave channel in the plug_to_phase mapping that gets sent to the PMUs
                 pmu4_plugs_dict[key].append(plug) #places the PMU measurement corresponding to actuator i on the WAVE channe
-        pmu4_plugs_dict[key] = np.asarray(sorted(pmu123_plugs_dict[key])) #orders the PMU channels in 0,1,2 ordering. This is expected by plug_to_phase_dict, which is sorted implicitly
+        pmu4_plugs_dict[key] = np.asarray(sorted(pmu4_plugs_dict[key])) #orders the PMU channels in 0,1,2 ordering. This is expected by plug_to_phase_dict, which is sorted implicitly
     elif actType_dict[key] == 'modbus':
         pmu123P_plugs_dict[key] = []
         for i in np.arange(3): #actuator i
