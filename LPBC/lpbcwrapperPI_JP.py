@@ -825,7 +825,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
             print(status)
             iterend = time.time()
-            print(f'~~~ STEP FINISH - iter length: {iterend-iterstart} ~~~')
+            print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {time.time()} ~~~')
             print('')
             if (iterend-iterstart) > rate:
                 print('WARNING: LOOP LENGTH LARGER THAN RATE - INCREASE SIZE OF RATE')
