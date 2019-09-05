@@ -464,9 +464,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.actType == 'inverter':
                     self.Pmax_pu[phase] = Pact_pu[phase]
                 elif self.actType == 'load':
-                    self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase  *1000) #Sratio double counted in localkVAbase
+                    self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
-                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
+                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
             else:
                 self.ICDI_sigP[phase] = False
                 self.Pmax_pu[phase] = np.NaN
