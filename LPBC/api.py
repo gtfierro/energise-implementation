@@ -22,7 +22,7 @@ import datetime as dt
 
 
 # load rack values:
-P_ctrl = 0
+P_ctrl = 1000
 group_id = 0 # [0,1,2]
 
 # inverter values:
