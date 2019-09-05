@@ -22,13 +22,13 @@ import datetime as dt
 
 
 # load rack values:
-P_ctrl = 0
+P_ctrl = 1000
 group_id = 0 # [0,1,2]
 
 # inverter values:
-Batt_ctrl = 500 # (+) is charging! (-) discharging
+Batt_ctrl = 0 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
-inv_id = 3 # [1,2,3]
+inv_id = 2 # [1,2,3]
 
 inv_perc = 10
 
@@ -67,6 +67,8 @@ command = f'http://131.243.41.118:9090/control?P_ctrl={P_ctrl}'
 
 ##### inv perc
 #command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+##### inv perc / inv id
+#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc},inv_id={inv_id}'
 
 if loop == 0:
     r = requests.get(command)
@@ -85,7 +87,7 @@ if loop == 1:
 
 def inv1p():
     t0 = time.time()
-    command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={1}'
+    command = f'http://131.243.41.47:9090/control?pf_ctrl={1},P_ctrl={1},Batt_ctrl={0}'
     r = requests.get(command)
     print(f'time to execute: {time.time()-t0}')
     print(r)
@@ -94,7 +96,7 @@ def inv1p():
     
 def invreset(invp):
     t0 = time.time()
-    command = f'http://131.243.41.47:9090/control?Batt_ctrl={0},pf_ctrl={1},P_ctrl={invp}' #84%
+    command = f'http://131.243.41.47:9090/control?pf_ctrl={1},P_ctrl={invp},Batt_ctrl={0}' #84%
     r = requests.get(command)
     print(f'time to execute: {time.time()-t0}')
     print(r)

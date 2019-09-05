@@ -204,7 +204,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 60
+        self.nPhasorReadings = 100
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms
 
         # https config
