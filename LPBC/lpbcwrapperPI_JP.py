@@ -700,9 +700,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
+        iterstart = time.time()
         self.iteration_counter += 1
         print('iteration counter bus ' + str(self.busId) + ' : ' + str(self.iteration_counter))
-
+        if self.iteration_counter > 1:
+            print(f'time since last iteration {iterstart-self.iterstart}')
+        self.iterstart = time.time()
+        
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
             pass
@@ -819,6 +823,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
             print(status)
+            iterend = time.time()
+            print(f'~~~ step finish - iter length: {iterend-iterstart} ~~~')
+            print('')
+            if (iterend-iterstart) > rate:
+                print('WARNING: LOOP LENGTH LARGER THAN RATE - INCREASE SIZE OF RATE')
+                print('')
 
             return status
 
