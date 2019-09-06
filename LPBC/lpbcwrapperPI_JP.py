@@ -64,12 +64,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
             #3.1
-# =============================================================================
-#             kp_ang = [0.0034]
-#             ki_ang = [0.0677]
-#             kp_mag = [0.5670]
-#             ki_mag = [3.4497]
-# =============================================================================
+            kp_ang = [0.0034]
+            ki_ang = [0.0677]
+            kp_mag = [0.5670]
+            ki_mag = [3.4497]
             
             #3.2
 # =============================================================================
@@ -90,11 +88,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
 
             #5.1
-            alph = 0.75
-            kp_ang = [0.004*alph]*3
-            ki_ang = [0.0798*alph]*3
-            kp_mag = [0,0,0]
-            ki_mag = [0,0,0]
+# =============================================================================
+#             alph = 0.75
+#             kp_ang = [0.004*alph]*3
+#             ki_ang = [0.0798*alph]*3
+#             kp_mag = [0,0,0]
+#             ki_mag = [0,0,0]
+# =============================================================================
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -932,10 +932,10 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671'] #nodes of actuation
-    key = '671'
-    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'load' #choose: 'inverter', 'load', or 'modbus'
+    lpbcidx = ['675'] #nodes of actuation
+    key = '675'
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
