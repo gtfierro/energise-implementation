@@ -511,8 +511,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - (self.batt_cmd[i] + self.P_PV[i])**2) #what happens by default? it probably maintains the PF command and just produces less P (and the battery curtails itself naturally)
                 self.pf_ctrl[i] = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i] + self.P_PV[i])) / \
                           (np.sqrt(((self.batt_cmd[i] + self.P_PV[i])**2) + (Qcmd_VA[i]**2))) #self.batt_cmd[i] + P_PV is ~ the full P flowing through the inverter
-                if np.abs(self.pf_ctrl[i]) < 0.01:
-                    pf_ctrl = 1
+                if np.abs(self.pf_ctrl[i]) < 0.1:
+                    pf_ctrl = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
         if self.mode == 2: #mode 2: PV calculated
@@ -525,8 +525,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     Qcmd_VA[i] = np.sign(Qcmd_VA[i]) * np.sqrt((self.inv_s_max)**2 - self.batt_cmd[i]**2)
                 self.pf_ctrl[i] = (np.sign(Qcmd_VA[i])*-1. * abs(self.batt_cmd[i])) / \
                           (np.sqrt((self.batt_cmd[i]**2) + (Qcmd_VA[i]**2))) #self.batt_cmd is ~ the full P flowing through the inverter
-                if np.abs(self.pf_ctrl[i]) < 0.01:
-                    pf_ctrl = 1
+                if np.abs(self.pf_ctrl[i]) < 0.1:
+                    pf_ctrl = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
         if self.mode == 3: #mode 3: PV only
@@ -544,8 +544,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     self.pf_ctrl[i] = (np.sign(Qcmd_VA[i])*-1. * abs(Pcmd_VA[i])) / \
                               (np.sqrt((Pcmd_VA[i] ** 2) + (Qcmd_VA[i] ** 2)))
-                if np.abs(self.pf_ctrl[i]) < 0.01:
-                    self.pf_ctrl[i] = 1
+                if np.abs(self.pf_ctrl[i]) < 0.1:
+                    self.pf_ctrl[i] = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
         responses = map(session.get, urls)
