@@ -29,7 +29,7 @@ dummy_ref = True # [INPUT HERE]
 constant_phasor = True # [INPUT HERE]
 
 if dummy_ref == True:
-    print('WARNING: dummy_ref ON')
+    print('WARNING: constant_ref ON')
 if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
