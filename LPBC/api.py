@@ -30,7 +30,7 @@ Batt_ctrl = 0 # (+) is charging! (-) discharging
 pf_ctrl = 1 # [-1,1] - BUT abs() > 0.85 ~~~ (+) is supplying Q, (-) is consuming Q ## -Q as per pmu is injecting
 inv_id = 2 # [1,2,3]
 
-inv_perc = 15
+inv_perc = 30
 
 
 if np.abs(pf_ctrl) < 0.85:
@@ -57,7 +57,7 @@ t0 = time.time()
 ##### batt only
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl}'  # works
 #####  pf only
-command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
+#command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf
@@ -66,7 +66,7 @@ command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl},inv_id={inv_id}'  # works
 
 ##### inv perc
-#command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
+command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc}'
 ##### inv perc / inv id
 #command = f'http://131.243.41.47:9090/control?P_ctrl={inv_perc},inv_id={inv_id}'
 
@@ -96,6 +96,8 @@ def inv1p():
     
 def invreset(invp):
     t0 = time.time()
+    command = f'http://131.243.41.47:9090/control?pf_ctrl={1}'
+    r = requests.get(command)
     command = f'http://131.243.41.47:9090/control?pf_ctrl={1},P_ctrl={invp},Batt_ctrl={0}' #84%
     r = requests.get(command)
     print(f'time to execute: {time.time()-t0}')
@@ -104,7 +106,7 @@ def invreset(invp):
     return
 
 def pfreset():
-    
+    t0 = time.time()
     command = f'http://131.243.41.47:9090/control?pf_ctrl={1}'
     r = requests.get(command)
     print(f'time to execute: {time.time()-t0}')
