@@ -218,6 +218,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #Flexlab specific commands
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
+        self.loadrack_manuallimit = 1500.
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
@@ -568,8 +569,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         commandReceipt = np.zeros(nphases).tolist()
         for i, group in zip(range(nphases), act_idxs): #same as enumerate
             self.load_cmd[i] = int(np.round((-1. * Pcmd_VA[i]) + self.loadrackPlimit/2)) # -1* bc command goes to a load not an inverter, +self.loadrackPlimit/2 centers the command around 0
-            if self.load_cmd[i] > self.loadrackPlimit:
-                urls.append(f"http://131.243.41.118:9090/control?group_id={group},P_ctrl=2000")
+            if self.load_cmd[i] > self.loadrack_manuallimit: #self.loadrackPlimit:
+                urls.append(f"http://131.243.41.118:9090/control?group_id={group},P_ctrl={self.loadrack_manuallimit}")
             elif self.load_cmd[i] < 0:
                 urls.append(f"http://131.243.41.118:9090/control?group_id={group},P_ctrl=0")
             else:
