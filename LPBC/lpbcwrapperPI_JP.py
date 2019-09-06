@@ -934,7 +934,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
