@@ -72,7 +72,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             
             #3.2
-            alph = 0.7
+            alph = 0.45
             beta = 0.75
             kp_ang = [0.00108*alph,0.0342*alph]
             ki_ang = [0.0618*alph,0.0677*alph]
@@ -820,7 +820,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
-
+            
+            self.Pact_kVA = self.Pact
+            self.Qact_kVA = self.Qact
+            
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
             print(log_actuation)
