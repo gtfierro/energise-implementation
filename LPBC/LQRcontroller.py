@@ -34,7 +34,8 @@ class LQRcontroller:
         self.Zskestinit = np.asmatrix(Zskinit)
         self.Zskest = np.asmatrix(Zskinit)
         if Gt == None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
-            self.Gt = np.asmatrix(np.eye(self.nphases) + np.eye(self.nphases)*1j,dtype=np.complex_)*.01 #HHERE
+            self.Gt = np.asmatrix(np.eye(self.nphases))*.01
+            # self.Gt = np.asmatrix(np.eye(self.nphases) + np.eye(self.nphases)*1j,dtype=np.complex_)*.01 #HHERE
         else:
             self.Gt = Gt
         (self.A, self.B) = self.makeABmatrices(Zskinit,integratorTimestepLength)
