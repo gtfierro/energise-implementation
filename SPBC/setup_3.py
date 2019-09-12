@@ -284,9 +284,11 @@ def fixconnections(tree,headnode):
     # This will break when we start moving to mesh networks
     succlist = list()
     for inode in tree.successors(headnode):
+        print(f'successors: {inode}')
         succlist.append(inode)
     for inode in succlist:
         if (inode, headnode) in tree.edges():
+            print(f'inode: {inode}, headnode: {headnode}')
             tree.remove_edge(inode,headnode)
         #old line causing recursive error
         #for inode2 in tree.successors(inode):
@@ -618,63 +620,7 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
                     iload.Rsched[2,ts] = np.real(Z)
                     iload.Xsched[2,ts] = np.imag(Z)
                 
-#JPEDIT END
-
-#EDITED SECTION START               
-    '''         
-    for key, iload in loaddict.items():
-        for ph in iload.phases:
-            for ts in range(0,timesteps):
-                
-                #loadname_kW = 'LD_KW_' + key + '_' + ph
-                #loadname_kVAR = 'LD_KV_' + key + '_' + ph
-    
-
-
-#Jaimie
-                loadname_kW = 'LD_' + key + '/P_' + ph
-                loadname_kVAR = 'LD_' + key + '/Q_' + ph
-
-                if loadname_kW in list(loaddf.columns.values):
-                    kW = loaddf[loadname_kW][ts]
-                else:
-                    kW = 0
-
-                if loadname_kVAR in list(loaddf.columns.values):
-                    kVAR = loaddf[loadname_kVAR][ts]
-                else:
-                    kVAR = 0
-
-                S = kW + 1j*kVAR
-                
-                if not (S==0):
-                    Z = np.conj(np.square(iload.node.kVbase_phg)*1000/S)
-                else:
-                    Z = 0
-
-                if ph == 'a':
-                    iload.Psched[0,ts] = kW
-                    iload.Qsched[0,ts] = kVAR
-
-                    iload.Rsched[0,ts] = np.real(Z)
-                    iload.Xsched[0,ts] = np.imag(Z)
-
-                if ph == 'b':
-                    iload.Psched[1,ts] = kW
-                    iload.Qsched[1,ts] = kVAR
-
-                    iload.Rsched[1,ts] = np.real(Z)
-                    iload.Xsched[1,ts] = np.imag(Z)
-
-                if ph == 'c':
-                    iload.Psched[2,ts] = kW
-                    iload.Qsched[2,ts] = kVAR
-
-                    iload.Rsched[2,ts] = np.real(Z)
-                    iload.Xsched[2,ts] = np.imag(Z)
-                    
-                    '''
-#EDITED SECTION END
+#JPEDIT END - replaced edited out code, see old backup versions if this needs to be restored
 
     for key, iload in loaddict.items():
         for idx in range(len(iload.phases)):
@@ -756,6 +702,7 @@ def linebuilder(modeldata, busdict, timesteps):
     # Create line dictionary from dataframe
     linedict = dict()
     for idx, row in linesheet.iterrows():
+        # node ID's
         if row['From1']:
             indkeyfrom = row['From1'][:len(row['From1'])-2]       
         elif row['From2']:
@@ -782,6 +729,7 @@ def linebuilder(modeldata, busdict, timesteps):
         linedict[indkey].from_node = busdict[indkeyfrom]
         linedict[indkey].to_node = busdict[indkeyto]
         
+        # phases (a,b,c)
         if row['From1'] and isinstance(row['From1'],str):
             linedict[indkey].from_phases.append(row['From1'][len(row['From1'])-1])    
         if row['From2'] and isinstance(row['From2'],str):
@@ -1040,6 +988,7 @@ def network_mapper(modeldata,busdict,linedict,transdict,switchdict):
     for key, value in busdict.items():
         network.add_node(value)
     for key, value in linedict.items():
+        print(f'key: {key}, value: {value}')
         network.add_edge(value.from_node,value.to_node,connector=value)
         network.add_edge(value.to_node,value.from_node,connector=value)
     for key, value in transdict.items():

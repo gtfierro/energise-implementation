@@ -236,7 +236,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
 # In[8]:
 # Run main_run
     
-'''
+
 ### dummy values ###    
 Psat = []
 Qsat = []
@@ -247,7 +247,7 @@ refphasor[:,0]=1
 refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
 
 Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat,perf_nodes,timestepcur)
-
+'''
 #tf = time.time()
 #print('time to load model')
 #print(tf-ts)
