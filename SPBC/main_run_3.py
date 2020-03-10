@@ -22,27 +22,27 @@ print(datetime.datetime.fromtimestamp(ts))
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 'UNBALANCED'
-# =============================================================================
-# filepath = "IEEE13/"
-# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-# 
-# loadfolder = "IEEE13/"
-# loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
-# =============================================================================
+filepath = "IEEE13/"
+modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+
+loadfolder = "IEEE13/"
+loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
 
 'BALANCED'
-filepath = "IEEE13_bal/"
-modelpath = filepath + "016 GB_IEEE13_balance all ver2.xls"
-
-loadfolder = "IEEE13_bal/"
-loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
+# =============================================================================
+# filepath = "IEEE13_bal/"
+# modelpath = filepath + "016 GB_IEEE13_balance all ver2.xls"
+# 
+# loadfolder = "IEEE13_bal/"
+# loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
+# =============================================================================
 
 plot = 0 #turn plot on/off
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 3
+timesteps = 3 #(16-8)*60  # [INPUT HERE] Manual input of start time
 
 #[HIL]
 date = datetime.datetime.now()
@@ -51,7 +51,7 @@ day = date.day
 hour = date.hour
 minute = date.minute
 #timestepcur = hour*60+minute
-timestepcur = 11*60 # [INPUT HERE] Manual input of start time
+timestepcur = 8*60  # [INPUT HERE] Manual input of start time
 
 #[HIL] - input constnats for PV forecasting
 PV_on = False # True for ON

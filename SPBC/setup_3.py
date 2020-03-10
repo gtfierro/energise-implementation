@@ -284,11 +284,10 @@ def fixconnections(tree,headnode):
     # This will break when we start moving to mesh networks
     succlist = list()
     for inode in tree.successors(headnode):
-        print(f'successors: {inode}')
         succlist.append(inode)
     for inode in succlist:
         if (inode, headnode) in tree.edges():
-            print(f'inode: {inode}, headnode: {headnode}')
+            #print(f'inode: {inode}, headnode: {headnode}')
             tree.remove_edge(inode,headnode)
         #old line causing recursive error
         #for inode2 in tree.successors(inode):
@@ -303,6 +302,9 @@ def propogatebasesup(tree,currnode,kVbase_phg):
     currnode.Zbase = kVbase_phg*kVbase_phg*1000/currnode.kVAbase
     for inode in tree.predecessors(currnode):
         predlist.append(inode)      
+    print(f'UP - currnode: {currnode.name}')
+    for inode in predlist:
+        print(f'UP - succ: {inode.name}')
     for inode in predlist:
         if isinstance(tree[inode][currnode]['connector'],transformer):
             return
@@ -316,7 +318,10 @@ def propogatebasesdown(tree,currnode,kVbase_phg):
     currnode.kVbase_phg = kVbase_phg
     currnode.Zbase = kVbase_phg*kVbase_phg*1000/currnode.kVAbase
     for inode in tree.successors(currnode):
-        succlist.append(inode)      
+        succlist.append(inode)
+    print(f'DOWN - currnode: {currnode.name}')
+    for inode in succlist:
+        print(f'DOWN- succ: {inode.name}')
     for inode in succlist:
         propogatebasesdown(tree,inode,kVbase_phg)
         
@@ -988,7 +993,7 @@ def network_mapper(modeldata,busdict,linedict,transdict,switchdict):
     for key, value in busdict.items():
         network.add_node(value)
     for key, value in linedict.items():
-        print(f'key: {key}, value: {value}')
+        #print(f'key: {key}, value: {value}')
         network.add_edge(value.from_node,value.to_node,connector=value)
         network.add_edge(value.to_node,value.from_node,connector=value)
     for key, value in transdict.items():
