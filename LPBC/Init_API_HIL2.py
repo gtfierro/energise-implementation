@@ -13,8 +13,8 @@ flexgrid = Flexgrid_API(inv_ids=[1,2,3], portNames=['COM3'], baudrate=115200, pa
 
 #set inverters to zero
 flexgrid.set_P(0, [1,2,3])
-
+print('Inverter P output set to zero')
 #set batteries to max
 flexgrid.battery_max_export(3300,[1,2,3])
-
+print('Battery output set to 3300 W')
 
