@@ -441,12 +441,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)}')
-            indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
+            print(f'PactVA: {Pact_VA}, abs(Pcmd): {abs(Pcmd)}')
+            #indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
+            indexP = np.where(abs(Pact_VA) < abs(Pcmd))[0]
             # find indicies where Qact + tolerance is less than Qcmd
             #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
-            print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)}')
-            indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
+            print(f'QactVA: {abs(Qact_VA)}, abs(Qcmd): {abs(Qcmd)}')
+            #indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
+            indexQ = np.where(abs(Qact_VA) < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
@@ -583,14 +585,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         for j in range(len(Qcmd_perc)): # checks Qcmd for inverter limit
             if Qcmd_perc[j] > 100:
                 Qcmd_perc[j] = 100
-        for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
+        for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
             Pcmd_perc_phase = Pcmd_perc_phase.item() #changes data type from numpy to python int/float
-            Qcmd_perc_phase = Qcmd_perc_phase.item() #changes data type
             inv = inv.item() #changes data type
             flexgrid.set_dyn_P(Pcmd_perc_phase,inv)
-            time.sleep(0.2) #pause so modbus does not crash
+        for Qcmd_perc_phase, inv in zip(Qcmd_perc, act_idxs):
+            Qcmd_perc_phase = Qcmd_perc_phase.item() #changes data type
+            inv = inv.item() #changes data type
             flexgrid.set_dyn_Q(Qcmd_perc_phase,inv)
-            time.sleep(0.2) #pause so modbus does not crash
+
 
     def httptoLoads(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA):
         #load commands are between 0 and 2000, but from the LPBC's perspective it can control between -1000 and 1000 W, with 1000 W collocated
