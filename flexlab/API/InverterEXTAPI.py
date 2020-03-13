@@ -1,8 +1,8 @@
 import time
 import json
 from datetime import datetime
-from Development.InverterControl import Inverter
-from Development.InverterControl import ModbusRTUClient
+from InverterControl import Inverter
+from InverterControl import ModbusRTUClient
 import multiprocessing as mp
 
 

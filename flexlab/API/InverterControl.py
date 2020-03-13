@@ -7,7 +7,7 @@ cgehbauer@lbl.gov
 from pymodbus.client.sync import  ModbusSerialClient
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
-from Development.convert_data import *
+from convert_data import *
 from time import sleep
 
 import struct
