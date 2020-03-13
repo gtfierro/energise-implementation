@@ -571,14 +571,26 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'failure'
         return commandReceipt
 
-    def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, Pmax, Qmax):
-        Pcmd_VA = -Pcmd_kVA*1000
-        Qcmd_VA = -Qcmd_kVA*1000
-        Pcmd_perc = Pcmd_VA/Pmax
-        Qcmd_perc = Qcmd_VA/Qmax
+    def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax):
+        Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
+        Qcmd_VA = abs(Qcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
+        Pcmd_perc = Pcmd_VA/inv_Pmax #Pcmd to inverters must be a percentage of Pmax
+        Qcmd_perc = Qcmd_VA/inv_Qmax #Qcmd to inverters must be a percentage of Qmax
         act_idxs = act_idxs.tolist()
-        flexgrid.set_dyn_P(Pcmd_perc,act_idxs)
-        flexgrid.set_dyn_Q(Qcmd_perc,act_idxs)
+        for i in range(len(Pcmd_perc)): # checks Pcmd for inverter limit
+            if Pcmd_perc[i] > 100:
+                Pcmd_perc[i] = 100
+        for j in range(len(Qcmd_perc)): # checks Qcmd for inverter limit
+            if Qcmd_perc[j] > 100:
+                Qcmd_perc[j] = 100
+        for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
+            Pcmd_perc_phase = Pcmd_perc_phase.item() #changes data type from numpy to python int/float
+            Qcmd_perc_phase = Qcmd_perc_phase.item() #changes data type
+            inv = inv.item() #changes data type
+            flexgrid.set_dyn_P(Pcmd_perc_phase,inv)
+            time.sleep(0.2) #pause so modbus does not crash
+            flexgrid.set_dyn_Q(Qcmd_perc_phase,inv)
+            time.sleep(0.2) #pause so modbus does not crash
 
     def httptoLoads(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA):
         #load commands are between 0 and 2000, but from the LPBC's perspective it can control between -1000 and 1000 W, with 1000 W collocated
@@ -606,6 +618,42 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'failure'
         return commandReceipt
 
+    def modbustoOpal_quadrant(self,Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
+        IP = '131.243.41.14'
+        PORT = 504
+        id = 3
+        inv_1 = 101
+        inv_2 = 102
+        inv_3 = 103
+        act_idxs_registers = []
+        for i in range(len(act_idxs)): #checks to see if any sign changes occured from last command
+            if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
+                act_idxs_registers.append(i)
+        if len(act_idxs_registers) > 0: #if any quadrant changes, execute modbus, else return.
+            value = [0] * len(act_idxs_registers)
+            inv_act_idxs_registers = act_idxs_registers + 1 # inverters are indexed start from 1 (1,2,3)
+            client = ModbusClient(IP, port=PORT)
+            for i in range(len(act_idxs_registers)): # determines which inverters have quadrant change
+                if inv_act_idxs_registers[i] == 1:
+                    inv_act_idxs_registers[i] = inv_1
+                elif inv_act_idxs_registers[i] == 2:
+                    inv_act_idxs_registers[i] = inv_2
+                elif inv_act_idxs_registers[i] == 3:
+                    inv_act_idxs_registers[i] = inv_3
+            for i,j in zip(act_idxs_registers, range(len(act_idxs_registers))): # determines exact quadrant for inverter
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0: #quadrant 1
+                    value[j] = 1
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0: #quadrant 2
+                    value[j] = 2
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0: #quadrant 3
+                    value[j] = 3
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0: #quadrant 4
+                    value[j] = 4
+            for i in range(len(act_idxs_registers)): # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i] , unit = id)
+                print('Quadrant change for inv:', inv_act_idxs_registers[i] )
+        else:
+            return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
@@ -622,7 +670,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         IP = '131.243.41.14'
         PORT = 504
-        id = 2
+        id = 3
         # Connect to client
         client = ModbusClient(IP, port=PORT)
         # P,Q commands in W and VAR (not kilo)
@@ -829,6 +877,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
                     #self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
+                    self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs)
                     self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax)
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
                 else:
