@@ -441,12 +441,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.actType == 'inverter':
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
-            print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)}')
-            indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
+            print(f'PactVA: {Pact_VA}, abs(Pcmd): {abs(Pcmd)}')
+            #indexP = np.where(abs(Pact_VA - P_PV) + 500 < abs(Pcmd))[0] #specific to step size of inverters
+            indexP = np.where(abs(Pact_VA) < abs(Pcmd))[0]
             # find indicies where Qact + tolerance is less than Qcmd
             #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
-            print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)}')
-            indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
+            print(f'QactVA: {abs(Qact_VA)}, abs(Qcmd): {abs(Qcmd)}')
+            #indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
+            indexQ = np.where(abs(Qact_VA) < abs(Qcmd))[0]
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
@@ -583,14 +585,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         for j in range(len(Qcmd_perc)): # checks Qcmd for inverter limit
             if Qcmd_perc[j] > 100:
                 Qcmd_perc[j] = 100
-        for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
+        for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
             Pcmd_perc_phase = Pcmd_perc_phase.item() #changes data type from numpy to python int/float
-            Qcmd_perc_phase = Qcmd_perc_phase.item() #changes data type
             inv = inv.item() #changes data type
             flexgrid.set_dyn_P(Pcmd_perc_phase,inv)
-            time.sleep(0.2) #pause so modbus does not crash
+        for Qcmd_perc_phase, inv in zip(Qcmd_perc, act_idxs):
+            Qcmd_perc_phase = Qcmd_perc_phase.item() #changes data type
+            inv = inv.item() #changes data type
             flexgrid.set_dyn_Q(Qcmd_perc_phase,inv)
-            time.sleep(0.2) #pause so modbus does not crash
+
 
     def httptoLoads(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA):
         #load commands are between 0 and 2000, but from the LPBC's perspective it can control between -1000 and 1000 W, with 1000 W collocated
@@ -618,7 +621,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'failure'
         return commandReceipt
 
-    def modbustoOpal_quadrant(self,Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
+    def modbustoOpal_quadrant(self, Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
         IP = '131.243.41.14'
         PORT = 504
         id = 3
@@ -626,32 +629,34 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         inv_2 = 102
         inv_3 = 103
         act_idxs_registers = []
-        for i in range(len(act_idxs)): #checks to see if any sign changes occured from last command
+        pq_changed = []
+        for i, j in zip(range(len(act_idxs)), act_idxs):  # checks to see if any sign changes occured from last command
             if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
-                act_idxs_registers.append(i)
-        if len(act_idxs_registers) > 0: #if any quadrant changes, execute modbus, else return.
+                act_idxs_registers.append(j)
+                pq_changed.append(i)
+        if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
             value = [0] * len(act_idxs_registers)
-            inv_act_idxs_registers = act_idxs_registers + 1 # inverters are indexed start from 1 (1,2,3)
+            inv_act_idxs_registers = act_idxs_registers.copy()
             client = ModbusClient(IP, port=PORT)
-            for i in range(len(act_idxs_registers)): # determines which inverters have quadrant change
+            for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
                 if inv_act_idxs_registers[i] == 1:
                     inv_act_idxs_registers[i] = inv_1
                 elif inv_act_idxs_registers[i] == 2:
                     inv_act_idxs_registers[i] = inv_2
                 elif inv_act_idxs_registers[i] == 3:
                     inv_act_idxs_registers[i] = inv_3
-            for i,j in zip(act_idxs_registers, range(len(act_idxs_registers))): # determines exact quadrant for inverter
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0: #quadrant 1
+            for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
                     value[j] = 1
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0: #quadrant 2
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
                     value[j] = 2
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0: #quadrant 3
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
                     value[j] = 3
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0: #quadrant 4
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 4
-            for i in range(len(act_idxs_registers)): # write quadrant changes to modbus registers
-                client.write_registers(inv_act_idxs_registers[i], value[i] , unit = id)
-                print('Quadrant change for inv:', inv_act_idxs_registers[i] )
+            for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
         else:
             return
 
