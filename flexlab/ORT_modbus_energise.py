@@ -258,11 +258,55 @@ def upmu(upmu,sw_value):
     
     return
     
-def set_switches(dfsw_in,dfsw_out,test_ID,sim_length_min):
+def set_switches(dfsw_in,dfsw_out,test_ID):
     
         
     IP = '131.243.41.14'
     PORT = 503
     id = 2
+    
+     # Connect to client
+    client = ModbusClient(IP, port=PORT)
+    
+    # Get indeces & assign values
+    sw_idx = []
+    scales = {}
+    
+    
+
+    for i in range(dfsw_in.shape[0]):
+        if dfsw_in.Description.values[i][:3] == 'sw_':
+            sw_idx.append(i)
+        if 'scale_flexgrid' in dfsw_in.Description.values[i]:
+            scales['flexgrid'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
+        if 'scale_loadrack' in dfsw_in.Description.values[i]:
+            scales['loadrack'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
+            
+    mtx = []
+    mtx_register = []
+
+    for i in sw_idx:
+        mtx.append(dfsw_in[test_ID][i])
+        mtx_register.append(dfsw_in['Register'][i])
+    
+    
+    try:
+        
+        # Write the scaling
+        client.write_registers(scales['flexgrid']['register'],
+                               int(scales['flexgrid']['value']), unit=id)
+        client.write_registers(scales['loadrack']['register'],
+                               int(scales['loadrack']['value']), unit=id)
+        
+        # write switch positions for config
+        for i in range(len(mtx)):
+            client.write_registers(mtx_register[i], int(mtx[i]), unit=id)
+            
+    except Exception as e:
+        print(e)
+        
+    finally:
+        client.close()
+        print('client closed')
 
     return
