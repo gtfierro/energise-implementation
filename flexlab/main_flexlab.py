@@ -68,7 +68,7 @@ functions from ORT_modbus_energise:
 # feeder =
 # Choose from [13NF_bal, 13NF_unbal]
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL_switch_matrix_13NF_bal.xlsx'
+filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
 filepath = pathname+filename
 
 
