@@ -90,6 +90,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
                 print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i] )
 
         except Exception as e:
+            print('here3')
             print(e)
 
     else:
@@ -98,8 +99,9 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
 IP = '131.243.41.14'
 PORT = 504
+print('here1')
 client = ModbusClient(IP, port=PORT)
-
+print('here2')
 Pcmd_kVA = np.array([[20,20,20],[-20,-20,-20],[-20,-20,-20], [20,20,20], [0,0,0]]) #3 phase each array is a new iteration command
 Qcmd_kVA = np.array([[20,20,20],[20,20,20], [-20,-20,-20], [-20,-20,-20], [0,0,0]])
 Pact = np.array([[0,0,0],[20,20,20], [-20,-20,-20], [-20,-20,-20], [20,20,20]])
