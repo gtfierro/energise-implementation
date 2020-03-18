@@ -55,6 +55,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
         # print('sent')
 
     except Exception as e:
+        print('here3')
         print(e)
 
     for i,j in zip(range(len(act_idxs)), act_idxs): #checks to see if any sign changes occured from last command
@@ -90,7 +91,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
                 print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i] )
 
         except Exception as e:
-            print('here3')
+            print('here4')
             print(e)
 
     else:
