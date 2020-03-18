@@ -704,7 +704,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-        print(local_phasors[2])
+        print(local_phasors[0])
         print(reference_phasors[0])
         iterstart = pytime.time()
         self.iteration_counter += 1
@@ -942,7 +942,7 @@ elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'load' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
