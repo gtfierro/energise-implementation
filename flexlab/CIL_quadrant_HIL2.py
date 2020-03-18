@@ -100,13 +100,13 @@ IP = '131.243.41.14'
 PORT = 504
 client = ModbusClient(IP, port=PORT)
 
-Pcmd_kVA = np.array([[5,5,5],[-5,-5,-5],[-5,-5,-5], [5,5,5], [0,0,0]]) #3 phase each array is a new iteration command
-Qcmd_kVA = np.array([[5,5,5],[5,5,5], [-5,-5,-5], [-5,-5,-5], [0,0,0]])
-Pact = np.array([[0,0,0],[5,5,5], [-5,-5,-5], [-5,-5,-5], [5,5,5]])
-Qact = np.array([[0,0,0],[5,5,5], [5,5,5], [-5,-5,-5], [-5,-5,-5]])
+Pcmd_kVA = np.array([[20,20,20],[-20,-20,-20],[-20,-20,-20], [20,20,20], [0,0,0]]) #3 phase each array is a new iteration command
+Qcmd_kVA = np.array([[20,20,20],[20,20,20], [-20,-20,-20], [-20,-20,-20], [0,0,0]])
+Pact = np.array([[0,0,0],[20,20,20], [-20,-20,-20], [-20,-20,-20], [20,20,20]])
+Qact = np.array([[0,0,0],[20,20,20], [20,20,20], [-20,-20,-20], [-20,-20,-20]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
-    time.sleep(300)
+    time.sleep(60)
 client.close()
 print('END: Closed Client')
