@@ -6,6 +6,7 @@ Created on Wed Jul 31 18:20:43 2019
 @author: energise
 """
 import numpy as np
+import time
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
@@ -19,16 +20,20 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
     act_idxs_registers = []
     pq_changed = []
     client = ModbusClient(IP, port=PORT)
-
+    Pcmd_VA = Pcmd_kVA * 1000
+    Qcmd_VA = Qcmd_kVA * 1000
+    Pcmd_VA = Pcmd_VA.tolist()
+    Qcmd_VA = Qcmd_VA.tolist()
     Pcmd_kVA = Pcmd_kVA.tolist()
     Qcmd_kVA = Qcmd_kVA.tolist()
+
     # P,Q commands in W and VAR (not kilo)
 
     # P1, P2, P3 = 1, 3, 5
     # Q1, Q2, Q3 = 2, 4, 6
 
-    P1, P2, P3 = Pcmd_kVA[0], Pcmd_kVA[1], Pcmd_kVA[2]
-    Q1, Q2, Q3 = Qcmd_kVA[0], Qcmd_kVA[1], Qcmd_kVA[2]
+    P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
+    Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
 
     sign_vec = [1, 1,
                 1, 1,
@@ -92,10 +97,11 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
     else:
         return
 
-Pcmd_kVA = np.array([[10000, 10000, 10000], [5000,5000,5000]]) #3 phase each array is a new iteration command
-Qcmd_kVA = np.array([])
-Pact = np.array([])
-Qact = np.array([])
+Pcmd_kVA = np.array([[5,5,5],[-5,-5,-5],[-5,-5,-5], [5,5,5], [0,0,0]]) #3 phase each array is a new iteration command
+Qcmd_kVA = np.array([[5,5,5],[5,5,5], [-5,-5,-5], [-5,-5,-5], [0,0,0]])
+Pact = np.array([[0,0,0],[5,5,5], [-5,-5,-5], [-5,-5,-5], [5,5,5]])
+Qact = np.array([[0,0,0],[5,5,5], [5,5,5], [-5,-5,-5], [-5,-5,-5]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs)
+    time.sleep(300)
