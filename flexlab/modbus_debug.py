@@ -29,7 +29,7 @@ client = ModbusClient(IP, port=PORT)
 
 
 try:
-    client.read_input_registers(1, count=1, unit=id).registers[0]
+    print(client.read_input_registers(1, count=1, unit=id).registers[0])
     
 except Exception as e:
     print(e)
