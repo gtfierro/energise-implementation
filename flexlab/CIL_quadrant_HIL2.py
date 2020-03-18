@@ -9,9 +9,7 @@ import numpy as np
 import time
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
-def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
-    IP = '131.243.41.14'
-    PORT = 504
+def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
     c = 500 / 1 / 1000
     id = 3
     inv_1 = 101
@@ -19,7 +17,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
     inv_3 = 103
     act_idxs_registers = []
     pq_changed = []
-    client = ModbusClient(IP, port=PORT)
+
     Pcmd_VA = Pcmd_kVA * 1000
     Qcmd_VA = Qcmd_kVA * 1000
     Pcmd_VA = Pcmd_VA.tolist()
@@ -97,11 +95,18 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
     else:
         return
 
+
+IP = '131.243.41.14'
+PORT = 504
+client = ModbusClient(IP, port=PORT)
+
 Pcmd_kVA = np.array([[5,5,5],[-5,-5,-5],[-5,-5,-5], [5,5,5], [0,0,0]]) #3 phase each array is a new iteration command
 Qcmd_kVA = np.array([[5,5,5],[5,5,5], [-5,-5,-5], [-5,-5,-5], [0,0,0]])
 Pact = np.array([[0,0,0],[5,5,5], [-5,-5,-5], [-5,-5,-5], [5,5,5]])
 Qact = np.array([[0,0,0],[5,5,5], [5,5,5], [-5,-5,-5], [-5,-5,-5]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
-    modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs)
+    modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
     time.sleep(300)
+client.close()
+print('END: Closed Client')
