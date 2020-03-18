@@ -657,6 +657,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
                 client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
                 print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+            client.close()
         else:
             return
 
