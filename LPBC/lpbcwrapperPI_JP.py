@@ -704,8 +704,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-        print(local_phasors[2][0])
-        print(local_phasors[6][0])
+
+        print('REF upmu4: ')
+        print(reference_phasors[0][0])
+        print(reference_phasors[1][0])
+        print(reference_phasors[2][0])
+        print('upmu123p')
+        print('PHASE A: ',local_phasors[0][0])
+        print('PHASE B: ',local_phasors[1][0])
+        print('PHASE C: ', local_phasors[2][0])
+
         iterstart = pytime.time()
         self.iteration_counter += 1
         print('iteration counter bus ' + str(self.busId) + ' : ' + str(self.iteration_counter))
@@ -1056,7 +1064,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         cfg['rate'] = rate
         cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
-        cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
+        cfg['reference_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
         localSratio = inverterScaling
     elif actType == 'load':
