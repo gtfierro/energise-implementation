@@ -1033,7 +1033,7 @@ entitydict[5] = 'lpbc_6.ent'
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
+refChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
 nlpbc = len(lpbcidx)
 
@@ -1064,7 +1064,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         cfg['rate'] = rate
         cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
-        cfg['reference_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
+        cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
         localSratio = inverterScaling
     elif actType == 'load':
