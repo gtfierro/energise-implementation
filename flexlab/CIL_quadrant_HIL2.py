@@ -48,6 +48,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
         # write switch positions for config
         for i in range(len(mtx)):
+            print(mtx_register[i], mtx[i])
             client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
         print('sent CIL')
 
@@ -56,7 +57,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
     except Exception as e:
         print(e)
-
+    '''
     for i,j in zip(range(len(act_idxs)), act_idxs): #checks to see if any sign changes occured from last command
         if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
             act_idxs_registers.append(j)
@@ -94,7 +95,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
     else:
         return
-
+'''
 
 IP = '131.243.41.14'
 PORT = 504
