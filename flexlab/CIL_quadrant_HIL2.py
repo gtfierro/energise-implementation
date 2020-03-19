@@ -97,7 +97,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
 IP = '131.243.41.14'
 PORT = 504
-x = 7
+x = 20
 client = ModbusClient(IP, port=PORT)
 
 
