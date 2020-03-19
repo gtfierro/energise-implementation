@@ -97,7 +97,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
 IP = '131.243.41.14'
 PORT = 504
-x = 50
+x = 7
 client = ModbusClient(IP, port=PORT)
 
 
@@ -108,5 +108,5 @@ Qact = np.array([[0,0,0],[x,x,x], [x,x,x], [-x,-x,-x], [-x,-x,-x]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
-    print('wait 60 sec...')
-    time.sleep(60)
+    print('wait 30 sec...')
+    time.sleep(30)
