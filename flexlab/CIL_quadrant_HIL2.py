@@ -10,7 +10,7 @@ import time
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
-    client.connect()
+
     c = 500 / 1 / 1000
     id = 3
     inv_1 = 101
@@ -47,9 +47,10 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
     print(mtx)
     try:
         # write switch positions for config
+        client.connect()
         for i in range(len(mtx)):
             print(mtx_register[i], mtx[i])
-            client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+            client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
         print('sent CIL')
 
         # client.write_registers(mtx_register, mtx, unit=id)
