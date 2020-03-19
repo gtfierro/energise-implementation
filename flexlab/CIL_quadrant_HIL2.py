@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 31 18:20:43 2019
+Created on Wed Jul 31 18:x:43 x19
 
 @author: energise
 """
@@ -43,7 +43,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
     # mtx = [0]*6
     mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
     mtx_register = np.arange(1, 8).tolist()
-
+    print(mtx)
     try:
 
         # write switch positions for config
@@ -98,13 +98,14 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
 IP = '131.243.41.14'
 PORT = 504
+x = 50
 
 client = ModbusClient(IP, port=PORT)
 
-Pcmd_kVA = np.array([[20,20,20],[-20,-20,-20],[-20,-20,-20], [20,20,20], [0,0,0]]) #3 phase each array is a new iteration command
-Qcmd_kVA = np.array([[20,20,20],[20,20,20], [-20,-20,-20], [-20,-20,-20], [0,0,0]])
-Pact = np.array([[0,0,0],[20,20,20], [-20,-20,-20], [-20,-20,-20], [20,20,20]])
-Qact = np.array([[0,0,0],[20,20,20], [20,20,20], [-20,-20,-20], [-20,-20,-20]])
+Pcmd_kVA = np.array([[x,x,x],[-x,-x,-x],[-x,-x,-x], [x,x,x], [0,0,0]]) #3 phase each array is a new iteration command
+Qcmd_kVA = np.array([[x,x,x],[x,x,x], [-x,-x,-x], [-x,-x,-x], [0,0,0]])
+Pact = np.array([[0,0,0],[x,x,x], [-x,-x,-x], [-x,-x,-x], [x,x,x]])
+Qact = np.array([[0,0,0],[x,x,x], [x,x,x], [-x,-x,-x], [-x,-x,-x]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
