@@ -10,7 +10,7 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 IP = '131.243.41.14'
 PORT = 504
-id = 2
+id = 3
 
 #IP = '131.243.41.14'
 #PORT = 502

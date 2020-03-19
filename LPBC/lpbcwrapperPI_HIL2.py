@@ -245,6 +245,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Pmax = 5000 #check with Maxime
         self.Qmax = 5000 #check with Maxime
 
+        IP = '131.243.41.14'
+        PORT = 504
+        self.client = ModbusClient(IP, port=PORT)
+
     def targetExtraction(self,phasor_target):
         #this implies A,B,C order to measurements from SPBC
         Vmag_targ_dict = dict()
@@ -621,9 +625,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'failure'
         return commandReceipt
 
-    def modbustoOpal_quadrant(self, Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs):
-        IP = '131.243.41.14'
-        PORT = 504
+    def modbustoOpal_quadrant(self, Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
         id = 3
         inv_1 = 101
         inv_2 = 102
@@ -635,9 +637,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 act_idxs_registers.append(j)
                 pq_changed.append(i)
         if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
+            client.connect()
             value = [0] * len(act_idxs_registers)
             inv_act_idxs_registers = act_idxs_registers.copy()
-            client = ModbusClient(IP, port=PORT)
+
             for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
                 if inv_act_idxs_registers[i] == 1:
                     inv_act_idxs_registers[i] = inv_1
@@ -654,16 +657,27 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     value[j] = 3
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 4
-            for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
-                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-            client.close()
+            try:
+
+                for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
+                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                    print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+
+            except Exception as e:
+                print(e)
+
+            finally:
+                client.close()
+
         else:
             return
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
+        id = 3
+        # Connect to client
+        client.connect()
         for phase in range(nphases):
             print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
             print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
@@ -674,11 +688,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
                 print('Qcmd over Opal limit')
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
-        IP = '131.243.41.14'
-        PORT = 504
-        id = 3
-        # Connect to client
-        client = ModbusClient(IP, port=PORT)
+
         # P,Q commands in W and VAR (not kilo)
 
         if nphases == 3:
@@ -883,7 +893,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
                     #self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
-                    self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs)
+                    self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
                     self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax)
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
                 else:
@@ -1015,8 +1025,8 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'modbus' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1099,7 +1109,7 @@ entitydict[5] = 'lpbc_6.ent'
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
+refChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 
 nlpbc = len(lpbcidx)
 
@@ -1111,7 +1121,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 20
+rate = 10
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
