@@ -92,6 +92,10 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
         except Exception as e:
             print(e)
+        
+        finally:
+            client.close()
+            print('closed client')
 
     else:
         return
@@ -112,5 +116,3 @@ for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
     print('wait 60 sec...')
     time.sleep(60)
-client.close()
-print('END: Closed Client')
