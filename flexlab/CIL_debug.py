@@ -21,7 +21,7 @@ client = ModbusClient(IP, port=PORT)
 
 try:
     client.connect()
-    client.write_registers(50000, 1, unit=id)
+    client.write_registers(1, int(50000), unit=id)
     print('sent')
 
 except Exception as e:
