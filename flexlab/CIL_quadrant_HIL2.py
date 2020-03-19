@@ -56,7 +56,6 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
         # client.write_registers(mtx_register, mtx, unit=id)
         # print('sent')
 
-        '''
         for i,j in zip(range(len(act_idxs)), act_idxs): #checks to see if any sign changes occured from last command
             if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
                 act_idxs_registers.append(j)
@@ -64,7 +63,6 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
         if len(act_idxs_registers) > 0: #if any quadrant changes, execute modbus, else return.
             value = [0] * len(act_idxs_registers)
             inv_act_idxs_registers = act_idxs_registers.copy()
-            #client = ModbusClient(IP, port=PORT)
     
             for i in range(len(act_idxs_registers)): # determines which inverters have quadrant change
                 if inv_act_idxs_registers[i] == 1:
@@ -85,17 +83,16 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
                     value[j] = 4
                     
             for i in range(len(act_idxs_registers)): # write quadrant changes to modbus registers
-                    client.write_registers(inv_act_idxs_registers[i], value[i] , unit = id)
+                    client.write_registers(int(inv_act_idxs_registers[i]), int(value[i]) , unit = id)
                     print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i] )
         else:
             pass
-'''
+
     except Exception as e:
         print(e)
         
     finally:
         client.close()
-
 
 
 IP = '131.243.41.14'
@@ -111,5 +108,5 @@ Qact = np.array([[0,0,0],[x,x,x], [x,x,x], [-x,-x,-x], [-x,-x,-x]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
-    print('wait 60 sec...')
-    time.sleep(60)
+    print('wait 30 sec...')
+    time.sleep(30)
