@@ -20,6 +20,7 @@ id = 3
 client = ModbusClient(IP, port=PORT)
 
 try:
+    client.connect()
     client.write_registers(50000, 1, unit=id)
     print('sent')
 
