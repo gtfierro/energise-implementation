@@ -297,10 +297,12 @@ def set_switches(dfsw_in,dfsw_out,test_ID):
                                int(scales['flexgrid']['value']), unit=id)
         client.write_registers(scales['loadrack']['register'],
                                int(scales['loadrack']['value']), unit=id)
+        print('scales set')
         
         # write switch positions for config
         for i in range(len(mtx)):
             client.write_registers(mtx_register[i], int(mtx[i]), unit=id)
+        print('switches set')
             
     except Exception as e:
         print(e)
