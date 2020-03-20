@@ -717,10 +717,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
-        print('123voltage: ')
-        print('PHASE A: ',local_phasors[6][0])
-        print('PHASE B: ',local_phasors[7][0])
-        print('PHASE C: ', local_phasors[8][0])
+
 
 
         iterstart = pytime.time()
@@ -966,7 +963,7 @@ elif testcase == 'manual':
 #eg if pmu123 port 2 is attached to inverter 3 and port 3 is attached to inverter 2 pmu123_act_to_plug_Map = np.asarray([0, 2, 1])
 pmu0_phase_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be true
 pmu123_act_to_plug_Map = np.asarray([0, 1, 2])
-# pmu123P_act_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be in the same order as pmu123_act_to_plug_Map
+pmu123P_act_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be in the same order as pmu123_act_to_plug_Map
 pmu4_act_to_plug_Map = np.asarray([0, 1, 2])
 pmu0_plugs_dict = dict()
 pmu123_plugs_dict = dict()
@@ -1084,8 +1081,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         localSratio = loadScaling
     elif actType == 'modbus':
         cfg['rate'] = rate
-        #cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
-        cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
+        cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
         currentMeasExists = True
         localSratio = CILscaling
