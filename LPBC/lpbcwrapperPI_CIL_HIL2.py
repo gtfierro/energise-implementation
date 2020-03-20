@@ -735,7 +735,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
-        (Pact_kVA,Qact_kVA) = PQ_solver(local_phasors, nphases, plug_to_V_idx)
+        (Pact_kVA,Qact_kVA) = self.PQ_solver(local_phasors, nphases, plug_to_V_idx)
         print(Pact_kVA, Qact_kVA)
 
 
