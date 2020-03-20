@@ -705,14 +705,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
 
-        print('REF upmu4: ')
+        print('REF upmu0: ')
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
         print(reference_phasors[2][0])
-        print('upmu123p')
+        print('upmu123p voltage: ')
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
+        print('current: ')
+        print('PHASE A: ',local_phasors[3][0])
+        print('PHASE B: ',local_phasors[4][0])
+        print('PHASE C: ', local_phasors[5][0])
+
 
         iterstart = pytime.time()
         self.iteration_counter += 1
@@ -950,7 +955,7 @@ elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'modbus' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1031,9 +1036,9 @@ entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3','uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
+refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
 nlpbc = len(lpbcidx)
 
@@ -1077,7 +1082,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         cfg['rate'] = rate
         cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
-        currentMeasExists = False
+        currentMeasExists = True
         localSratio = CILscaling
     else:
         error('actType Error')
