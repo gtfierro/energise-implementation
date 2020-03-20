@@ -1035,7 +1035,7 @@ entitydict[4] = 'lpbc_5.ent'
 entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
-pmu123Channels = np.asarray(['uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3','uPMU_123/L1','uPMU_123/L2','uPMU_123/L3'])
+pmu123Channels = np.asarray(['uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3','uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
