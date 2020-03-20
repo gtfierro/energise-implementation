@@ -955,7 +955,7 @@ elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'load' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
