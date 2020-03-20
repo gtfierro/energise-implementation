@@ -577,7 +577,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'failure'
         return commandReceipt
 
-    def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax):
+    def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
         Qcmd_VA = abs(Qcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
         Pcmd_perc = Pcmd_VA/inv_Pmax #Pcmd to inverters must be a percentage of Pmax
@@ -894,7 +894,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.currentMeasExists or self.mode == 3:
                     #self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
                     self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
-                    self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax)
+                    self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
                 else:
                     disp('couldnt send inverter commands because no current measurement available')

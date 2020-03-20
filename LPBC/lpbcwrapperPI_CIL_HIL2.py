@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -230,6 +230,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
         self.P_PV = np.zeros(nphases)
         self.pf_ctrl = np.ones(nphases)
+        IP = '131.243.41.14'
+        PORT = 504
+        self.client = ModbusClient(IP, port=PORT)
 
 
 
@@ -427,6 +430,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
         if self.actType == 'inverter':
+
+            '''
+            HAD TO COMMENT OUT AND MICKEY MOUSE SATURATION CHECK FOR CIL
             # find indicies where Pact + tolerance is less than Pcmd
             #indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
             print(f'PactVA: {Pact_VA}, P_PV: {P_PV}, Pact-P_PV+500: {abs(Pact_VA - P_PV)+500}, abs(Pcmd): {abs(Pcmd)}')
@@ -435,6 +441,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #indexQ = np.where(abs(Qact_VA + (0.03 * Qcmd)) < abs(Qcmd))[0]
             print(f'QactVA+250: {abs(Qact_VA)+250}, abs(Qcmd): {abs(Qcmd)}')
             indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
+
+            '''
+
+            indexP = np.where(abs(Pcmd)== self.ORT_max_VA/self.localSratio)[0]
+            indexQ = np.where(abs(Qcmd)== self.ORT_max_VA/self.localSratio)[0]
+
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
@@ -466,7 +478,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if phase in np.where(~self.Psat.any(axis=1))[0]: #if each row doesnt have a 1 in it, then send ICDI for that phase
                 self.ICDI_sigP[phase] = True
                 if self.actType == 'inverter':
-                    self.Pmax_pu[phase] = Pact_pu[phase]
+                    '''
+                    COMMENTED OUT FOR CIL TESTING
+                    #self.Pmax_pu[phase] = Pact_pu[phase] 
+                    '''
+                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -480,7 +496,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if phase in np.where(~self.Qsat.any(axis=1))[0]:
                 self.ICDI_sigQ[phase] = True
                 if self.actType == 'inverter':
+                    '''
+                    COMMENTED OUT FOR CIL TESTING
                     self.Qmax_pu[phase] = Qact_pu[phase]
+                    '''
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
@@ -587,7 +607,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
@@ -600,11 +620,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
                 print('Qcmd over Opal limit')
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
-        IP = '131.243.41.14'
-        PORT = 504
         id = 3
-        # Connect to client
-        client = ModbusClient(IP, port=PORT)
         # P,Q commands in W and VAR (not kilo)
 
         if nphases == 3:
@@ -705,7 +721,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-
+        nphases = 3
+        plug_to_V_idx = [0,1,2]
         print('REF upmu0: ')
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
@@ -715,9 +732,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
         print('current: ')
-        print('PHASE A: ',local_phasors[6][0])
-        print('PHASE B: ',local_phasors[7][0])
-        print('PHASE C: ', local_phasors[8][0])
+        print('PHASE A: ',local_phasors[3][0])
+        print('PHASE B: ',local_phasors[4][0])
+        print('PHASE C: ', local_phasors[5][0])
+        (Pact_kVA,Qact_kVA) = PQ_solver(local_phasors, nphases, plug_to_V_idx)
+        print(Pact_kVA, Qact_kVA)
+
 
 
         iterstart = pytime.time()
@@ -824,10 +844,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3:
+                    '''
+                    COMMENTED OUT FOR CIL TESTING
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
+                    '''
+                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
-                    disp('couldnt send inverter commands because no current measurement available')
+                    disp('couldnt send commands because no current measurement available')
             elif self.actType == 'load':
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
@@ -1036,6 +1061,7 @@ entitydict[4] = 'lpbc_5.ent'
 entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
+'''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3', 'uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
@@ -1072,7 +1098,12 @@ for lpbcCounter, key in enumerate(lpbcidx):
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
+        '''
+        COMMENTED OUT FOR CIL TESTING
         localSratio = inverterScaling
+        '''
+        localSratio = CILscaling
+
     elif actType == 'load':
         cfg['rate'] = rate
         cfg['local_channels'] = list(pmu4Channels[pmu4_plugs_dict[key]])
