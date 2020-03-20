@@ -714,10 +714,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
         print('current: ')
-        print('PHASE A: ',local_phasors[6][0])
-        print('PHASE B: ',local_phasors[7][0])
-        print('PHASE C: ', local_phasors[8][0])
-
+        print('PHASE A: ',local_phasors[3][0])
+        print('PHASE B: ',local_phasors[4][0])
+        print('PHASE C: ', local_phasors[5][0])
 
 
         iterstart = pytime.time()
@@ -963,7 +962,7 @@ elif testcase == 'manual':
 #eg if pmu123 port 2 is attached to inverter 3 and port 3 is attached to inverter 2 pmu123_act_to_plug_Map = np.asarray([0, 2, 1])
 pmu0_phase_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be true
 pmu123_act_to_plug_Map = np.asarray([0, 1, 2])
-pmu123P_act_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be in the same order as pmu123_act_to_plug_Map
+# pmu123P_act_to_plug_Map = np.asarray([0, 1, 2]) #this is assumed to be in the same order as pmu123_act_to_plug_Map
 pmu4_act_to_plug_Map = np.asarray([0, 1, 2])
 pmu0_plugs_dict = dict()
 pmu123_plugs_dict = dict()
@@ -1036,9 +1035,8 @@ entitydict[4] = 'lpbc_5.ent'
 entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
-#pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
-pmu123Channels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3','uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3'])
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3','uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
