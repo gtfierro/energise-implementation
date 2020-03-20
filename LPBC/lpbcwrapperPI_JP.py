@@ -717,6 +717,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
+        print('123voltage: ')
+        print('PHASE A: ',local_phasors[6][0])
+        print('PHASE B: ',local_phasors[7][0])
+        print('PHASE C: ', local_phasors[8][0])
 
 
         iterstart = pytime.time()
