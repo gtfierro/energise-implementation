@@ -735,10 +735,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
         '''
-        self
-        result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio,
-                                   self.client)
-
 
         iterstart = pytime.time()
         self.iteration_counter += 1
@@ -1075,7 +1071,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/3.3
 loadScaling = 350
-CILscaling = 500/3.3
+CILscaling = 10 #in VA
 
 rate = 10
 
