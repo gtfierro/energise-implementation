@@ -33,7 +33,8 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
     P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
     Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
-
+    print(Pcmd_VA[0], Pcmd_VA[1], Pcmd_VA[2])
+    print(Qcmd_VA[0], Qcmd_VA[1], Qcmd_VA[2])
     sign_vec = []
     for p, q in zip(Pcmd_VA, Qcmd_VA):
         if p >= 0:
