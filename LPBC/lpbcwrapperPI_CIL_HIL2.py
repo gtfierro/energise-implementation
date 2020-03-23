@@ -721,8 +721,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-        nphases = 3
-        plug_to_V_idx = [0,1,2]
+        '''
         print('REF upmu0: ')
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
@@ -735,9 +734,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
-        (Pact_kVA,Qact_kVA) = self.PQ_solver(local_phasors, nphases, plug_to_V_idx)
-        print(Pact_kVA, Qact_kVA)
-
+        '''
+        self
+        result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio,
+                                   self.client)
 
 
         iterstart = pytime.time()
@@ -1077,7 +1077,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 3
+rate = 10
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):

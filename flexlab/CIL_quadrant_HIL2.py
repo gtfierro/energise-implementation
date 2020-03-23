@@ -34,6 +34,21 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
     P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
     Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
 
+    sign_vec = []
+    for p, q in zip(Pcmd_VA, Qcmd_VA):
+        if p >= 0:
+            sign_vec.append(1)
+        if p < 0:
+            sign_vec.append(0)
+        if q >= 0:
+            sign_vec.append(1)
+        if q < 0:
+            sign_vec.append(0)
+
+    sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[
+            3] + 2 ** 1 * sign_vec[4] + 2 ** 0 * sign_vec[5]
+
+    '''
     sign_vec = [1, 1,
                 1, 1,
                 1, 1]
@@ -42,6 +57,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
     # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
     # mtx = [0]*6
+    '''
     mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
     mtx_register = np.arange(1, 8).tolist()
     print(mtx)
@@ -55,7 +71,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
 
         # client.write_registers(mtx_register, mtx, unit=id)
         # print('sent')
-
+        '''
         for i,j in zip(range(len(act_idxs)), act_idxs): #checks to see if any sign changes occured from last command
             if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
                 act_idxs_registers.append(j)
@@ -87,7 +103,7 @@ def modbustoOpal_quadrant(Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
                     print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i] )
         else:
             pass
-
+        '''
     except Exception as e:
         print(e)
         
@@ -108,5 +124,5 @@ Qact = np.array([[0,0,0],[x,x,x], [x,x,x], [-x,-x,-x], [-x,-x,-x]])
 act_idxs = np.array([1,2,3]) #phases
 for i in range(len(Pcmd_kVA)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
-    print('wait 40 sec...')
-    time.sleep(40)
+    print('wait 30 sec...')
+    time.sleep(30)
