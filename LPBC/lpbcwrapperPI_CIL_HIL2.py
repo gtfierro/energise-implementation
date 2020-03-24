@@ -721,12 +721,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-        '''
+
         print('REF upmu0: ')
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
         print(reference_phasors[2][0])
-        print('upmu123p voltage: ')
+        print('upmu4 voltage: ')
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
@@ -734,7 +734,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
-        '''
+
 
         iterstart = pytime.time()
         self.iteration_counter += 1
@@ -1058,8 +1058,8 @@ entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
-pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3', 'uPMU_123P/C1','uPMU_123P/C2','uPMU_123P/C3'])
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
+pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
