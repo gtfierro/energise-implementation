@@ -720,7 +720,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE C: ', local_phasors[5][0])
 
 
-
+        return
         iterstart = pytime.time()
         self.iteration_counter += 1
         print('iteration counter bus ' + str(self.busId) + ' : ' + str(self.iteration_counter))
