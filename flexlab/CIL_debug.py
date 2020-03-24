@@ -7,7 +7,7 @@ Created on Wed Jul 31 18:20:43 2019
 """
 import numpy as np
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-'''
+
 IP = '131.243.41.14'
 PORT = 504
 id = 3
@@ -18,7 +18,7 @@ id = 3
 
 # Connect to client
 client = ModbusClient(IP, port=PORT)
-
+'''
 try:
     client.connect()
     client.write_registers(int(1), int(50000), unit=id)
@@ -34,7 +34,7 @@ finally:
 
 #P,Q commands in W and VAR (not kilo)
 
-c = 500/3.3/1000
+#c = 500/3.3/1000
 
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
@@ -59,7 +59,7 @@ mtx_register = np.arange(1,8).tolist()
 
 
 try:
-    
+    client.connect()
     # write switch positions for config
     for i in range(len(mtx)):
         client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
