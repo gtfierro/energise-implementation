@@ -815,8 +815,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
-            print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-            print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+            #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+            #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
             print('self.sat_arrayP ' + str(self.sat_arrayP))
             print('self.sat_arrayQ ' + str(self.sat_arrayQ))
             if self.controllerType == 'PI':
@@ -868,6 +868,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
             print(status)
             iterend = pytime.time()
+            print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+            print('self.phasor_error_ang ' + str(self.phasor_error_ang))
             print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
             print('')
             if (iterend-iterstart) > rate:

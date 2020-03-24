@@ -7,7 +7,7 @@ Created on Wed Jul 31 18:20:43 2019
 """
 import numpy as np
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
-
+'''
 IP = '131.243.41.14'
 PORT = 504
 id = 3
@@ -29,9 +29,8 @@ except Exception as e:
 
 finally:
     client.close()
-
-
 '''
+
 
 #P,Q commands in W and VAR (not kilo)
 
@@ -40,6 +39,7 @@ c = 500/3.3/1000
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
+#RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
 P1, P2, P3 = 0, 0, 0
 Q1, Q2, Q3 = 0, 0, 0
 
@@ -74,6 +74,6 @@ except Exception as e:
     
 finally:
     client.close()
-'''
+
     
     
