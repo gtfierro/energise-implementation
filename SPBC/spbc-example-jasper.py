@@ -18,7 +18,7 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b'] # [INPUT HERE]
+lpbc_phases = ['a'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
 angle_unit = 'radians' # [INPUT HERE] - 'degrees' or 'radians'
 
@@ -33,9 +33,9 @@ if dummy_ref == True:
 if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
-    cons_Vmag = [0.99,0.99,0.99]
+    cons_Vmag = [1.02,0.98,0.98]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_Vang = [0-.5,-120+.5,120-1] # [INPUT HERE]
+    cons_Vang = [0+1.5,-120+1,120-1] # [INPUT HERE]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
@@ -50,6 +50,9 @@ Vmag_prev = []
 #lpbc_nodes = []
 
 print()
+print('$$$$$$$$$$$$$$$$')
+print('~~ START SPBC ~~')
+print('$$$$$$$$$$$$$$$$')
 class myspbc(pbc.SPBCProcess):
     """
     This is an example SPBC implementation demonstrating how to access and use
@@ -153,7 +156,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(60, self.compute_and_announce))
+        schedule(self.call_periodic(30, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
@@ -280,8 +283,10 @@ class myspbc(pbc.SPBCProcess):
         #[1.00899569 6.2332654 ]
         #[1.01064548 4.13935041]]
         refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
-        print('phasor reference [pu-rad]:')
-        print(refphasor)
+        
+        if dummy_ref == False:
+            print('phasor reference [pu-rad]:')
+            print(refphasor)
 
         if dummy_ref == True:
             #dummy values
@@ -381,6 +386,7 @@ class myspbc(pbc.SPBCProcess):
                 
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
+                print(f'announcing to lpbc: {lpbc_name}')
                 await self.broadcast_target(lpbc_name, targets['phase'], \
                                 targets['delV'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
 

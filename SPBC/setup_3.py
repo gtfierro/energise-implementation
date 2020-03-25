@@ -302,9 +302,9 @@ def propogatebasesup(tree,currnode,kVbase_phg):
     currnode.Zbase = kVbase_phg*kVbase_phg*1000/currnode.kVAbase
     for inode in tree.predecessors(currnode):
         predlist.append(inode)      
-    print(f'UP - currnode: {currnode.name}')
-    for inode in predlist:
-        print(f'UP - succ: {inode.name}')
+    #print(f'UP - currnode: {currnode.name}')
+    #for inode in predlist:
+        #print(f'UP - succ: {inode.name}')
     for inode in predlist:
         if isinstance(tree[inode][currnode]['connector'],transformer):
             return
@@ -319,9 +319,9 @@ def propogatebasesdown(tree,currnode,kVbase_phg):
     currnode.Zbase = kVbase_phg*kVbase_phg*1000/currnode.kVAbase
     for inode in tree.successors(currnode):
         succlist.append(inode)
-    print(f'DOWN - currnode: {currnode.name}')
-    for inode in succlist:
-        print(f'DOWN- succ: {inode.name}')
+    #print(f'DOWN - currnode: {currnode.name}')
+    #for inode in succlist:
+        #print(f'DOWN- succ: {inode.name}')
     for inode in succlist:
         propogatebasesdown(tree,inode,kVbase_phg)
         
