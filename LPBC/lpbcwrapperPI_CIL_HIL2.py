@@ -853,6 +853,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
                     '''
+                    print('********')
+                    print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
+                    print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
+                    print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+                    print('self.phasor_error_ang ' + str(self.phasor_error_ang))
                     result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
@@ -876,8 +881,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
             print(status)
             iterend = pytime.time()
-            print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-            print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+
             print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
             print('')
             if (iterend-iterstart) > rate:
