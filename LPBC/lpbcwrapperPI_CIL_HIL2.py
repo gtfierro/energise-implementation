@@ -444,8 +444,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             '''
 
-            indexP = np.where(abs(Pcmd)== self.ORT_max_VA/self.localSratio)[0]
-            indexQ = np.where(abs(Qcmd)== self.ORT_max_VA/self.localSratio)[0]
+            indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
+            indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -743,7 +743,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
         '''
-        print(self.localSratio)
+
 
         iterstart = pytime.time()
         self.iteration_counter += 1
