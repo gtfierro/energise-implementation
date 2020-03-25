@@ -1029,12 +1029,12 @@ for key in lpbcidx:
 #entity corresponds to a given piece of hardware (eg a server), putting multiple entities so that the lpbcs could go on different pieces of hardware
 #these entity files are on the server (Leo)
 entitydict = dict()
-entitydict[0] = 'lpbc_1.ent'
-entitydict[1] = 'lpbc_2.ent'
-entitydict[2] = 'lpbc_3.ent'
-entitydict[3] = 'lpbc_4.ent'
-entitydict[4] = 'lpbc_5.ent'
-entitydict[5] = 'lpbc_6.ent'
+entitydict[0] = 'lpbc_6.ent'
+entitydict[1] = 'lpbc_5.ent'
+entitydict[2] = 'lpbc_4.ent'
+entitydict[3] = 'lpbc_3.ent'
+entitydict[4] = 'lpbc_2.ent'
+entitydict[5] = 'lpbc_1.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3', 'uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
