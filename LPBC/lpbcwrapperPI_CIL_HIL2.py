@@ -631,6 +631,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
             Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
 
+        elif nphases == 2: # Phase A, B only (change if needed)
+            P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
+            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), 0
+
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
         sign_vec = []
@@ -649,6 +653,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # TODO modbus only: manually change phase actuation on modbus here for sign base if needed on different phase
         elif nphases == 1:
             sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+        elif nphases == 2: # Phase A, B only (change if needed)
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[3]
+
 
         mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
         print('mtx : ' + str(mtx))
