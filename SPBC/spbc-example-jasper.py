@@ -33,9 +33,10 @@ if dummy_ref == True:
 if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
-    cons_Vmag = [0.97,0.98,0.98] # [INPUT HERE]
+    # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
+    cons_Vmag = [1.02,0.98,0.98] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_Vang = [0-3,-120-1,120-1] # [INPUT HERE]
+    cons_Vang = [0+2,-120-1,120-1] # [INPUT HERE]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
