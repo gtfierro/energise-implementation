@@ -323,7 +323,7 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key] = {}
                     Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[0]-refphasor[2,0]]
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
-                    if self.iteration >= 4:
+                    if self.iteration >= 4: #Change here if we want to set varying targets
                         Vtargdict[key]['Vang'] = [1 - refphasor[0, 1], cons_Vang[1] - refphasor[1, 1],
                                                   cons_Vang[2] - refphasor[2, 1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
