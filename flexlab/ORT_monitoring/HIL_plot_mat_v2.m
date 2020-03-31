@@ -17,10 +17,10 @@ len_min = 50; % INPUT length of sim in minutes
 % headers = readtable('ORT_monitoring_template.xlsx');
 % headers = table2array(headers);
 %copyfile 'IEEE13NF_bal_monitoring_template.xlsx' 'grid_result_1.xlsx'; % create copy of 13nf bal monitoring template
-folder = 'energise_HIL/';
-FileData = load(strcat(folder,'T5_0-R4.mat')); % contains grid_result matrixs
+folder = 'C:\Users\Leo\Documents\energise_results\';
+FileData = load(strcat(folder,'T3_1-R11_ORT.mat')); % contains grid_result matrixs ** Need to change according to .MAT file
 %xlswrite('grid_result_1.xlsx',FileData.grid_result_1',1,'A2')
-a=FileData.grid_result_16'; % rows are across time, cols are across nodes/phases
+a=FileData.grid_result_25'; % rows are across time, cols are across nodes/phases ** May need to change according to field of FileData
 
 a(1,:)=[];
 a(:,2:34)=[];
