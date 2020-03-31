@@ -83,6 +83,16 @@ end
 
 i = 1; %initialize starting column
 if plot_on == 1 
+
+% TO PLOT TARGETS:
+% "hold on; plot(ones(length(ai(:,1)),1)*targetMag, '--', 'LineWidth', 1.5);" <-- add this line of code to plot targets. 
+% Create new variables to set values to target. (see variable "targetMag" on line above.
+% E.g. below:
+% ~~~
+% figure; plot(ai(:,i+40:i+42),'LineWidth',2); hold on; plot(ones(length(ai(:,1)),1)*targetMag, '--', 'LineWidth', 1.5);...
+% legend('692a','692b','692c','target'); title('Vang'); hold off
+% ~~~
+
     figure; plot(ai(:,i+1:i+3),'LineWidth',2); legend('671a','671b','671c'); title('P');
     figure; plot(ai(:,i+4:i+6),'LineWidth',2); legend('675a','675b','675c'); title('P');
     figure; plot(ai(:,i+7),'LineWidth',2); legend('652a'); title('P');
