@@ -85,3 +85,4 @@ dfsw_in,dfsw_out = read_sw_mat(filepath)
 sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
 #sim_start_pause_stop(sim_length_min)
 
+#sim_stop()
