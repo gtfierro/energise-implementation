@@ -63,21 +63,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
+
+            # TODO: CHANGE CONTROLLER GAINS HERE
             #3.1
 # =============================================================================
-#             kp_ang = [0.0034]
-#             ki_ang = [0.0677]
-#             kp_mag = [0.5670]
-#             ki_mag = [3.4497]
+            kp_ang = [0.0034]
+            ki_ang = [0.0677]
+            kp_mag = [0.5670]
+            ki_mag = [3.4497]
 # =============================================================================
             
             #3.2
-            alph = 0.4
-            beta = 0.75
-            kp_ang = [0.00108*alph,0.0342*alph]
-            ki_ang = [0.0618*alph,0.0677*alph]
-            kp_mag = [0.6901*beta,1.6522*beta]
-            ki_mag = [3.46*beta,3.5004*beta]
+            # alph = 0.4
+            # beta = 0.75
+            # kp_ang = [0.00108*alph,0.0342*alph]
+            # ki_ang = [0.0618*alph,0.0677*alph]
+            # kp_mag = [0.6901*beta,1.6522*beta]
+            # ki_mag = [3.46*beta,3.5004*beta]
             
             #3.3
 # =============================================================================
