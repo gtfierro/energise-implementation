@@ -67,8 +67,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # TODO: CHANGE CONTROLLER GAINS HERE
             #3.1
 # =============================================================================
-            alph = 0.35
-            beta = 0.4
+            alph = 0.2
+            beta = 0.1
             kp_ang = [0.0034*alph]
             ki_ang = [0.0677*alph]
             kp_mag = [0.5670*beta]
