@@ -18,7 +18,7 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a', 'b'] # [INPUT HERE]
+lpbc_phases = ['a'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
