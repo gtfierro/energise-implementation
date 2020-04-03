@@ -504,11 +504,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     COMMENTED OUT FOR CIL TESTING
                     self.Qmax_pu[phase] = Qact_pu[phase]
                     '''
-                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
-                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
             else:
                 self.ICDI_sigQ[phase] = False
                 self.Qmax_pu[phase] = np.NaN
