@@ -76,21 +76,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             
             #3.2
-            alph = 0.5
-            beta = 0.5
-            kp_ang = [0.00108*alph,0.0342*alph]
-            ki_ang = [0.0618*alph,0.0677*alph]
-            kp_mag = [0.6901*beta,1.6522*beta]
-            ki_mag = [3.46*beta,3.5004*beta]
+            # alph = 0.5
+            # beta = 0.5
+            # kp_ang = [0.00108*alph,0.0342*alph]
+            # ki_ang = [0.0618*alph,0.0677*alph]
+            # kp_mag = [0.6901*beta,1.6522*beta]
+            # ki_mag = [3.46*beta,3.5004*beta]
             
             #3.3
 # =============================================================================
-#             alph = 0.45
-#             beta = 0.75
-#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+            alph = 0.75
+            beta = 0.75
+            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -995,7 +995,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
