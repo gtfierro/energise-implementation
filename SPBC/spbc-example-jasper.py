@@ -323,7 +323,13 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key] = {}
                     Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[2]-refphasor[2,0]]
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
-                    if self.iteration >= 31: #Change here if we want to set varying targets
+                    if 13 <= self.iteration < 26: #Change here if we want to set varying targets
+                        Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
+                        Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
+                    elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
+                        Vtargdict[key]['Vmag'] = [0.97 - refphasor[0, 0], 0.97 - refphasor[1, 0],0.97 - refphasor[2, 0]]
+                        Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -123 - refphasor[1, 1], 117 - refphasor[2, 1]]
+                    elif self.iteration >= 39: #Change here if we want to set varying targets
                         Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[1, 0],0.96 - refphasor[2, 0]]
                         Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -124 - refphasor[1, 1], 116 - refphasor[2, 1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
