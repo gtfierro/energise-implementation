@@ -54,7 +54,7 @@ Q1, Q2, Q3 = -1000, 1000, 1000
 mtx = [P1,Q1,P2,Q2,P3,Q3]
 mtx_register = [201,202,203,204,205,206]
 
-
+print('here')
 try:
     client.connect()
     # write switch positions for config
