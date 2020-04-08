@@ -85,8 +85,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.6
-            beta = 0.3
+            alph = 0.7
+            beta = 0.28
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
@@ -1092,7 +1092,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 7
+rate = 11
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
