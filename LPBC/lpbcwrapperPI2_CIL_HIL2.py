@@ -628,21 +628,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # P,Q commands in W and VAR (not kilo)
 
         if nphases == 3:
-            P1, P2, P3 = Pcmd_VA[0], Pcmd_VA[1], Pcmd_VA[2]
-            Q1, Q2, Q3 = Qcmd_VA[0], Qcmd_VA[1], Qcmd_VA[2]
+            P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
+            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
         # TODO modbus only: manually change phase actuation on modbus here if needed on different phase
         elif nphases == 1:
-            P1, P2, P3 = Pcmd_VA[0], 0, 0
-            Q1, Q2, Q3 = Qcmd_VA[0], 0, 0
+            P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
+            Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
 
         elif nphases == 2: # Phase A, B only (change if needed)
-            P1, P2, P3 = Pcmd_VA[0], Pcmd_VA[1], 0
-            Q1, Q2, Q3 = Qcmd_VA[0], Qcmd_VA[1], 0
+            P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
+            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), 0
 
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
 
-        ''' NO NEED FOR SIGN VEC SINCE MAXIME SETUP REGISTERS 201,202,203,204,205,206 for P/Q loadrack sub in CIL
         sign_vec = []
         for p, q in zip(Pcmd_VA, Qcmd_VA):
             if p >= 0:
@@ -662,12 +661,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         elif nphases == 2: # Phase A, B only (change if needed)
             sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[3]
-        
-        '''
 
-        mtx = [P1, Q1, P2, Q2, P3, Q3]
+
+        mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
         print('mtx : ' + str(mtx))
-        mtx_register = [202,203,204,205,206]
+        mtx_register = [201,202,203,204,205,206,207]
         try:
             client.connect()
             # write switch positions for config

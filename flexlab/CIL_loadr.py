@@ -39,11 +39,21 @@ finally:
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
-#RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
-P1, P2, P3 = -3000, 1000, 1000
-Q1, Q2, Q3 = -3000, 1000, 1000
+P1, P2, P3 = 3000, 1000, 1000
+Q1, Q2, Q3 = 3000, 1000, 1000
 
+sign_vec = [0,0,
+            0,0,
+            0,0]
+sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
 
+# set signs of commands through sign_vec
+#           P,Q      1 is positive, 0 is negative
+# sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
+
+#mtx = [0]*6
+mtx = [P1,Q1,P2,Q2,P3,Q3,sign_base]
+mtx_register = [201,202,203,204,205,206,207]
 
 # set signs of commands through sign_vec
 #           P,Q      1 is positive, 0 is negative
@@ -51,10 +61,7 @@ Q1, Q2, Q3 = -3000, 1000, 1000
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
 #mtx = [0]*6
-mtx = [P1,Q1,P2,Q2,P3,Q3]
-mtx_register = [201,202,203,205,206,207]
 
-print('here')
 try:
     client.connect()
     # write switch positions for config
