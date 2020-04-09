@@ -714,6 +714,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
+        print('upmu4 voltage: ')
+        print('PHASE A: ',local_phasors[6][0])
+        print('PHASE B: ',local_phasors[7][0])
+        print('PHASE C: ', local_phasors[8][0])
         print('upmu4 current: ')
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
@@ -1037,7 +1041,7 @@ entitydict[4] = 'lpbc_2.ent'
 entitydict[5] = 'lpbc_1.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
-pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3', 'uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
+pmu123Channels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3', 'uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
 pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
