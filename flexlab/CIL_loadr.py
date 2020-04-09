@@ -42,7 +42,7 @@ finally:
 P1, P2, P3 = 3000, 1000, 1000
 Q1, Q2, Q3 = 3000, 1000, 1000
 
-sign_vec = [0,0,
+sign_vec = [1,1,
             0,0,
             0,0]
 sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
