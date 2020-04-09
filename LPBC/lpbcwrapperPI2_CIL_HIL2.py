@@ -408,16 +408,18 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         theta = [0.0] * nphases
         Pact_kVA = np.asarray([0.0] * nphases)
         Qact_kVA = np.asarray([0.0] * nphases)
+        ''' COMMENTED OUT FOR CIL TESTING ONLY!
         for plug in range(nphases):
             phase_idx = plug_to_V_idx[plug] #assumes plug to V map is the same for uPMUp123 voltage, uPMU123 current and uPMU123 voltage
             V_mag[phase_idx] = local_phasors[plug][-1]['magnitude'] #pulls out vmeas from uPMU123 not uPMUP123
             V_ang[phase_idx] = local_phasors[plug][-1]['angle']
-            I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude']
-            I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle']
+            I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude'] #check plugs!
+            I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle'] #check plugs!
             theta[phase_idx] = np.radians(V_ang[phase_idx] - I_ang[phase_idx]) #angle comes in in degrees, theta is calced for each phase, so there shouldnt be any 2pi/3 offsets
             # P = (VI)cos(theta), Q = (VI)sin(theta)
             Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(theta[phase_idx]))/1000
             Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(theta[phase_idx]))/1000
+        '''
         return (Pact_kVA,Qact_kVA)
 
 
