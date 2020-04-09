@@ -714,11 +714,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
-
-        # print('upmu123p voltage: ')
-        # print('PHASE A: ',local_phasors[3][0])
-        # print('PHASE B: ',local_phasors[4][0])
-        # print('PHASE C: ', local_phasors[5][0])
+        print('upmu123p voltage: ')
+        print('PHASE A: ',local_phasors[3][0])
+        print('PHASE B: ',local_phasors[4][0])
+        print('PHASE C: ', local_phasors[5][0])
 
 
         return
@@ -1038,7 +1037,7 @@ entitydict[4] = 'lpbc_2.ent'
 entitydict[5] = 'lpbc_1.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
-pmu123Channels = np.asarray([])
+pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3', 'uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
 pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
@@ -1070,7 +1069,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
     if actType == 'inverter':
         cfg['rate'] = rate
-        cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
+        cfg['local_channels'] = list(np.concatenate([pmu123PChannels[pmu123P_plugs_dict[key]], pmu123Channels[3 + pmu123_plugs_dict[key]], pmu123Channels[pmu123_plugs_dict[key]]]))
         #takes voltage measurements from PMU123P, current from PMU123, voltage measurements from PMU123P
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #assumes current and voltage plugs are connected the same way
         currentMeasExists = True
