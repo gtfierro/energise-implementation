@@ -17,11 +17,11 @@ class PIcontroller():
     def PIiteration(self, nphases, phasor_error_mag, phasor_error_ang, sat_arrayP, sat_arrayQ):
         phasor_error_ang = np.degrees(phasor_error_ang)
         for phase in range(nphases):
-            currentIntError_ang = phasor_error_ang[phase] * sat_arrayP[phase]
+            currentIntError_ang = phasor_error_ang[phase]
             self.intError_ang[phase] += currentIntError_ang
             self.Pcmd_pu[phase] = (self.Kp_ang[phase] * phasor_error_ang[phase]) + self.Ki_ang[phase] * self.intError_ang[phase]
 
-            currentIntError_mag = phasor_error_mag[phase] * sat_arrayQ[phase]
+            currentIntError_mag = phasor_error_mag[phase] #* sat_arrayQ[phase]
             self.intError_mag[phase] += currentIntError_mag
             self.Qcmd_pu[phase] = (self.Kp_mag[phase] * phasor_error_mag[phase]) + self.Ki_mag[phase] * self.intError_mag[phase]
         print('self.intError_ang : ' + str(self.intError_ang))
