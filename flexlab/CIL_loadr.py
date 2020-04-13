@@ -62,7 +62,7 @@ mtx_register = [201,202,203,204,205,206,207]
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
 #mtx = [0]*6
-
+time.sleep(480)
 try:
     client.connect()
     # write switch positions for config
