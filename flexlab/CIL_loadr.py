@@ -89,6 +89,9 @@ sign_vec = [0,0,
             0,0]
 sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
 
+mtx = [P1,Q1,P2,Q2,P3,Q3,sign_base]
+mtx_register = [201,202,203,204,205,206,207]
+
 try:
     client.connect()
     # write switch positions for config
