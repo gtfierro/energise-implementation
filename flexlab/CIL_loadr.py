@@ -6,6 +6,7 @@ Created on Wed Jul 31 18:20:43 2019
 @author: energise
 """
 import numpy as np
+import time
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 IP = '131.243.41.14'
@@ -39,12 +40,12 @@ finally:
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
-P1, P2, P3 = 3000, 1000, 1000
-Q1, Q2, Q3 = 3000, 1000, 1000
+P1, P2, P3 = 3000, 3000, 3000
+Q1, Q2, Q3 = 3000, 3000, 3000
 
 sign_vec = [1,1,
-            0,0,
-            0,0]
+            1,1,
+            1,1]
 sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
 
 # set signs of commands through sign_vec
@@ -71,13 +72,35 @@ try:
     
     #client.write_registers(mtx_register, mtx, unit=id)
     #print('sent')
-        
-    
+
 except Exception as e:
     print(e)
     
 finally:
     client.close()
 
+time.sleep(1450)
     
-    
+P1, P2, P3 = 3000, 3000, 3000
+Q1, Q2, Q3 = 3000, 3000, 3000
+
+sign_vec = [0,0,
+            0,0,
+            0,0]
+sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
+
+try:
+    client.connect()
+    # write switch positions for config
+    for i in range(len(mtx)):
+        client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+    print('sent')
+
+    # client.write_registers(mtx_register, mtx, unit=id)
+    # print('sent')
+
+except Exception as e:
+    print(e)
+
+finally:
+    client.close()
