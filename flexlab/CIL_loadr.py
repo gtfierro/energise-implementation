@@ -79,7 +79,7 @@ except Exception as e:
 finally:
     client.close()
 
-time.sleep(1450)
+time.sleep(1400)
     
 P1, P2, P3 = 3000, 3000, 3000
 Q1, Q2, Q3 = 3000, 3000, 3000
