@@ -1,0 +1,673 @@
+
+~~~~~~~TEST RESULTS~~~~~~~
+
+__CIL T3.1:__
+
+target:[0.98, 1] #[abosolute p.u., relative angle degrees]
+
+simulation start time: 1351
+epoch: 1585849646.4473288
+2020-04-02 17:47:26.447349
+
+1585849639.0750964
+
+simulation end time 1951
+epoch: 1585850246.0833588
+2020-04-02 17:57:26.083394
+
+~~
+target:[0.98, 1] #[abosolute p.u., relative angle degrees]
+gains
+
+simulation start time: 14113
+epoch: 1585862410.5626037
+2020-04-02 21:20:10.562618
+
+1585862407.1439183
+
+simulation end time 14713
+epoch: 1585863009.6926594
+2020-04-02 21:30:09.692710
+~~
+
+FULL TEST:
+target:[0.99, 1] #[abosolute p.u., relative angle degrees]
+alpha = 1, beta = 1
+
+simulation start time: 16086
+epoch: 1585864383.988147
+2020-04-02 21:53:03.988177
+
+1585864395.0555513
+
+simulation end time 19086
+epoch: 1585867383.1662793
+2020-04-02 22:43:03.166338
+~~
+FULL TEST:
+target:[0.99, -1] #[abosolute p.u., relative angle degrees]
+- same gains as T3.2 PH1
+
+simulation start time: 38913
+epoch: 1585952756.6420557
+2020-04-03 22:25:56.642085
+
+1585952793.6032906
+
+simulation end time 41913
+epoch: 1585955756.3215406
+2020-04-03 23:15:56.321614
+
+~~
+~~~~
+
+__CIL T3.2__
+
+simulation start time: 21640
+epoch: 1585935481.8549237
+2020-04-03 17:38:01.854938
+
+1585935500.6736867
+
+simulation end time 22240
+epoch: 1585936080.9907904
+2020-04-03 17:48:00.990891
+
+-gains: alpha= 0.4, beta= 0.75
+-PH2 ang didn't meet target
+~~
+simulation start time: 24736
+epoch: 1585938578.0335622
+2020-04-03 18:29:38.033615
+
+1585938585.8704262
+
+simulation end time 25336
+epoch: 1585939177.16848
+2020-04-03 18:39:37.168553
+
+-bad gains: alpha=1, beta=1
+-P saturated
+~~
+
+simulation start time: 27893
+epoch: 1585941735.720712
+2020-04-03 19:22:15.720744
+
+1585941777.6779234
+
+
+simulation end time 28493
+epoch: 1585942334.8552525
+2020-04-03 19:32:14.855325
+
+-good gains: alpha=0.5, beta=0.5
+-met targets
+
+~~
+
+FULL TEST:
+target:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha = 0.5, beta = 0.5
+
+simulation start time: 30561
+epoch: 1585944403.8056147
+2020-04-03 20:06:43.805644
+
+
+1585944413.7940013
+
+SSH had error toward end of test. Lost connection with fitPC.
+Didn't print simulation end time, but results came out fine.
+
+~~
+~~~~
+
+__CIL T3.3__
+
+simulation start time: 44219
+epoch: 1585958062.6387868
+2020-04-03 23:54:22.638809
+
+1585958074.9948254
+
+simulation end time 44819
+epoch: 1585958662.2728848
+2020-04-04 00:04:22.272941
+
+-gains: alpha=0.75, beta=0.75
+
+~~
+
+simulation start time: 45537
+epoch: 1585959381.4275095
+2020-04-04 00:16:21.427558
+
+1585959388.6443453
+
+simulation end time 46137
+epoch: 1585959980.5631988
+2020-04-04 00:26:20.563267
+
+-gains: alpha=0.5, beta=0.5
+
+~~
+
+simulation start time: 18581
+epoch: 1586194596.006432
+2020-04-06 17:36:36.006464
+
+1586194612.0654697
+
+simulation end time 19181
+epoch: 1586195195.1411624
+2020-04-06 17:46:35.141198
+
+-gains: alpha=0.5, beta=0.5
+
+~~
+
+simulation start time: 20030
+epoch: 1586196044.824969
+2020-04-06 18:00:44.825020
+
+1586196054.44829
+
+
+simulation end time 20630
+epoch: 1586196644.4611404
+2020-04-06 18:10:44.461186
+
+-gains: alpha=0.6, beta=0.6
+
+~~
+
+simulation start time: 23899
+epoch: 1586199914.6673272
+2020-04-06 19:05:14.667383
+
+1586199924.5745308
+
+simulation end time 24499
+epoch: 1586200513.803956
+2020-04-06 19:15:13.804030
+
+-gains: alpha=0.6, beta=0.5
+
+~~
+
+simulation start time: 25715
+epoch: 1586201730.5656903
+2020-04-06 19:35:30.565745
+
+1586201742.1667182
+
+simulation end time 26315
+epoch: 1586202330.2003188
+2020-04-06 19:45:30.200396
+
+-gains: alpha=1, beta=1
+
+~~
+
+simulation start time: 26876
+epoch: 1586202891.8193667
+2020-04-06 19:54:51.819411
+
+1586202900.59577
+
+simulation end time 27476
+epoch: 1586203490.952829
+2020-04-06 20:04:50.952883
+
+-gains: alpha=0.55, beta=0.55
+
+~~
+
+simulation start time: 28200
+epoch: 1586204215.6067796
+2020-04-06 20:16:55.606807
+
+1586204225.9867234
+
+simulation end time 28800
+epoch: 1586204815.239755
+2020-04-06 20:26:55.239791
+
+-gains: alpha=0.6, beta=0.3
+
+~~
+
+simulation start time: 29172
+epoch: 1586205187.8192282
+2020-04-06 20:33:07.819260
+
+1586205196.2587445
+
+simulation end time 29772
+epoch: 1586205787.4527023
+2020-04-06 20:43:07.452804
+
+-gains: alpha=0.7, beta=0.3
+
+~~
+
+FULL TEST:
+target:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.6, beta=0.3
+
+simulation start time: 36763
+epoch: 1586212779.467177
+2020-04-06 22:39:39.467209
+
+1586212790.5076118
+
+simulation end time 39763
+epoch: 1586215779.644689
+2020-04-06 23:29:39.644750
+
+~~
+~~~~
+
+__CIL T3.4__
+
+FULL TEST:
+target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2:[0.97, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.6, beta=0.3
+
+simulation start time: 45640
+epoch: 1586221658.4134269
+2020-04-07 01:07:38.413458
+
+1586221669.3499267
+
+simulation end time 48640
+epoch: 1586224657.5839453
+2020-04-07 01:57:37.584021
+
+~~
+
+FULL TEST:
+target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2:[0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.6, beta=0.3
+
+simulation start time: 58408
+epoch: 1586234427.1935227
+2020-04-07 04:40:27.193555
+
+1586234436.4958215
+
+simulation end time 61408
+epoch: 1586237426.861822
+2020-04-07 05:30:26.861862
+
+~~
+FULL TEST:RERUN
+target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2:[0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.6, beta=0.3
+
+simulation start time: 36941
+epoch: 1586278501.7327547
+2020-04-07 16:55:01.732814
+
+1586278510.416896
+
+simulation end time 39941
+epoch: 1586281500.9140024
+2020-04-07 17:45:00.914060
+
+~~
+
+FULL TEST:
+target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2:[0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3:[0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4:[0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.6, beta=0.3
+
+simulation start time: 51743
+epoch: 1586293305.4603038
+2020-04-07 21:01:45.460362
+
+1586293319.8256304
+
+simulation end time 54743
+epoch: 1586296304.6402073
+2020-04-07 21:51:44.640325
+
+~~
+~~~~
+
+__CIL T7.1__
+
+~~
+simulation start time: 5842
+epoch: 1586454247.8341324
+2020-04-09 17:44:07.834171
+
+1586454269.46851
+
+simulation end time 6442
+epoch: 1586454846.9676497
+2020-04-09 17:54:06.967695
+
+-gains: alpha=0.6, beta=0.3 (T3.3) both controllers
+-rate=8
+
+~~
+
+simulation start time: 7625
+epoch: 1586456030.2220845
+2020-04-09 18:13:50.222116
+
+1586456044.3744576
+
+simulation end time 8225
+epoch: 1586456629.8583112
+2020-04-09 18:23:49.858386
+
+-gains: alpha=0.7, beta=0.3 (T3.3) both controllers
+
+~~
+
+simulation start time: 8759
+epoch: 1586457164.9727442
+2020-04-09 18:32:44.972762
+
+1586457175.483097
+
+simulation end time 9359
+epoch: 1586457764.108252
+2020-04-09 18:42:44.108321
+
+-gains: alpha=0.6, beta=0.4 (T3.3) both controllers
+
+~~
+
+simulation start time: 9853
+epoch: 1586458259.2145197
+2020-04-09 18:50:59.214547
+
+1586458268.4107494
+
+simulation end time 10453
+epoch: 1586458858.349733
+2020-04-09 19:00:58.349806
+
+-gains: alpha=0.6, beta=0.5 (T3.3) both controllers
+
+~~
+
+simulation start time: 11235
+epoch: 1586459640.51723
+2020-04-09 19:14:00.517288
+
+1586459647.8553116
+
+simulation end time 11835
+epoch: 1586460240.1520698
+2020-04-09 19:24:00.152108
+
+-gains: alpha=0.6, beta=0.7 (T3.3) both controllers
+
+~~
+
+simulation start time: 13366
+epoch: 1586461771.9812572
+2020-04-09 19:49:31.981323
+
+1586461784.8042505
+
+simulation end time 13966
+epoch: 1586462371.6170754
+2020-04-09 19:59:31.617134
+
+-gains: alpha=0.7, beta=0.8 (T3.3) both controllers
+
+~~
+
+simulation start time: 14448
+epoch: 1586462854.7206774
+2020-04-09 20:07:34.720706
+
+1586462863.8128996
+
+simulation end time 15048
+epoch: 1586463453.8558152
+2020-04-09 20:17:33.855885
+
+-gains: alpha=0.75, beta=0.75 (T3.3) both controllers
+
+~~
+
+simulation start time: 16997
+epoch: 1586465403.2750642
+2020-04-09 20:50:03.275097
+
+1586465409.6559868
+
+simulation end time 17597
+epoch: 1586466002.9106536
+2020-04-09 21:00:02.910707
+
+-gains: alpha=0.8, beta=0.75 (T3.3) both controllers
+
+~~
+
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 1539
+epoch: 1586469982.8421526
+2020-04-09 22:06:22.842184
+
+1586469990.24508
+
+simulation end time 4539
+epoch: 1586472983.0210643
+2020-04-09 22:56:23.021112
+
+~~
+
+simulation start time: 7072
+epoch: 1586475517.0655198
+2020-04-09 23:38:37.065551
+
+1586475524.5066786
+
+simulation end time 7672
+epoch: 1586476116.201342
+2020-04-09 23:48:36.201408
+
+-changed targets to [-0.03],[+1]
+-hit saturation on several phases
+
+~~
+
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 9289
+epoch: 1586477734.5577815
+2020-04-10 00:15:34.557852
+
+
+simulation end time 12289
+epoch: 1586480733.727185
+2020-04-10 01:05:33.727267
+
+~~
+
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+rate = 11
+
+simulation start time: 12898
+epoch: 1586546887.057573
+2020-04-10 19:28:07.057605
+
+1586546895.263337
+
+simulation end time 15898
+epoch: 1586549886.230767
+2020-04-10 20:18:06.230794
+
+~~
+~~~~
+
+__CIL T7.2__
+
+~~
+
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+- target change at 1500 s
+
+simulation start time: 19879
+epoch: 1586488325.357981
+2020-04-10 03:12:05.358017
+
+1586488334.1678803
+
+simulation end time 22879
+epoch: 1586491325.0358102
+2020-04-10 04:02:05.035882
+
+~~
+
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+- target change at 1900 s
+
+simulation start time: 20492
+epoch: 1586554481.75622
+2020-04-10 21:34:41.756240
+
+simulation end time 23492
+epoch: 1586557480.9339356
+2020-04-10 22:24:40.933961
+
+~~
+
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 25585
+epoch: 1586559575.384817
+2020-04-10 22:59:35.384866
+
+1586559583.4517038
+
+simulation end time 28585
+epoch: 1586562574.5606842
+2020-04-10 23:49:34.560723
+
+- Stuck at saturation. Fixed bug - turned off anti-windup control
+~~
+
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 42982
+epoch: 1586576974.178617
+2020-04-11 03:49:34.178650
+
+simulation end time 45982
+epoch: 1586579973.3526173
+2020-04-11 04:39:33.352677
+
+~~
+
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 2333
+epoch: 1586798493.075031
+2020-04-13 17:21:33.075064
+
+1586798503.8920345
+
+simulation end time 5333
+epoch: 1586801492.7549326
+2020-04-13 18:11:32.755014
+
+~~
+
+SIDE TEST: T7.2e with control only at 675, (671 off):
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3)
+
+simulation start time: 7911
+epoch: 1586804072.3083935
+2020-04-13 18:54:32.308444
+
+1586804085.7097366
+
+simulation end time 10911
+epoch: 1586807071.4901278
+2020-04-13 19:44:31.490194
+
+~~
+~~~~
+
+__CIL T8.1__
+
+~~
+
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+virtual loadracks disturbance at 671: +/- 300k P/Q
+
+simulation start time: 14624
+epoch: 1586810785.4423676
+2020-04-13 20:46:25.442391
+
+1586810798.4176912
+
+simulation end time 17624
+epoch: 1586813785.119782
+2020-04-13 21:36:25.119855
+
+~~
+
+FULL TEST:
+Same as above, but shifted disturbance timing.
+
+simulation start time: 18131
+epoch: 1586814292.728014
+2020-04-13 21:44:52.728035
+
+1586814302.92054
+
+simulation end time 21131
+epoch: 1586817292.4147894
+2020-04-13 22:34:52.414845
+
+~~
+
+
