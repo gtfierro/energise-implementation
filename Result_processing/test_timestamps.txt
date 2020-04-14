@@ -532,6 +532,23 @@ epoch: 1586549886.230767
 2020-04-10 20:18:06.230794
 
 ~~
+
+*Figure T7.1d*
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+rate = 10
+
+simulation start time: 32922
+epoch: 1586894628.7919786
+2020-04-14 20:03:48.791995
+
+1586894637.081213
+
+simulation end time 35922
+epoch: 1586897628.4480722
+2020-04-14 20:53:48.448168
+
 ~~~~
 
 __CIL T7.2__
@@ -572,6 +589,23 @@ simulation end time 23492
 epoch: 1586557480.9339356
 2020-04-10 22:24:40.933961
 
+~~
+
+*Figure T7.2b_10*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+- target change at 1900 s
+-rate =10s
+
+simulation start time: 38966
+epoch: 1586900673.1025884
+2020-04-14 21:44:33.102622
+
+1586900682.2861848
+
+SSH connection lost at end. Didn't print end time. Results look fine.
 ~~
 
 FULL TEST:
