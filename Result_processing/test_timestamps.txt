@@ -44,6 +44,8 @@ simulation end time 19086
 epoch: 1585867383.1662793
 2020-04-02 22:43:03.166338
 ~~
+
+*Figure T3.1_3*
 FULL TEST:
 target:[0.99, -1] #[abosolute p.u., relative angle degrees]
 - same gains as T3.2 PH1
@@ -106,6 +108,7 @@ epoch: 1585942334.8552525
 
 ~~
 
+*Figure T3.2*
 FULL TEST:
 target:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 alpha = 0.5, beta = 0.5
@@ -252,6 +255,7 @@ epoch: 1586205787.4527023
 
 ~~
 
+*Figure T3.3*
 FULL TEST:
 target:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 alpha=0.6, beta=0.3
@@ -271,6 +275,9 @@ epoch: 1586215779.644689
 
 __CIL T3.4__
 
+~~
+
+*Figure T3.4h*
 FULL TEST:
 target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2:[0.97, -4] for all phases #[abosolute p.u., relative angle degrees]
@@ -304,6 +311,8 @@ epoch: 1586237426.861822
 2020-04-07 05:30:26.861862
 
 ~~
+
+*Figure T3.4b*
 FULL TEST:RERUN
 target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2:[0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
@@ -321,6 +330,7 @@ epoch: 1586281500.9140024
 
 ~~
 
+*Figure T3.4c*
 FULL TEST:
 target_1:[0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2:[0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -457,6 +467,7 @@ epoch: 1586466002.9106536
 
 ~~
 
+*Figure T7.1*
 FULL TEST:
 target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 alpha=0.75, beta=0.75 (T3.3) both controllers
@@ -488,6 +499,7 @@ epoch: 1586476116.201342
 
 ~~
 
+*Figure T7.1b*
 FULL TEST:
 target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 alpha=0.75, beta=0.75 (T3.3) both controllers
@@ -503,6 +515,7 @@ epoch: 1586480733.727185
 
 ~~
 
+*Figure T7.1c*
 FULL TEST:
 target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 alpha=0.75, beta=0.75 (T3.3) both controllers
@@ -525,6 +538,7 @@ __CIL T7.2__
 
 ~~
 
+*Figure T7.2*
 FULL TEST:
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -543,6 +557,7 @@ epoch: 1586491325.0358102
 
 ~~
 
+*Figure T7.2b*
 FULL TEST:
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -579,6 +594,7 @@ epoch: 1586562574.5606842
 - Stuck at saturation. Fixed bug - turned off anti-windup control
 ~~
 
+*Figure T7.2c*
 FULL TEST:
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -596,6 +612,7 @@ epoch: 1586579973.3526173
 
 ~~
 
+*Figure T7.2d*
 FULL TEST:
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -615,7 +632,7 @@ epoch: 1586801492.7549326
 
 ~~
 
-SIDE TEST: T7.2e with control only at 675, (671 off):
+SIDE TEST: T7.2d with control only at 675, (671 off):
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
 target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
@@ -639,6 +656,7 @@ __CIL T8.1__
 
 ~~
 
+*Figure 8.1*
 FULL TEST:
 target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 virtual loadracks disturbance at 671: +/- 300k P/Q
@@ -655,6 +673,7 @@ epoch: 1586813785.119782
 
 ~~
 
+*Figure 8.1b*
 FULL TEST:
 Same as above, but shifted disturbance timing.
 
