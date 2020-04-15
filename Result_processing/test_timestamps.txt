@@ -685,6 +685,26 @@ epoch: 1586801492.7549326
 
 ~~
 
+*Figure T7-2d_10*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+
+simulation start time: 47008
+epoch: 1586974259.0150738
+2020-04-15 18:10:59.015101
+
+1586974310.0364213
+
+simulation end time 50008
+epoch: 1586977258.6940136
+2020-04-15 19:00:58.694082
+
+~~
+
 SIDE TEST: T7-2d with control only at 675, (671 off):
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
@@ -709,7 +729,7 @@ __CIL T8.1__
 
 ~~
 
-*Figure 8-1*
+*Figure T8-1*
 FULL TEST:
 target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
 virtual loadracks disturbance at 671: +/- 300k P/Q
@@ -726,7 +746,7 @@ epoch: 1586813785.119782
 
 ~~
 
-*Figure 8-1b*
+*Figure T8-1b*
 FULL TEST:
 Same as above, but shifted disturbance timing.
 
