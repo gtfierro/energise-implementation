@@ -646,6 +646,25 @@ epoch: 1586579973.3526173
 
 ~~
 
+*Figure T7.2c_10*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+rate =10s
+
+simulation start time: 46390
+epoch: 1586908098.233377
+2020-04-14 23:48:18.233418
+
+1586908119.7603357
+
+SSH connection lost at end. Result look fine.
+
+~~
+
 *Figure T7.2d*
 FULL TEST:
 target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
