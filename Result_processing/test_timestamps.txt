@@ -549,6 +549,22 @@ simulation end time 35922
 epoch: 1586897628.4480722
 2020-04-14 20:53:48.448168
 
+~~
+
+*Figure T7-1d_LR*
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+rate = 10
+LOADRACKS (P only)
+
+simulation start time: 13199                                                                 
+epoch: 1587071532.429069                                                               
+2020-04-16 21:12:12.429107   
+
+1587071560.2594378
+
+
 ~~~~
 
 __CIL T7.2__
@@ -762,4 +778,19 @@ epoch: 1586817292.4147894
 
 ~~
 
+*Figure T8-1c*
+FULL TEST:
+target: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+virtual loadracks disturbance at 671: +/- 300k P only
 
+simulation start time: 8957                                                                  
+epoch: 1587067289.984964    
+2020-04-16 20:01:29.984995  
+
+1587067295.1454942
+
+simulation end time 11957                                                                
+epoch: 1587070290.1630769                                                                   
+2020-04-16 20:51:30.163176   
+
+~~
