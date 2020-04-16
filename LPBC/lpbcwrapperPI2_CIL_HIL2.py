@@ -631,15 +631,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if nphases == 3:
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
+            Q1, Q2, Q3 = 0, 0, 0
         # TODO modbus only: manually change phase actuation on modbus here if needed on different phase
         elif nphases == 1:
             P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
+            Q1, Q2, Q3 = 0, 0, 0
 
         elif nphases == 2: # Phase A, B only (change if needed)
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), 0
+            Q1, Q2, Q3 = 0, 0, 0
 
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
@@ -837,6 +837,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('self.sat_arrayQ ' + str(self.sat_arrayQ))
             if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+                self.Qcmd_kVA= 0 # for load racks TODO
+                self.Qcmd_pu = 0 # for load racks TODO
             elif self.controllerType == 'LQR':
                 if self.currentMeasExists:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
