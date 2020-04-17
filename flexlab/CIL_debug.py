@@ -40,8 +40,8 @@ finally:
 #Q1, Q2, Q3 = 2, 4, 6
 
 #RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
-P1, P2, P3 = 0, 0, 7000
-Q1, Q2, Q3 = 0, 0, 7000
+P1, P2, P3 = 0, 0, 0
+Q1, Q2, Q3 = 0, 0, 0
 
 
 
@@ -49,7 +49,7 @@ Q1, Q2, Q3 = 0, 0, 7000
 #           P,Q      1 is positive, 0 is negative
 sign_vec = [0,0,
             0,0,
-            1,1]
+            0,0]
 sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
