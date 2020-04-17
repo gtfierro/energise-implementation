@@ -18,8 +18,8 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','',''] # [INPUT HERE]
-lpbc_nodeIDs = ['671','652','692'] # [INPUT HERE]
+lpbc_phases = ['a','b','c'] # [INPUT HERE]
+lpbc_nodeIDs = ['671a/652a/692a'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -36,7 +36,9 @@ if constant_phasor == True:
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
     cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
-    cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
+    #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
+    # USED BELOW ONLY FOR T12
+    cons_Vang = [0 - 1, 0 - 1, 0 - 1]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
