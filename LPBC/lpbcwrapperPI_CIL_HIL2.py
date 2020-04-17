@@ -1007,10 +1007,10 @@ elif testcase == 'manual':
     acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
     key = '652'
-    acts_to_phase_dict[key] = np.asarray(['','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter'
     key = '692'
-    acts_to_phase_dict[key] = np.asarray(['', '', 'C'])  # which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A', '', ''])  # which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter'
 
 #these should be established once for the FLexlab,
@@ -1038,14 +1038,12 @@ for key in lpbcidx:
     #Puts pmu0_plugs_dict[key] in A, B, C order, (assuming XBOS wrapper doesnt take care of this on its own)
     #acts_to_phase_dict[key] has the phases that the reference should listen to (not necessarily in order)
     pmu0_plugs_dict[key] = []
-    pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
-    '''Commented below only for T12'''
-    # if 'A' in acts_to_phase_dict[key]:
-    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
-    # if 'B' in acts_to_phase_dict[key]:
-    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
-    # if 'C' in acts_to_phase_dict[key]:
-    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
+    if 'A' in acts_to_phase_dict[key]:
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
+    if 'B' in acts_to_phase_dict[key]:
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
+    if 'C' in acts_to_phase_dict[key]:
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
     pmu0_plugs_dict[key] = np.asarray(pmu0_plugs_dict[key])
 
     #Does not put local pmus measurements in A, B, C order, but does build plug_to_phase_Map
