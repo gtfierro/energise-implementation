@@ -85,12 +85,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.75
-            beta = 0.75
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+#             alph = 0.75
+#             beta = 0.75
+#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -101,6 +101,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
+            # 12.3
+            alph = 0.75
+            beta = 0.75
+            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+            kp_mag = [0.1750*beta,0.1750*beta,0.1750*beta]
+            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -995,10 +1002,16 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    lpbcidx = ['671','652','692'] #nodes of actuation
+    key = '671'
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    key = '652'
+    acts_to_phase_dict[key] = np.asarray(['','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter'
+    key = '692'
+    acts_to_phase_dict[key] = np.asarray(['', '', 'C'])  # which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1025,12 +1038,14 @@ for key in lpbcidx:
     #Puts pmu0_plugs_dict[key] in A, B, C order, (assuming XBOS wrapper doesnt take care of this on its own)
     #acts_to_phase_dict[key] has the phases that the reference should listen to (not necessarily in order)
     pmu0_plugs_dict[key] = []
-    if 'A' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
-    if 'B' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
-    if 'C' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
+    pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
+    '''Commented below only for T12'''
+    # if 'A' in acts_to_phase_dict[key]:
+    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
+    # if 'B' in acts_to_phase_dict[key]:
+    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
+    # if 'C' in acts_to_phase_dict[key]:
+    #     pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
     pmu0_plugs_dict[key] = np.asarray(pmu0_plugs_dict[key])
 
     #Does not put local pmus measurements in A, B, C order, but does build plug_to_phase_Map
@@ -1081,7 +1096,7 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
@@ -1095,7 +1110,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 10
+rate = 5
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):

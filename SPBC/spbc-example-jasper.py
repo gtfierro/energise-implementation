@@ -18,8 +18,8 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['671','675'] # [INPUT HERE]
+lpbc_phases = ['a','',''] # [INPUT HERE]
+lpbc_nodeIDs = ['671','652','692'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -326,15 +326,15 @@ class myspbc(pbc.SPBCProcess):
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
-                    if 13 <= self.iteration < 26: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
-                         Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
-                    elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.97 - refphasor[0, 0], 0.97 - refphasor[1, 0],0.97 - refphasor[2, 0]]
-                         Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -123 - refphasor[1, 1], 117 - refphasor[2, 1]]
-                    elif self.iteration >= 39: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[1, 0],0.96 - refphasor[2, 0]]
-                         Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -124 - refphasor[1, 1], 116 - refphasor[2, 1]]
+                    # if 13 <= self.iteration < 26: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
+                    # elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.97 - refphasor[0, 0], 0.97 - refphasor[1, 0],0.97 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -123 - refphasor[1, 1], 117 - refphasor[2, 1]]
+                    # elif self.iteration >= 39: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[1, 0],0.96 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -124 - refphasor[1, 1], 116 - refphasor[2, 1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
                     

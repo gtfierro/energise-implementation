@@ -564,7 +564,11 @@ epoch: 1587071532.429069
 
 1587071560.2594378
 
+simulation end time 16199                                                                
+epoch: 1587074532.6067357                                                                   
+2020-04-16 22:02:12.606812  
 
+~~
 ~~~~
 
 __CIL T7.2__
@@ -622,6 +626,7 @@ epoch: 1586900673.1025884
 1586900682.2861848
 
 SSH connection lost at end. Didn't print end time. Results look fine.
+
 ~~
 
 FULL TEST:
@@ -737,6 +742,68 @@ epoch: 1586804072.3083935
 simulation end time 10911
 epoch: 1586807071.4901278
 2020-04-13 19:44:31.490194
+
+~~
+
+*Figure T7-2b_LR*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+- target change at 1900 s
+-rate =10s
+
+simulation start time: 18714                                                               
+epoch: 1587077048.1475258                                                                    
+2020-04-16 22:44:08.147557 
+
+1587077079.6014984
+
+simulation end time 21714                                                         
+epoch: 1587080047.8259282                                                                 
+2020-04-16 23:34:07.826002 
+
+~~
+
+*Figure T7-2c_LR*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+-rate =10s
+
+simulation start time: 23694                                                       
+epoch: 1587082028.7508779                                                                     
+2020-04-17 00:07:08.750941 
+
+1587082060.2156916
+
+simulation end time 26694                                                            
+epoch: 1587085028.4291685                                                                 
+2020-04-17 00:57:08.429197  
+
+~~
+
+*Figure T7-2d_LR*
+FULL TEST:
+target_1: [0.99, -1] for all phases #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] for all phases #[abosolute p.u., relative angle degrees]
+target_3: [0.97, -3] for all phases #[abosolute p.u., relative angle degrees]
+target_4: [0.96, -4] for all phases #[abosolute p.u., relative angle degrees]
+alpha=0.75, beta=0.75 (T3.3) both controllers
+-rate =10s
+
+simulation start time: 29140                                            
+epoch: 1587087475.9540527                                                                     
+2020-04-17 01:37:55.954079  
+
+1587087513.9155142
+
+simulation end time 32140                            
+epoch: 1587090475.1333487                                                                   
+2020-04-17 02:27:55.133415 
 
 ~~
 ~~~~
