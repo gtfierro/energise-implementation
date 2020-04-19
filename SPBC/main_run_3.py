@@ -26,7 +26,7 @@ filepath = "IEEE13/"
 modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
 
 loadfolder = "IEEE13/"
-loadpath = loadfolder + "001_phasor08_IEEE13_norm03_HIL_7_1.xlsx"
+loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 
 'BALANCED'
 # =============================================================================
@@ -42,7 +42,7 @@ plot = 0 #turn plot on/off
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 3 #(16-8)*60  # [INPUT HERE] Manual input of start time
+timesteps = 2 #(16-8)*60  # [INPUT HERE] Manual input of start time
 
 #[HIL]
 date = datetime.datetime.now()
@@ -51,7 +51,7 @@ day = date.day
 hour = date.hour
 minute = date.minute
 #timestepcur = hour*60+minute
-timestepcur = 8*60  # [INPUT HERE] Manual input of start time
+timestepcur = 11*60  # [INPUT HERE] Manual input of start time
 
 #[HIL] - input constnats for PV forecasting
 PV_on = False # True for ON
@@ -147,13 +147,16 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
             if lam1 > 0:
                 if bus.name == 'bus_671':
                     #print(key,bus.name)
-                    Vmag_match = [0.98, 0.98, 0.98]
-                    Vang_match = [0 - np.radians(2), 4/3*2*np.pi - np.radians(2), 2/3*np.pi - np.radians(2)] 
+                    Vmag_match = [1, 0.99, 0.99]
+                    Vang_match = [0 - np.radians(0), 4/3*2*np.pi - np.radians(1), 2/3*np.pi - np.radians(1)] 
                     #pdb.set_trace()
-                    #normalize to 2pi rad by adjusting to 2Pi / 2pi
-                    if (bus.phasevec == np.ones((3,timesteps))).all():
-                        #obj = obj + lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
-                        obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
+                    'T12:'
+                    obj += lam1*(cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]))
+                    obj += lam1*(cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]))
+
+                    #if (bus.phasevec == np.ones((3,timesteps))).all():
+                        #obj += lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
+                        #obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
                         #obj += ((cp.abs(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.abs(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.abs(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
             
     # objective 2 - phase balancing
@@ -217,7 +220,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
     constraints = cvx_set_constraints(myfeeder,1) # Second argument turns actuators on/off
     prob = cp.Problem(objective, constraints)
-    result = prob.solve(verbose=False,eps_rel=1e-1,eps_abs=1e-1)
+    result = prob.solve(verbose=False,eps_rel=1e-5,eps_abs=1e-5)
     
     # In[7]:
     
@@ -228,30 +231,31 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     #nodes_arr,Vmag_targ,Vang_targ,KVbase = get_targets(myfeeder)
     
     # Vtargdict[key(nodeID)][Vmag/Vang/KVbase]
-    Vtargdict, act_keys = get_targets(myfeeder)
+    Vtargdict, act_keys = get_targets(myfeeder) #timestepcur might need to be input to update which target is being taken
     #lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
     return Vtargdict, act_keys, subkVAbase, myfeeder
 
 
 # In[8]:
 # Run main_run
+
+if __name__ == '__main__': 
+
+    ### dummy values ###    
+    Psat = []
+    Qsat = []
+    perf_nodes = []
+    #create dummy refphasor of nominal voltages
+    refphasor = np.ones((3,2))
+    refphasor[:,0]=1
+    refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
     
-
-### dummy values ###    
-Psat = []
-Qsat = []
-perf_nodes = ['671']
-#create dummy refphasor of nominal voltages
-refphasor = np.ones((3,2))
-refphasor[:,0]=1
-refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-
-Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat,perf_nodes,timestepcur)
-'''
-#tf = time.time()
-#print('time to load model')
-#print(tf-ts)
-'''
+    Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat,perf_nodes,timestepcur)
+    '''
+    #tf = time.time()
+    #print('time to load model')
+    #print(tf-ts)
+    '''
 
 # In[9]:
 # Plot first timestep of result

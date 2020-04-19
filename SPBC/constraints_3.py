@@ -321,7 +321,7 @@ def cons_actuators(feeder,acttoggle):
                 Qsatmul[phidx] = 0.8
         for iact in inode.actuators:
             #scale PV actuation down based on TOD irradiance (really only uses beam) [HIL]
-            if feeder.PVforecast[str(key)]['on_off'] == True:
+            if feeder.PVforecast['on_off'] == True:
                 solweight = solweight_realtime(feeder.PVforecast[str(key)]['lat'],feeder.PVforecast[str(key)]['lon'],
                                                 feeder.PVforecast[str(key)]['maridian'])
                 PVfrac = feeder.PVforecast[str(key)]['PVfrac']

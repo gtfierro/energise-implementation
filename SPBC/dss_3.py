@@ -553,7 +553,7 @@ def export_Vtargets(feeder):
 #[jasper] create vectors to be sent to LPBC for HIL
 # Create a single package to be read by specific LPBC's
 
-def get_targets(feeder):
+def get_targets(feeder,timestepcur=0):
     
     for key,ibus in feeder.busdict.items():
         if ibus.name == 'bus_671':
@@ -562,7 +562,6 @@ def get_targets(feeder):
             pass
 
     act_keys = []
-    tstep_cur = 0 #need way to call most recent timestep?
     for key, inode in feeder.busdict.items():
         for iact in inode.actuators:
             act_keys.append(key)
@@ -572,26 +571,34 @@ def get_targets(feeder):
     Vtarg_dict = {}
     for key,ibus in feeder.busdict.items():
         if ibus.type == 'SLACK' or ibus.type == 'Slack' or ibus.type == 'slack':
-            phAmag_ref = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
-            phBmag_ref = ibus.Vmag_NL[1,tstep_cur]/(ibus.kVbase_phg*1000)
-            phCmag_ref = ibus.Vmag_NL[2,tstep_cur]/(ibus.kVbase_phg*1000)
+            phAmag_ref = ibus.Vmag_NL[0,timestepcur]/(ibus.kVbase_phg*1000)
+            phBmag_ref = ibus.Vmag_NL[1,timestepcur]/(ibus.kVbase_phg*1000)
+            phCmag_ref = ibus.Vmag_NL[2,timestepcur]/(ibus.kVbase_phg*1000)
             
-            phAang_ref = ibus.Vang_NL[0,tstep_cur]
-            phBang_ref = ibus.Vang_NL[1,tstep_cur]
-            phCang_ref = ibus.Vang_NL[2,tstep_cur]
+            phAang_ref = ibus.Vang_NL[0,timestepcur]
+            phBang_ref = ibus.Vang_NL[1,timestepcur]
+            phCang_ref = ibus.Vang_NL[2,timestepcur]
 
         if key in act_keys:
-            phAmag = ibus.Vmag_NL[0,tstep_cur]/(ibus.kVbase_phg*1000)
-            phBmag = ibus.Vmag_NL[1,tstep_cur]/(ibus.kVbase_phg*1000)
-            phCmag = ibus.Vmag_NL[2,tstep_cur]/(ibus.kVbase_phg*1000)
-              
-            phAang = ibus.Vang_NL[0,tstep_cur]
-            phBang = ibus.Vang_NL[1,tstep_cur]
-            phCang = ibus.Vang_NL[2,tstep_cur]
-            
-            phA_kVbase = ibus.Vmag_NL[0,tstep_cur]/ibus.Vmag_NL[0,tstep_cur]*ibus.kVbase_phg
-            phB_kVbase = ibus.Vmag_NL[1,tstep_cur]/ibus.Vmag_NL[1,tstep_cur]*ibus.kVbase_phg
-            phC_kVbase = ibus.Vmag_NL[2,tstep_cur]/ibus.Vmag_NL[2,tstep_cur]*ibus.kVbase_phg
+            for iact in ibus.actuators:
+                if 'a' in iact.phases:
+                    phAmag = ibus.Vmag_NL[0,timestepcur]/(ibus.kVbase_phg*1000)
+                    phAang = ibus.Vang_NL[0,timestepcur]
+                    phA_kVbase = ibus.Vmag_NL[0,timestepcur]/ibus.Vmag_NL[0,timestepcur]*ibus.kVbase_phg
+                else:
+                    [phAmag, phAang, phA_kVbase] = [np.nan]*3
+                if 'b' in iact.phases:
+                    phBmag = ibus.Vmag_NL[1,timestepcur]/(ibus.kVbase_phg*1000)
+                    phBang = ibus.Vang_NL[1,timestepcur]
+                    phB_kVbase = ibus.Vmag_NL[1,timestepcur]/ibus.Vmag_NL[1,timestepcur]*ibus.kVbase_phg
+                else:
+                    [phBmag, phBang, phB_kVbase] = [np.nan]*3
+                if 'c' in iact.phases:
+                    phCmag = ibus.Vmag_NL[2,timestepcur]/(ibus.kVbase_phg*1000)
+                    phCang = ibus.Vang_NL[2,timestepcur]
+                    phC_kVbase = ibus.Vmag_NL[2,timestepcur]/ibus.Vmag_NL[2,timestepcur]*ibus.kVbase_phg
+                else:
+                    [phCmag, phCang, phC_kVbase] = [np.nan]*3
             
             Vtarg_dict[key] = {}
             Vtarg_dict[key]['Vmag'] = [phAmag-phAmag_ref,phBmag-phBmag_ref,phCmag-phCmag_ref]
