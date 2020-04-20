@@ -1132,7 +1132,7 @@ entitydict[5] = 'lpbc_6.ent'
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
 #changed below for T12 only
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L1','uPMU_123P/L1']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L1','uPMU_0/L1','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
