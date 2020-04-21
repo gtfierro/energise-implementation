@@ -921,6 +921,29 @@ simulation start time: 41383
 epoch: 1587492978.7140784
 2020-04-21 18:16:18.714110
 
+simulation end time 41983
+epoch: 1587493577.8492465
+2020-04-21 18:26:17.849306
 
-- gains alpha=0.15, beta= 0.1 (T3.3 phase A)
+- gains: alpha=0.15, beta= 0.1 (T3.3 phase A)
+
+~~
+
+*Figure T12-3*
+FULL TEST:
+target: [0.99, -1] at 671a
+gains: alpha=0.15, beta= 0.1 (T3.3 phase A)
+rate=5s
+
+simulation start time: 44685
+epoch: 1587496280.4304574
+2020-04-21 19:11:20.430488
+
+1587496297.940536
+
+simulation end time 47685
+epoch: 1587499280.611469
+2020-04-21 20:01:20.611544
+
+~~
 
