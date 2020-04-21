@@ -347,6 +347,7 @@ class myspbc(pbc.SPBCProcess):
 
             #for key in act_keys:
             for key, ibus in myfeeder.busdict.items():
+                print("here")
                 if key in lpbc_nodes:
                     #lpbcID = 'lpbc_' + key
                     lpbcID = key
