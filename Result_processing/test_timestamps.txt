@@ -902,3 +902,19 @@ epoch: 1587435307.3046346
 
 - gains alpha=0.25, beta= 0.25 (T3.3 phase A)
 - Convergence
+
+~~
+
+simulation start time: 37755
+epoch: 1587489349.9275877
+2020-04-21 17:15:49.927607
+
+simulation end time 38355
+epoch: 1587489949.5619934
+2020-04-21 17:25:49.562066
+
+- gains alpha=0.2, beta= 0.2 (T3.3 phase A)
+
+~~
+
+
