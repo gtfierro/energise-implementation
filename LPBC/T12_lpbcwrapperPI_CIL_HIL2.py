@@ -796,11 +796,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
-        '''
+
         print('REF upmu0: ')
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
         print(reference_phasors[2][0])
+        '''
         print('upmu4 voltage: ')
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
