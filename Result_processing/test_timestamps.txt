@@ -947,3 +947,18 @@ epoch: 1587499280.611469
 
 ~~
 
+*Figure T12-3b*
+FULL TEST:
+target: [0.99, -1] at 671a
+gains: alpha=0.15, beta= 0.1 (T3.3 phase A)
+rate=5s
+- lowered 671a cap to 35 kVA
+
+simulation start time: 55573
+epoch: 1587507169.8439558
+2020-04-21 22:12:49.843995
+
+1587507196.8865337
+
+
+~~
