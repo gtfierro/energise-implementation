@@ -102,8 +102,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             ki_mag = [0,0,0]
 # =============================================================================
             # 12.3
-            alph = 0.25
-            beta = 0.25
+            alph = 0.2
+            beta = 0.2
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.1750*beta,0.1750*beta]
