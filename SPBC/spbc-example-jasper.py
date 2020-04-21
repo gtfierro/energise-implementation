@@ -19,7 +19,7 @@ print('phases on network:',phase_size)
 
 # SETTINGS
 lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['671a/652a/692a'] # [INPUT HERE]
+lpbc_nodeIDs = ['671'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -377,7 +377,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
-                            print("here1")
+
                         if ph == 'b':
                             phidx  = 1
                             computed_targets[lpbcID]['phase'].append('ph_B')
@@ -389,7 +389,7 @@ class myspbc(pbc.SPBCProcess):
                                 computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-                            print("here2")
+
                         if ph == 'c':
                             phidx  = 2
                             computed_targets[lpbcID]['phase'].append('ph_C')
@@ -402,8 +402,8 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
 
-                            print("here3")
-                    
+
+
                 
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():

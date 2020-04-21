@@ -1057,8 +1057,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671a/652a/692a'] #nodes of actuation
-    key = '671a/652a/692a'
+    lpbcidx = ['671'] #nodes of actuation
+    key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
