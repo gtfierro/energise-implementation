@@ -316,7 +316,7 @@ class myspbc(pbc.SPBCProcess):
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
-            print("here")
+
             if constant_phasor == True:
                 Vtargdict = {}
                 refphasor[:,1] = refphasor[:,1]*180/np.pi
@@ -344,7 +344,7 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
                     
             computed_targets = {}
-            
+            print("here")
             #for key in act_keys:
             for key, ibus in myfeeder.busdict.items():
                 if key in lpbc_nodes:
