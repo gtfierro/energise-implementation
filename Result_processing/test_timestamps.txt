@@ -866,6 +866,17 @@ epoch: 1587070290.1630769
 __CIL T12.3__
 
 ~~
+load profile at 671a first 10 min
+
+simulation start time: 50824
+epoch: 1587436877.142157
+2020-04-21 02:41:17.142189
+
+simulation end time 51424
+epoch: 1587437476.7785926
+2020-04-21 02:51:16.778683
+
+~~
 
 simulation start time: 46847
 epoch: 1587432900.2785437
@@ -877,4 +888,17 @@ epoch: 1587433499.4142275
 2020-04-21 01:44:59.414303
 
 - gains alpha=0.75, beta= 0.75 (T3.3 phase A)
-- instability
+- instability (possibly due to gains too large)
+
+~~
+
+simulation start time: 48655
+epoch: 1587434708.170358
+2020-04-21 02:05:08.170386
+
+simulation end time 49255
+epoch: 1587435307.3046346
+2020-04-21 02:15:07.304671
+
+- gains alpha=0.25, beta= 0.25 (T3.3 phase A)
+- Convergence
