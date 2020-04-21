@@ -344,7 +344,7 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
                     
             computed_targets = {}
-            print("here")
+
             #for key in act_keys:
             for key, ibus in myfeeder.busdict.items():
                 if key in lpbc_nodes:
@@ -376,6 +376,7 @@ class myspbc(pbc.SPBCProcess):
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
                             
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
+                            print("here1")
                         if ph == 'b':
                             phidx  = 1
                             computed_targets[lpbcID]['phase'].append('ph_B')
@@ -387,7 +388,7 @@ class myspbc(pbc.SPBCProcess):
                                 computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-                        
+                            print("here2")
                         if ph == 'c':
                             phidx  = 2
                             computed_targets[lpbcID]['phase'].append('ph_C')
@@ -399,8 +400,8 @@ class myspbc(pbc.SPBCProcess):
                                 computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-                            
-                        
+
+                            print("here3")
                     
                 
             # loop through the computed targets and send them to all LPBCs:
