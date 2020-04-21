@@ -1088,14 +1088,12 @@ for key in lpbcidx:
     #Puts pmu0_plugs_dict[key] in A, B, C order, (assuming XBOS wrapper doesnt take care of this on its own)
     #acts_to_phase_dict[key] has the phases that the reference should listen to (not necessarily in order)
     pmu0_plugs_dict[key] = []
-
-    '''changed all pmu plug map to 0 index only for T12 so all phases can listen to PH A(node 671A) only'''
     if 'A' in acts_to_phase_dict[key]:
         pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
     if 'B' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
     if 'C' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
 
     pmu0_plugs_dict[key] = np.asarray(pmu0_plugs_dict[key])
 
