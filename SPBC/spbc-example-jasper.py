@@ -316,15 +316,18 @@ class myspbc(pbc.SPBCProcess):
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
-    
+            print("here")
             if constant_phasor == True:
                 Vtargdict = {}
                 refphasor[:,1] = refphasor[:,1]*180/np.pi
                 refphasor[1,1] = refphasor[1,1]-360
                 for key in lpbc_nodes:
                     Vtargdict[key] = {}
-                    Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[2]-refphasor[2,0]]
-                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
+                    '''CHANGED INDICIES FOR T12 CONFIG ONLY'''
+                    # Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[2]-refphasor[2,0]]
+                    # Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
+                    Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
+                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
