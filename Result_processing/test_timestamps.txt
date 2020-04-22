@@ -931,7 +931,7 @@ epoch: 1587493577.8492465
 
 *Figure T12-3*
 FULL TEST:
-target: [0.99, -1] at 671a
+target: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
 gains: alpha=0.15, beta= 0.1 (T3.3 phase A)
 rate=5s
 
@@ -949,7 +949,7 @@ epoch: 1587499280.611469
 
 *Figure T12-3b*
 FULL TEST:
-target: [0.99, -1] at 671a
+target: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
 gains: alpha=0.15, beta= 0.1 (T3.3 phase A)
 rate=5s
 - lowered 671a cap to 35 kVA
@@ -960,5 +960,29 @@ epoch: 1587507169.8439558
 
 1587507196.8865337
 
+simulation end time 58573
+epoch: 1587510169.5186844
+2020-04-21 23:02:49.518758
 
 ~~
+
+*Figure T12-3c*
+FULL TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.96, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.94, -4] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+
+simulation start time: 61690
+epoch: 1587513287.6885467
+2020-04-21 23:54:47.688587
+
+1587513355.9105453  
+
+simulation end time 64690
+epoch: 1587516287.3671818 
+2020-04-22 00:44:47.367243
+
+~~
+
