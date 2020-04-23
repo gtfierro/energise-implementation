@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 50):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -430,7 +430,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return
 
 
-    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV):
+    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV, phasor_target):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
@@ -451,13 +451,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             '''
 
-            indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
-            indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
+
             '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
-            if abs(Pcmd[0]) >= ORT_max_VA_T12/self.localSratio:
-                indexP = np.append(indexP,0)
-            if abs(Qcmd[0]) >= ORT_max_VA_T12/self.localSratio:
-                indexQ = np.append(indexQ,0)
+            if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                indexP = np.where(abs(Pcmd)>= ORT_max_VA_T12/self.localSratio)[0]
+                indexQ = np.where(abs(Qcmd)>= ORT_max_VA_T12/self.localSratio)[0]
+            else:
+                indexP = np.where(abs(Pcmd) >= self.ORT_max_VA / self.localSratio)[0]
+                indexQ = np.where(abs(Qcmd) >= self.ORT_max_VA / self.localSratio)[0]
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -482,8 +483,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return(sat_arrayP,sat_arrayQ)
 
 
-    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
+    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu, phasor_target):
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
+        ORT_max_VA_T12 = 30000
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
@@ -496,7 +498,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     '''
                     self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                     '''ADDED BELOW FOR T12 ONLY'''
-                    if phase == 0:
+                    if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
                         self.Pmax_pu[phase] = ORT_max_VA_T12/ (self.localkVAbase[phase] * 1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
@@ -516,7 +518,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.Qmax_pu[phase] = Qact_pu[phase]
                     '''
                     self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
-                    if phase == 0:
+                    if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
                         self.Qmax_pu[phase] = ORT_max_VA_T12 / (self.localkVAbase[phase] * 1000)
 
                 elif self.actType == 'load':
@@ -888,8 +890,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Icomp_pu = [np.NaN]*self.nphases
 
             #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV, phasor_target)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu, phasor_target) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
             #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
