@@ -993,8 +993,6 @@ epoch: 1587516287.3671818
 2020-04-22 00:44:47.367243
 
 ~~
-
-*Figure T12-3c*
 FULL TEST:
 target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
@@ -1004,3 +1002,79 @@ alpha=0.15, beta=0.1 (T3.3 phase A)
 671a capacity: 30 kVA
 652a capacity: 50 kVA
 692a capacity: 50 kVA
+
+simulation start time: 61338
+epoch: 1587578478.4646583
+2020-04-22 18:01:18.464714
+
+1587578502.981397
+
+simulation end time 64338
+epoch: 1587581478.1438825
+2020-04-22 18:51:18.143921
+
+~~
+
+DEBUG TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.96, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.94, -4] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 8375
+epoch: 1587591053.2093182
+2020-04-22 21:30:53.209337
+
+simulation end time 11375
+epoch: 1587594052.8902926
+2020-04-22 22:20:52.890357
+
+
+~~
+
+DEBUG TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.96, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.94, -4] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 18146
+epoch: 1587600825.3507166
+2020-04-23 00:13:45.350731
+
+simulation end time 21146
+epoch: 1587603825.0333781
+2020-04-23 01:03:45.033452
+
+~~
+
+FULL TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.96, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.94, -4] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 32964
+epoch: 1587615645.088812
+2020-04-23 04:20:45.088823
+
+1587615671.448549
+
+simulation end time 35964
+epoch: 1587618644.270645
+2020-04-23 05:10:44.270693
+
+~~
+

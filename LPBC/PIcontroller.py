@@ -19,6 +19,7 @@ class PIcontroller():
         phasor_error_ang = np.degrees(phasor_error_ang)
         for phase in range(nphases):
             # if controller is saturated and target/phasor error is same direction then turn on anti-windup,
+            # this condition is necessary when kp << ki to get controller out of saturation
             if sat_arrayP[phase] == 0 and np.sign(self.intError_ang[phase]) == np.sign(phasor_error_ang[phase]):
                 currentIntError_ang = phasor_error_ang[phase] * sat_arrayP[phase]
             else:  # if controller is saturated but target/phasor error is different direction then turn off anti-windup
