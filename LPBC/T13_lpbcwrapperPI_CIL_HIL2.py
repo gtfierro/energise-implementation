@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 50):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 200):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -435,7 +435,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 100000
         if self.actType == 'inverter':
 
             '''
@@ -485,7 +485,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu, phasor_target):
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 100000
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
@@ -630,7 +630,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client, phasor_target ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 100000
         for phase in range(nphases):
             if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
                 print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
