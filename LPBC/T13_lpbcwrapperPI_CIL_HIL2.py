@@ -1027,7 +1027,7 @@ Tells each LPBC whether it sends commands to loads or inverters
 '''
 
 
-SPBCname = 'spbc-jasper-1'
+SPBCname = 'spbc2'
 # SPBCname = 'spbc-example-jasper'
 
 #Manual entry here to determine test case, phases, etc.
