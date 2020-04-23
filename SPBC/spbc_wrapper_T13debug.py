@@ -382,38 +382,38 @@ class myspbc(pbc.SPBCProcess):
                             phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_A')
                             #computed_targets[lpbcID]['channels'].append('L1')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[iactnode]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iactnode]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[iactnode]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iactnode]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iactnode]['KVAbase'][phidx])
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
                                 
                                 #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
                         if key == '652':
                             phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_B')
                             #computed_targets[lpbcID]['channels'].append('L2')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[iactnode]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iactnode]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[iactnode]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iactnode]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iactnode]['KVAbase'][phidx])
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
                             
                         if key == '692':
                             phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_C')
                             #computed_targets[lpbcID]['channels'].append('L3')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[iactnode]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iactnode]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[iactnode]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iactnode]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iactnode]['KVAbase'][phidx])
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
                             
                         
                     
