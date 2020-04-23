@@ -331,13 +331,13 @@ class myspbc(pbc.SPBCProcess):
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
-                    if 13 <= self.iteration < 26: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[0, 0],0.98 - refphasor[0, 0]]
-                         Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
-                    elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
-                         Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
-                    elif self.iteration >= 39: #Change here if we want to set varying targets
+                    # if 13 <= self.iteration < 26: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[0, 0],0.98 - refphasor[0, 0]]
+                    #      Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
+                    # elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
+                    #      Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
+                    if self.iteration >= 0: #Change here if we want to set varying targets
                          Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],0.94 - refphasor[0, 0]]
                          Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]

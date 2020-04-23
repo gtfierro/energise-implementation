@@ -37,6 +37,8 @@ class PIcontroller():
             self.intError_mag[phase] += currentIntError_mag
             self.Qcmd_pu[phase] = (self.Kp_mag[phase] * phasor_error_mag[phase]) + self.Ki_mag[phase] * self.intError_mag[phase]
 
+        print(phasor_error_ang)
+        print(phasor_error_mag)
         self.phasor_error_ang_prev = copy.deepcopy(phasor_error_ang)
         self.phasor_error_mag_prev = copy.deepcopy(phasor_error_mag)
         print('previous phasor error ang: ' + str(self.phasor_error_ang_prev))
