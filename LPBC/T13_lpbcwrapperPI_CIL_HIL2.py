@@ -435,6 +435,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
+        ORT_max_VA_T12 = 30000
         if self.actType == 'inverter':
 
             '''
@@ -452,6 +453,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
             indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
+            '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
+            if abs(Pcmd[0]) >= ORT_max_VA_T12/self.localSratio:
+                indexP = np.append(indexP,0)
+            if abs(Qcmd[0]) >= ORT_max_VA_T12/self.localSratio:
+                indexQ = np.append(indexQ,0)
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -489,6 +495,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #self.Pmax_pu[phase] = Pact_pu[phase] 
                     '''
                     self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
+                    '''ADDED BELOW FOR T12 ONLY'''
+                    if phase == 0:
+                        self.Pmax_pu[phase] = ORT_max_VA_T12/ (self.localkVAbase[phase] * 1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -507,6 +516,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.Qmax_pu[phase] = Qact_pu[phase]
                     '''
                     self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
+                    if phase == 0:
+                        self.Qmax_pu[phase] = ORT_max_VA_T12 / (self.localkVAbase[phase] * 1000)
+
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
@@ -613,19 +625,31 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client, phasor_target ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
+        ORT_max_VA_T12 = 30000
         for phase in range(nphases):
-            print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
-            print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
-            print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
-            if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Pcmd over Opal limit')
-                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
-            if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Qcmd over Opal limit')
-                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
+            if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+                print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+                print('ORT_max_VA/localSratio : ' + str(ORT_max_VA_T12/localSratio))
+                if abs(Pcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
+                    print('Pcmd over Opal limit')
+                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA_T12/localSratio
+                if abs(Qcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
+                    print('Qcmd over Opal limit')
+                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA_T12/localSratio
+            else:
+                print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+                print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+                print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
+                if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
+                    print('Pcmd over Opal limit')
+                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
+                if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
+                    print('Qcmd over Opal limit')
+                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
 
@@ -633,9 +657,69 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
             Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
         # TODO modbus only: manually change phase actuation on modbus here if needed on different phase
-        elif nphases == 1:
-            P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
+
+        elif nphases == 1 and 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+            P1 = abs(Pcmd_VA[0])
+            Q1 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P1, Q1, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [1,2,7]
+
+        elif nphases == 1 and 'ph_B' in phasor_target['phasor_targets'][0]['channelName']:
+            P2 = abs(Pcmd_VA[0])
+            Q2 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P2, Q2, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [3,4,7]
+
+        elif nphases == 1 and 'ph_C' in phasor_target['phasor_targets'][0]['channelName']:
+            P3 = abs(Pcmd_VA[0])
+            Q3 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P3, Q3, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [5,6,7]
 
         elif nphases == 2: # Phase A, B only (change if needed)
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
@@ -643,30 +727,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
-        sign_vec = []
-        for p, q in zip(Pcmd_VA, Qcmd_VA):
-            if p >= 0:
-                sign_vec.append(1)
-            if p < 0:
-                sign_vec.append(0)
-            if q >= 0:
-                sign_vec.append(1)
-            if q < 0:
-                sign_vec.append(0)
-        if nphases == 3:
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[
-            3] + 2 ** 1 * sign_vec[4] + 2 ** 0 * sign_vec[5]
-        # TODO modbus only: manually change phase actuation on modbus here for sign base if needed on different phase
-        elif nphases == 1:
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
-
-        elif nphases == 2: # Phase A, B only (change if needed)
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[3]
 
 
-        mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
-        print('mtx : ' + str(mtx))
-        mtx_register = np.arange(1, 8).tolist()
         try:
             client.connect()
             # write switch positions for config
@@ -865,7 +927,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client, phasor_target)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
                     disp('couldnt send commands because no current measurement available')
