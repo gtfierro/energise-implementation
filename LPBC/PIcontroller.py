@@ -7,8 +7,6 @@ class PIcontroller():
         self.intError_mag = np.zeros(nphases)
         self.Pcmd_pu = np.zeros(nphases)
         self.Qcmd_pu = np.zeros(nphases)
-        self.phasor_error_mag_prev = np.zeros(nphases)
-        self.phasor_error_ang_prev = np.zeros(nphases)
 
         # controller gains must be a list, even if single phase. gains can be different on each phase
         # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
@@ -34,10 +32,6 @@ class PIcontroller():
                 currentIntError_mag = phasor_error_mag[phase]
             self.intError_mag[phase] += currentIntError_mag
             self.Qcmd_pu[phase] = (self.Kp_mag[phase] * phasor_error_mag[phase]) + self.Ki_mag[phase] * self.intError_mag[phase]
-
-
-        self.phasor_error_ang_prev = copy.deepcopy(phasor_error_ang)
-        self.phasor_error_mag_prev = copy.deepcopy(phasor_error_mag)
 
         print('self.intError_ang : ' + str(self.intError_ang))
         print('self.intError_mag : ' + str(self.intError_mag))
