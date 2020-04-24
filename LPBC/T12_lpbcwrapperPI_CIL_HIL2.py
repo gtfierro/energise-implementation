@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 50):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 80):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -208,7 +208,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.sat_arrayQ = np.ones(nphases) #if no current measurements, then these will just stay zero and saturated == 0
         self.Pmax_pu = np.asarray([np.NaN] * nphases) #this signal is used by the SPBC if ICDI is true, otherwise its a nan
         self.Qmax_pu = np.asarray([np.NaN] * nphases)
-        self.saturationCounterLimit = 30
+        self.saturationCounterLimit = 20
         self.Psat = np.ones((nphases, self.saturationCounterLimit)) #set of sat_arrayPs
         self.Qsat = np.ones((nphases, self.saturationCounterLimit))
         self.ICDI_sigP = np.zeros((nphases, 1), dtype=bool) #I Cant Do It signal, defaulted to zero (that it can do it)
