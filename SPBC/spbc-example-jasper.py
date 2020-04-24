@@ -165,6 +165,8 @@ class myspbc(pbc.SPBCProcess):
         
          #~~ initialize values ~~#
         self.iteration = -1
+        self.P_flag = []
+        self.Q_flag = []
         if TV_load == True:
             self.timestepcur = start_hour*60-1
         else:
@@ -326,20 +328,55 @@ class myspbc(pbc.SPBCProcess):
                     '''CHANGED INDICIES FOR T12 CONFIG ONLY'''
                     # Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[2]-refphasor[2,0]]
                     # Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
-                    Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
-                    Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
+                    if self.iteration < 13:
+                        Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
+                        Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
                     if 13 <= self.iteration < 26: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.97 - refphasor[0, 0], 0.97 - refphasor[0, 0],0.97 - refphasor[0, 0]]
-                         Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
-                    elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
-                         Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],0.94 - refphasor[0, 0]]
-                         Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
+                        if '671_a' and '652_a' and '692_a' not in Qsat_nodes:
+                            Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
+                        if '671_a' and '652_a' and '692_a' not in Psat_nodes:
+                            Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
+                        if '671_a' and '652_a' and '692_a' in Psat_nodes:
+                            self.P_flag = []
+                            self.P_flag.append(1)
+                        if '671_a' and '652_a' and '692_a' in Qsat_nodes:
+                            self.Q_flag = []
+                            self.Q_flag.append(1)
+
+                    elif self.iteration >= 26: #Change here if we want to set varying targets
+                        if '671_a' and '652_a' and '692_a' not in Psat_nodes:
+                            Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
+
+                        if '671_a' and '652_a' and '692_a' not in Qsat_nodes:
+                            Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],
+                                                      0.94 - refphasor[0, 0]]
+                        if '671_a' and '652_a' and '692_a' in Psat_nodes:
+                            self.P_flag = []
+                            self.P_flag.append(2)
+                        if '671_a' and '652_a' and '692_a' in Qsat_nodes:
+                            self.Q_flag = []
+                            self.Q_flag.append(2)
+
                     # elif self.iteration >= 39: #Change here if we want to set varying targets
                     #      Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],0.94 - refphasor[0, 0]]
                     #      Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
+
+                    if len(self.P_flag) > 0:
+                        if self.P_flag[0] == 1:
+                            Vtargdict[key]['Vang'] = [cons_Vang[0] - refphasor[0, 1], cons_Vang[1] - refphasor[0, 1],
+                                                      cons_Vang[2] - refphasor[0, 1]]
+                        elif self.P_flag[0] == 2:
+                            Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
+
+                    if len(self.Q_flag) > 0:
+                        if self.Q_flag[0] == 1:
+                            Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
+                        if self.Q_flag[0] == 2:
+                            Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
+
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
                     
