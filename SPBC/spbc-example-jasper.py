@@ -335,8 +335,8 @@ class myspbc(pbc.SPBCProcess):
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
                     if self.iteration > 59: #Change here if we want to set varying targets
-                        Vtargdict[key]['Vmag'] = [0.93 - refphasor[0, 0], 0.93 - refphasor[0, 0],
-                                                  0.93 - refphasor[0, 0]]
+                        Vtargdict[key]['Vmag'] = [0.92 - refphasor[0, 0], 0.92 - refphasor[0, 0],
+                                                  0.92 - refphasor[0, 0]]
                         Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
                         # if '671_a' and '671_b' and '671_c' not in Qsat_nodes:
                         #     Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
@@ -369,7 +369,7 @@ class myspbc(pbc.SPBCProcess):
 
                     if len(self.P_flag) > 0:
                         if self.P_flag[0] == 1:
-                            Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
+                            Vtargdict[key]['Vang'] = [-2.5 - refphasor[0, 1], -2.5 - refphasor[0, 1], -2.5 - refphasor[0, 1]]
                         elif self.P_flag[0] == 2:
                             Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
 
