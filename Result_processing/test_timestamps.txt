@@ -1056,6 +1056,7 @@ epoch: 1587603825.0333781
 
 ~~
 
+*Figure T12-4*
 FULL TEST:
 target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
 target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
@@ -1076,5 +1077,137 @@ simulation end time 35964
 epoch: 1587618644.270645
 2020-04-23 05:10:44.270693
 
+~~
+
+*Figure T12-4b*
+FULL TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.98, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.96, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 11966
+epoch: 1587660187.8926997
+2020-04-23 16:43:07.892734
+
+1587660217.4880044
+
+simulation end time 14966
+epoch: 1587663187.0723896
+2020-04-23 17:33:07.072430
+
+~~
+
+*Figure T12-4c*
+FULL TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.97, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.94, -3] at 671a #[abosolute p.u., relative angle degrees]
+target_4: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 19145
+epoch: 1587667367.9726136
+2020-04-23 18:42:47.972647
+
+1587667405.5687268
+
+simulation end time 22145
+epoch: 1587670367.1540956
+2020-04-23 19:32:47.154163
+
+~~
+
+*Figure T12-4_ICDI-1*
+FULL TEST:
+target_1: [0.99, -1] at 671a #[abosolute p.u., relative angle degrees]
+target_2: [0.96, -2] at 671a #[abosolute p.u., relative angle degrees]
+target_3: [0.94, -3] at 671a #[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 50 kVA
+692a capacity: 50 kVA
+
+simulation start time: 48672
+epoch: 1587696897.4337807
+2020-04-24 02:54:57.433814
+
+simulation end time 51672
+epoch: 1587699897.1133094
+2020-04-24 03:44:57.113341
+
+~~
+
+*Figure T12-4_ICDI-2*
+FULL TEST:
+Target_1: [-0.02], [-1.5] at 671a
+Target_2: [-0.07], [-4] at 671a
+ICDI_target2: [-0.05], [-3] at 671a
+#[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 30 kVA
+652a capacity: 80 kVA
+692a capacity: 80 kVA
+
+simulation start time: 56350
+epoch: 1587704576.6215749
+2020-04-24 05:02:56.621598
+
+1587704594.8976173
+
+simulation end time 59350
+epoch: 1587707576.3015428
+2020-04-24 05:52:56.301614
+
+~~
+
+*Figure T12-4_ICDI-3*
+FULL TEST:
+Target_1: [-0.01], [-1] at 671a
+Target_2: [-0.07], [-4] at 671a
+ICDI_target2: [-0.05], [-3] at 671a
+#[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 50 kVA
+652a capacity: 80 kVA
+692a capacity: 80 kVA
+
+simulation start time: 60495
+epoch: 1587708722.048072
+2020-04-24 06:12:02.048092
+
+1587708744.177757
+
+simulation end time 63495
+epoch: 1587711721.7284982
+2020-04-24 07:02:01.728566
+
+~~
+
+*Figure T12-4_ICDI-4*
+FULL TEST:
+Target_1: [-0.01], [-1] at 671a
+Target_2: [-0.08], [-4] at 671a
+ICDI_target2: [-0.05], [-2.5] at 671a
+#[abosolute p.u., relative angle degrees]
+alpha=0.15, beta=0.1 (T3.3 phase A) 
+671a capacity: 50 kVA
+652a capacity: 80 kVA
+692a capacity: 80 kVA
+
+simulation start time: 64292
+epoch: 1587712519.400079
+2020-04-24 07:15:19.400130
+
+1587712544.1807966
+
+Didnt print end time. Issue with client., not SSH issue. 
 ~~
 
