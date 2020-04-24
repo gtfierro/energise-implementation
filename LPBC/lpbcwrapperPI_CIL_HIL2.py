@@ -995,16 +995,11 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671','652','692'] #nodes of actuation
-    key = '671'
+    lpbcidx = ['675'] #nodes of actuation
+    key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
-    key = '652'
-    acts_to_phase_dict[key] = np.asarray(['','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter'
-    key = '692'
-    acts_to_phase_dict[key] = np.asarray(['', '', 'C'])  # which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter'
+
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1087,7 +1082,7 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 

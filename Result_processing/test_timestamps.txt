@@ -1208,6 +1208,7 @@ epoch: 1587712519.400079
 
 1587712544.1807966
 
-Didnt print end time. Issue with client., not SSH issue. 
+Didnt print end time. Issue with client., not SSH issue.
+See  T12-4_ICDI-4_671a_652a_692a.mat /.csv for data file
 ~~
 
