@@ -454,7 +454,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 50000
         if self.actType == 'inverter':
 
             '''
@@ -502,7 +502,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
     def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 50000
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
@@ -665,7 +665,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         '''
         '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
-        ORT_max_VA_T12 = 30000
+        ORT_max_VA_T12 = 50000
         # P,Q commands in W and VAR (not kilo)
         for phase in range(nphases):
             if phase == 0:
