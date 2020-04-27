@@ -1217,4 +1217,18 @@ See T12-4_ICDI-4_671a_652a_692a.mat /.csv for data file
 
 __CIL_13unbal_T3.1__
 
+~~
+TUNING GAINS: alpha=0.5, beta=0.4 (T3.2)
+
+simulation start time: 3446
+epoch: 1588014620.8223655
+2020-04-27 19:10:20.822391
+
+simulation end time 4046
+epoch: 1588015220.4535444
+2020-04-27 19:20:20.453648
+
+~~
+
+TUNING GAINS: alpha=0.5, beta=0.25 (T3.2)
 
