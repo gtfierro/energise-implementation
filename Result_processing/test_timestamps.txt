@@ -1283,6 +1283,9 @@ epoch: 1588024943.5958586
 2020-04-27 22:02:23.595905
 
 ~~
+~~~~
+
+__CIL_13unbal_T3.2__
 
 FULL TEST:
 target: [-0.01], [-1] both phases #[abosolute p.u., relative angle degrees]
@@ -1299,4 +1302,31 @@ epoch: 1588031078.9468389
 2020-04-27 23:44:38.946938
 
 ~~
+~~~~
+
+
+__CIL_13unbal_T3.3__
+
+~~
+
+TUNING GAINS: alpha=0.75, beta=0.75 (T3.3)
+target: [-0.01], [-1] all phases
+
+simulation start time: 15551
+epoch: 1588092270.6461637
+2020-04-28 16:44:30.646235
+
+simulation end time 15851
+epoch: 1588092569.713101
+2020-04-28 16:49:29.713162
+
+-bad gains
+~~
+
+TUNING GAINS: alpha=0.5, beta=0.4 (T3.3)
+target: [-0.01], [-1] all phases
+
+simulation start time: 16283
+epoch: 1588093002.3061202
+2020-04-28 16:56:42.306165
 
