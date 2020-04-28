@@ -1330,3 +1330,17 @@ simulation start time: 16283
 epoch: 1588093002.3061202
 2020-04-28 16:56:42.306165
 
+simulation end time 16583
+epoch: 1588093301.8731825
+2020-04-28 17:01:41.873250
+
+-ok gains; slightly excessive overshoot
+~~
+
+TUNING GAINS: alpha=0.4, beta=0.3 (T3.3)
+target: [-0.01], [-1] all phases
+
+simulation start time: 16945
+epoch: 1588093664.4512553
+2020-04-28 17:07:44.451292
+
