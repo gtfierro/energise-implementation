@@ -1344,3 +1344,36 @@ simulation start time: 16945
 epoch: 1588093664.4512553
 2020-04-28 17:07:44.451292
 
+simulation end time 17245
+epoch: 1588093964.0189073
+2020-04-28 17:12:44.018977
+
+-ok gains
+~~
+
+TUNING GAINS: alpha=0.45, beta=0.35 (T3.3)
+target: [-0.01], [-1] all phases
+
+simulation start time: 17677
+epoch: 1588094397.1122234
+2020-04-28 17:19:57.112256
+
+simulation end time 17977
+epoch: 1588094696.179443
+2020-04-28 17:24:56.179518
+
+-GOOD GAINS
+~~
+
+FULL TEST:
+target: [-0.01], [-1] all phases #[abosolute p.u., relative angle degrees]
+alpha=0.45, beta=0.35 (T3.2) 
+
+simulation start time: 18283
+epoch: 1588095003.2453454
+2020-04-28 17:30:03.245383
+
+1588095024.1455746
+
+
+
