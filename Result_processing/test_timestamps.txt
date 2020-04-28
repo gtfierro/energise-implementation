@@ -1209,6 +1209,7 @@ epoch: 1587712519.400079
 1587712544.1807966
 
 Didnt print end time. Issue with client., not SSH issue.
+Graphical results are good.
 See T12-4_ICDI-4_671a_652a_692a.mat /.csv for data file
 ~~
 ~~~~
@@ -1219,7 +1220,7 @@ __CIL_13unbal_T3.1__
 
 ~~
 TUNING GAINS: alpha=0.5, beta=0.4 (T3.2)
-
+GOOD
 simulation start time: 3446
 epoch: 1588014620.8223655
 2020-04-27 19:10:20.822391
@@ -1239,6 +1240,63 @@ epoch: 1588017542.9533381
 simulation end time 6668
 epoch: 1588017842.5214403
 2020-04-27 20:04:02.521515
+
+~~
+
+TUNING GAINS: alpha=0.5, beta=0.15 (T3.2)
+
+simulation start time: 6850
+epoch: 1588018025.0607421
+2020-04-27 20:07:05.060768
+
+simulation end time 7150
+epoch: 1588018324.628869
+2020-04-27 20:12:04.628945
+
+~~
+
+TUNING GAINS: alpha=0.5, beta=0.5 (T3.2)
+
+simulation start time: 8079
+epoch: 1588019254.8328712
+2020-04-27 20:27:34.832920
+
+simulation end time 8379
+epoch: 1588019553.9008565
+2020-04-27 20:32:33.900927
+
+~~
+
+*Figure 13unbal_T3-1*
+FULL TEST:
+target: [-0.01], [-1] #[abosolute p.u., relative angle degrees]
+alpha=0.5, beta=0.4 (T3.2 phase A) 
+
+simulation start time: 10768
+epoch: 1588021943.914758
+2020-04-27 21:12:23.914807
+
+1588021963.5807617
+
+simulation end time 13768
+epoch: 1588024943.5958586
+2020-04-27 22:02:23.595905
+
+~~
+
+FULL TEST:
+target: [-0.01], [-1] both phases #[abosolute p.u., relative angle degrees]
+alpha=0.5, beta=0.4 (T3.2) 
+
+simulation start time: 16903
+epoch: 1588028079.2705338
+2020-04-27 22:54:39.270563
+
+1588028113.7946584
+
+simulation end time 19903
+epoch: 1588031078.9468389
+2020-04-27 23:44:38.946938
 
 ~~
 
