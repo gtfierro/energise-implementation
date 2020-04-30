@@ -14,8 +14,8 @@ from main_run_3 import *
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 #init feeder & other vars (commented below because excel file is incomplete)
-phase_size, feeder_init = feeder_init()
-print('phases on network:',phase_size)
+#phase_size, feeder_init = feeder_init()
+#print('phases on network:',phase_size)
 
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
@@ -156,6 +156,7 @@ class myspbc(pbc.SPBCProcess):
         
         # define system phase size to define size of phasor reference
         #phase_size, feeder_init = feeder_init() ## doesnt work inside of __init__
+
         
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
@@ -208,6 +209,7 @@ class myspbc(pbc.SPBCProcess):
                 
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
+            print('here')
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
 
