@@ -60,7 +60,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
                 scales['flexgrid'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
             if 'scale_loadrack' in dfsw_in.Description.values[i]:
                 scales['loadrack'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
-        print('here0')
+
         mtx = []
         mtx_register = []
     
@@ -68,11 +68,11 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
             mtx.append(dfsw_in[test_ID][i])
             mtx_register.append(dfsw_in['Register'][i])
         
-        print('here1')
+
         try:
             client.connect()
             # Write the scaling
-            print('her')
+
             client.write_registers(scales['flexgrid']['register'],
                                    int(scales['flexgrid']['value']), unit=id)
             print('here1.5')
