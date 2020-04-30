@@ -22,11 +22,11 @@ print(datetime.datetime.fromtimestamp(ts))
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 'UNBALANCED'
-filepath = "IEEE13/"
-modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-
-loadfolder = "IEEE13/"
-loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+# filepath = "IEEE13/"
+# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+#
+# loadfolder = "IEEE13/"
+# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 
 'BALANCED'
 # =============================================================================
@@ -36,6 +36,13 @@ loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 # loadfolder = "IEEE13_bal/"
 # loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
 # =============================================================================
+
+'33NF'
+filepath = "33/"
+modelpath = filepath + "005_GB_UCB33_opal_v2.xls"
+
+loadfolder = "33/"
+loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 
 plot = 0 #turn plot on/off
 

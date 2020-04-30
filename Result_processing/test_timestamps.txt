@@ -1287,6 +1287,7 @@ epoch: 1588024943.5958586
 
 __CIL_13unbal_T3.2__
 
+*Figure 13unbal_T3-2*
 FULL TEST:
 target: [-0.01], [-1] both phases #[abosolute p.u., relative angle degrees]
 alpha=0.5, beta=0.4 (T3.2) 
@@ -1366,9 +1367,10 @@ epoch: 1588094696.179443
 
 ~~
 
+*Figure 13unbal_T3-3*
 FULL TEST:
 target: [-0.01], [-1] all phases #[abosolute p.u., relative angle degrees]
-alpha=0.45, beta=0.35 (T3.2) 
+alpha=0.45, beta=0.35 (T3.3) 
 
 simulation start time: 18283
 epoch: 1588095003.2453454
@@ -1381,7 +1383,16 @@ epoch: 1588098002.4236002
 2020-04-28 18:20:02.423631
 
 ~~
- 
+~~~~
+
+__CIL_13unbal_T8.1__
+
+*Figure 13unbal_T8-1*
+FULL TEST:
+target: [-0.01], [-1] all phases at 632.
+alpha=0.45, beta=0.35 (T3.3) 
+-Using loadracks as actuators
+
 simulation start time: 41167
 epoch: 1588117889.7427917
 2020-04-28 23:51:29.742822
@@ -1392,5 +1403,26 @@ simulation end time 44167
 epoch: 1588120888.9178076
 2020-04-29 00:41:28.917869
 
+~~
 
+*Figure 13unbal_T8-1_disturbance* 
+FULL TEST:
+target: [-0.01], [-1] all phases at 632.
+alpha=0.45, beta=0.35 (T3.3) 
+-Using loadracks as disturbance
+
+simulation start time: 41880
+epoch: 1588184145.4801967
+2020-04-29 18:15:45.480246
+
+1588184180.372382
+
+simulation end time 44880
+epoch: 1588187145.1574216
+2020-04-29 19:05:45.157484
+
+~~
+~~~~
+
+** 33NF **
 
