@@ -209,7 +209,6 @@ class myspbc(pbc.SPBCProcess):
                 
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
-            print('here')
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
 
@@ -254,10 +253,11 @@ class myspbc(pbc.SPBCProcess):
         
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
+        phase_size = len(lpbc_phases)
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
-        
+        print('here0')
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
             if data != None:
@@ -323,6 +323,7 @@ class myspbc(pbc.SPBCProcess):
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
 
             if constant_phasor == True:
+                print('here2')
                 Vtargdict = {}
                 refphasor[:,1] = refphasor[:,1]*180/np.pi
                 refphasor[1,1] = refphasor[1,1]-360
