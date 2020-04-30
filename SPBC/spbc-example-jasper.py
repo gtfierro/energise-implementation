@@ -254,7 +254,7 @@ class myspbc(pbc.SPBCProcess):
         
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
-        phase_size = 3
+        phase_size = len(lpbc_phases)
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
