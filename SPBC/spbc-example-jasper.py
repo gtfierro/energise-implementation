@@ -253,7 +253,7 @@ class myspbc(pbc.SPBCProcess):
         
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
-        phase_size = len(lpbc_phases)
+        phase_size = len(lpbc_phases-1)
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
@@ -284,13 +284,14 @@ class myspbc(pbc.SPBCProcess):
         
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
+        #commented below for debugging
+        #refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
         #convert angle from degrees to rads
         # TODO: phases in right order?
         #[[1.00925961 2.04308987]
         #[1.00899569 6.2332654 ]
         #[1.01064548 4.13935041]]
-        refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
+        #refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
         
         if dummy_ref == False:
             print('phasor reference [pu-rad]:')
