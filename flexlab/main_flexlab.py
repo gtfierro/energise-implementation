@@ -78,7 +78,7 @@ sim_length_min = 20 # amount of time to record for in minutes
 
 # run functions...
 
-#dfsw_in,dfsw_out = read_sw_mat(filepath)
+dfsw_in,dfsw_out = read_sw_mat(filepath)
 
 #set_switches(dfsw_in,dfsw_out,test_ID)
 
