@@ -60,7 +60,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
                 scales['flexgrid'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
             if 'scale_loadrack' in dfsw_in.Description.values[i]:
                 scales['loadrack'] = {'register':dfsw_in['Register'][i], 'value':dfsw_in[test_ID][i]}
-                
+        print('here0')
         mtx = []
         mtx_register = []
     
@@ -68,22 +68,23 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
             mtx.append(dfsw_in[test_ID][i])
             mtx_register.append(dfsw_in['Register'][i])
         
-        
+        print('here1')
         try:
             client.connect()
             # Write the scaling
             client.write_registers(scales['flexgrid']['register'],
                                    int(scales['flexgrid']['value']), unit=id)
+            print('here1.5')
             client.write_registers(scales['loadrack']['register'],
                                    int(scales['loadrack']['value']), unit=id)
-            
+            print('here2')
             # write switch positions for config
             for i in range(len(mtx)):
                 client.write_registers(mtx_register[i], int(mtx[i]), unit=id)
-                
+            print('here3')
             # Read simulaiton time
             sim_start = client.read_input_registers(1, count=1, unit=id).registers[0]
-            
+            print('here4')
             # start recording data (sim flag on)
             client.write_registers(int(1), int(0), unit=id)
             client.write_registers(int(1), int(1), unit=id) #sets simulation flag to 1 (ON)
