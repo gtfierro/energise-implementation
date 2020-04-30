@@ -316,8 +316,8 @@ class myspbc(pbc.SPBCProcess):
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
-            pass #pass here because excel file is incomplete
-            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur) 
+            print('here') #pass here because excel file is incomplete
+            #Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur)
             
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
