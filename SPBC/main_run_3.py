@@ -100,7 +100,7 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
     
     #get feeder
-    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
+    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,\
                          subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
     feeder_init
     
