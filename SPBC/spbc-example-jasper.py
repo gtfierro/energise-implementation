@@ -219,7 +219,8 @@ class myspbc(pbc.SPBCProcess):
                 if channel == 'ph_C':
                     chanph = 'c'
                 # get perf nodes (lpbc nodes)
-                for key, ibus in feeder_init.busdict.items():
+                #for key, ibus in feeder_init.busdict.items(): #DEBUGGING
+                for key in lpbc_nodeIDs:
                     #if lpbc == 'lpbc_' + key:
                     if lpbc == key:
                         lpbc_nodes.append(key)
@@ -393,8 +394,9 @@ class myspbc(pbc.SPBCProcess):
 
             computed_targets = {}
 
-            #for key in act_keys:
-            for key, ibus in myfeeder.busdict.items():
+            #for key in act_keys: #DEBUG BELOW
+            #for key, ibus in myfeeder.busdict.items():
+            for key in lpbc_nodeIDs:
                 if key in lpbc_nodes:
                     #lpbcID = 'lpbc_' + key
                     lpbcID = key
