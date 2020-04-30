@@ -70,7 +70,7 @@ def sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min):
         
         
         try:
-            
+            client.connect()
             # Write the scaling
             client.write_registers(scales['flexgrid']['register'],
                                    int(scales['flexgrid']['value']), unit=id)

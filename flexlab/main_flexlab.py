@@ -79,10 +79,10 @@ sim_length_min = 50 # amount of time to record for in minutes
 # run functions...
 
 dfsw_in,dfsw_out = read_sw_mat(filepath)
-print('here')
-#set_switches(dfsw_in,dfsw_out,test_ID)
 
-sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+set_switches(dfsw_in,dfsw_out,test_ID)
+
+#sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
 #sim_start_pause_stop(sim_length_min)
 
 #sim_stop()
