@@ -14,8 +14,8 @@ from main_run_3 import *
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 #init feeder & other vars (commented below because excel file is incomplete)
-#phase_size, feeder_init = feeder_init()
-#print('phases on network:',phase_size)
+phase_size, feeder_init = feeder_init()
+print('phases on network:',phase_size)
 
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
@@ -206,30 +206,30 @@ class myspbc(pbc.SPBCProcess):
                 # (i.e. before SPBC sends any targets)
                 # could also input perf nodes manually
                 
-        # how to loop through all LPBC statuses # commented below for debugging
-        # for lpbc, channels in self.lpbcs.items():
-        #     for channel, status in channels.items():
-        #         print('LPBC status:', lpbc,':', channel, ':', status)
-        #
-        #         if channel == 'ph_A':
-        #             chanph = 'a'
-        #         if channel == 'ph_B':
-        #             chanph = 'b'
-        #         if channel == 'ph_C':
-        #             chanph = 'c'
-                # get perf nodes (lpbc nodes) #commented below because excel file is incomplete
-                # for key, ibus in feeder_init.busdict.items():
-                #     #if lpbc == 'lpbc_' + key:
-                #     if lpbc == key:
-                #         lpbc_nodes.append(key)
+        # how to loop through all LPBC statuses
+        for lpbc, channels in self.lpbcs.items():
+            for channel, status in channels.items():
+                print('LPBC status:', lpbc,':', channel, ':', status)
+
+                if channel == 'ph_A':
+                    chanph = 'a'
+                if channel == 'ph_B':
+                    chanph = 'b'
+                if channel == 'ph_C':
+                    chanph = 'c'
+                # get perf nodes (lpbc nodes)
+                for key, ibus in feeder_init.busdict.items():
+                    #if lpbc == 'lpbc_' + key:
+                    if lpbc == key:
+                        lpbc_nodes.append(key)
         
-        # create list of nodes where ICDI is true (Change to distinguish b/w P & Q) #commented below for debuggin
-        #         if status['pSaturated'] == True:
-        #             #Psat_nodes.append(lpbc[5:]+'_'+chanph)
-        #             Psat_nodes.append(lpbc + '_' + chanph)
-        #         if status['qSaturated'] == True:
-        #             #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
-        #             Qsat_nodes.append(lpbc + '_' + chanph)
+        # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
+                if status['pSaturated'] == True:
+                    #Psat_nodes.append(lpbc[5:]+'_'+chanph)
+                    Psat_nodes.append(lpbc + '_' + chanph)
+                if status['qSaturated'] == True:
+                    #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
+                    Qsat_nodes.append(lpbc + '_' + chanph)
                     
 # =============================================================================
 # =============================================================================
