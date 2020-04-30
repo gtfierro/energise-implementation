@@ -223,13 +223,13 @@ class myspbc(pbc.SPBCProcess):
                 #     if lpbc == key:
                 #         lpbc_nodes.append(key)
         
-        # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
-                if status['pSaturated'] == True:
-                    #Psat_nodes.append(lpbc[5:]+'_'+chanph)
-                    Psat_nodes.append(lpbc + '_' + chanph)
-                if status['qSaturated'] == True:
-                    #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
-                    Qsat_nodes.append(lpbc + '_' + chanph)
+        # create list of nodes where ICDI is true (Change to distinguish b/w P & Q) #commented below for debuggin
+        #         if status['pSaturated'] == True:
+        #             #Psat_nodes.append(lpbc[5:]+'_'+chanph)
+        #             Psat_nodes.append(lpbc + '_' + chanph)
+        #         if status['qSaturated'] == True:
+        #             #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
+        #             Qsat_nodes.append(lpbc + '_' + chanph)
                     
 # =============================================================================
 # =============================================================================
