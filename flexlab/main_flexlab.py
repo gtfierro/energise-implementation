@@ -72,7 +72,7 @@ filename = 'HIL_switch_matrix_33NF_bal_CIL.xlsx'
 filepath = pathname+filename
 
 
-test_ID = 'T3.1' # which test case you want to run
+test_ID = 'T8.1' # which test case you want to run
 sim_length_min = 20 # amount of time to record for in minutes
 # In[run]:
 
@@ -80,9 +80,9 @@ sim_length_min = 20 # amount of time to record for in minutes
 
 dfsw_in,dfsw_out = read_sw_mat(filepath)
 
-#set_switches(dfsw_in,dfsw_out,test_ID)
+set_switches(dfsw_in,dfsw_out,test_ID)
 
-sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+#sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
 #sim_start_pause_stop(sim_length_min)
 
 #sim_stop()

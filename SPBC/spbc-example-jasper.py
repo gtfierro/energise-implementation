@@ -39,7 +39,8 @@ if constant_phasor == True:
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # USED BELOW ONLY FOR T12
     cons_Vang = [0 - 1, -120 - 1, 120 - 1]
-    cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
+    #cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
+    cons_kVbase = np.ones(3)*3.505 # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
 
