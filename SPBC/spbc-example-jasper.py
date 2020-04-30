@@ -13,9 +13,9 @@ from main_run_3 import *
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
-#init feeder & other vars
-phase_size, feeder_init = feeder_init()
-print('phases on network:',phase_size)
+#init feeder & other vars (commented below because excel file is incomplete)
+#phase_size, feeder_init = feeder_init()
+#print('phases on network:',phase_size)
 
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
@@ -217,11 +217,11 @@ class myspbc(pbc.SPBCProcess):
                     chanph = 'b'
                 if channel == 'ph_C':
                     chanph = 'c'
-                # get perf nodes (lpbc nodes)
-                for key, ibus in feeder_init.busdict.items():
-                    #if lpbc == 'lpbc_' + key:
-                    if lpbc == key:
-                        lpbc_nodes.append(key)
+                # get perf nodes (lpbc nodes) #commented below because excel file is incomplete
+                # for key, ibus in feeder_init.busdict.items():
+                #     #if lpbc == 'lpbc_' + key:
+                #     if lpbc == key:
+                #         lpbc_nodes.append(key)
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
@@ -313,6 +313,7 @@ class myspbc(pbc.SPBCProcess):
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
+            pass #pass here because excel file is incomplete
             Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur) 
             
             # TODO: how do we communicate phase information?
