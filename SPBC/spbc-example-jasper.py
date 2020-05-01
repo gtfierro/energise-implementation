@@ -41,7 +41,7 @@ if constant_phasor == True:
     cons_Vang = [0 - 1, -120 - 1, 120 - 1]
     cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
     #cons_kVbase = np.ones(3)*2.4017 # [INPUT HERE]
-    cons_kVAbase = np.ones(3)*100000/3 # [INPUT HERE]
+    cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
 
 
