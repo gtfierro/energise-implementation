@@ -104,12 +104,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             # 3.1 (33NF)
             # =============================================================================
+            # alph = 1
+            # beta = 1
+            # kp_ang = [0.01*alph]
+            # ki_ang = [0.3*alph]
+            # kp_mag = [0.01*beta]
+            # ki_mag = [0.3*beta]
+
+            #PG&E
+
             alph = 1
             beta = 1
-            kp_ang = [0.01*alph]
-            ki_ang = [0.3*alph]
-            kp_mag = [0.01*beta]
-            ki_mag = [0.3*beta]
+            kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
+            ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
+            kp_mag = [3*beta, 3*beta, 3*beta]
+            ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -1004,8 +1013,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['18'] #nodes of actuation
-    key = '18'
+    lpbcidx = ['300062503_a'] #nodes of actuation
+    key = '300062503_a'
     acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
