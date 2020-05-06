@@ -18,7 +18,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 #print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b'] # [INPUT HERE]
+lpbc_phases = ['a','b','c'] # [INPUT HERE]
 lpbc_nodeIDs = ['675'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
