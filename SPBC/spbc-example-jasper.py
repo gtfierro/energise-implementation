@@ -19,7 +19,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 # SETTINGS
 lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['675'] # [INPUT HERE]
+lpbc_nodeIDs = ['675', '671'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
