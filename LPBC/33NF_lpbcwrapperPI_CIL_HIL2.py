@@ -247,6 +247,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
+        self.scaling33NF = 3.
+
 
 
     def targetExtraction(self,phasor_target):
@@ -364,8 +366,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
 
-                        V_mag_local = V_mag_local * 3.
-                        V_mag_ref = V_mag_ref * 3.
+                        V_mag_local = V_mag_local * self.scaling33NF
+                        V_mag_ref = V_mag_ref * self.scaling33NF
                         # calculates relative phasors
                         self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
                         self.Vmag[phase] = V_mag_local
