@@ -1283,6 +1283,23 @@ epoch: 1588024943.5958586
 2020-04-27 22:02:23.595905
 
 ~~
+
+*Figure 13unbal_T3-1_newLoads*
+FULL TEST:
+target: [-0.01], [-1] #[abosolute p.u., relative angle degrees]
+alpha=0.5, beta=0.4 (T3.2 phase A) 
+
+simulation start time: 11719
+epoch: 1588795752.0306633
+2020-05-06 20:09:12.030695
+
+1588795785.0737958
+
+simulation end time 14719
+epoch: 1588798751.6970816
+2020-05-06 20:59:11.697116
+
+~~
 ~~~~
 
 __CIL_13unbal_T3.2__
@@ -1301,6 +1318,23 @@ epoch: 1588028079.2705338
 simulation end time 19903
 epoch: 1588031078.9468389
 2020-04-27 23:44:38.946938
+
+~~
+
+*Figure 13unbal_T3-2_newLoads*
+FULL TEST:
+target: [-0.01], [-1] both phases #[abosolute p.u., relative angle degrees]
+alpha=0.5, beta=0.4 (T3.2) 
+
+simulation start time: 15330
+epoch: 1588799363.8272164
+2020-05-06 21:09:23.827243
+
+1588799383.4889724
+
+simulation end time 18330
+epoch: 1588802363.4920604
+2020-05-06 21:59:23.492115
 
 ~~
 ~~~~
@@ -1383,6 +1417,23 @@ epoch: 1588098002.4236002
 2020-04-28 18:20:02.423631
 
 ~~
+
+*Figure 13unbal_T3-3_newLoads*
+FULL TEST:
+target: [-0.01], [-1] all phases #[abosolute p.u., relative angle degrees]
+alpha=0.45, beta=0.35 (T3.3) 
+
+simulation start time: 20495
+epoch: 1588804529.4505548
+2020-05-06 22:35:29.450603
+
+1588804552.2831924
+
+simulation end time 23495
+epoch: 1588807528.6200325
+2020-05-06 23:25:28.620113
+
+~~
 ~~~~
 
 __CIL_13unbal_T8.1__
@@ -1420,6 +1471,42 @@ epoch: 1588184145.4801967
 simulation end time 44880
 epoch: 1588187145.1574216
 2020-04-29 19:05:45.157484
+
+~~
+
+*Figure 13unbal_T8-1_newLoads*
+FULL TEST:
+target: [-0.01], [-1] all phases at 632.
+alpha=0.45, beta=0.35 (T3.3) 
+-Using loadracks as actuators
+
+simulation start time: 25512
+epoch: 1588809547.0549364
+2020-05-06 23:59:07.054964
+
+1588809596.4475024 
+
+simulation end time 28512
+epoch: 1588812546.2219517
+2020-05-07 00:49:06.221986
+
+~~
+
+*Figure 13unbal_T8-1_disturbance_newLoads*
+FULL TEST:
+target: [-0.01], [-1] all phases at 632.
+alpha=0.45, beta=0.35 (T3.3) 
+-Using loadracks as disturbance
+
+simulation start time: 34776
+epoch: 1588818812.0623753
+2020-05-07 02:33:32.062408
+
+1588818832.1385217  
+
+simulation end time 37776 
+epoch: 1588821811.2312405 
+2020-05-07 03:23:31.231313  
 
 ~~
 ~~~~
