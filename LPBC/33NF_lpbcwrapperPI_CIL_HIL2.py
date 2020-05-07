@@ -104,13 +104,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             # 3.1 (33NF)
             # =============================================================================
-            alph = 0.2
+            alph = 1
             beta = 1
-            kp_ang = [0.01*alph]
-            ki_ang = [0.3*alph]
-            kp_mag = [0.03*beta]
-            ki_mag = [0.3*beta]
-            
+            kp_ang = [0.0018*alph]
+            ki_ang = [0.0677*alph]
+            kp_mag = [0.1*beta]
+            ki_mag = [3*beta]
+
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
