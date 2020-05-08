@@ -107,10 +107,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             alph = 0.2
             beta = 1
-            kp_ang = [0.01 * alph]
-            ki_ang = [0.3 * alph]
-            kp_mag = [0.05 * beta]
-            ki_mag = [1 * beta]
+            kp_ang = [0.01 * alph,0.01 * alph,0.01 * alph]
+            ki_ang = [0.3 * alph,0.3 * alph,0.3 * alph]
+            kp_mag = [0.05 * beta,0.05 * beta,0.05 * beta]
+            ki_mag = [1 * beta,1 * beta,1 * beta]
 
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -1012,7 +1012,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['18'] #nodes of actuation
     key = '18'
-    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 

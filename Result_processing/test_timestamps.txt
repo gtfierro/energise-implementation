@@ -1513,3 +1513,198 @@ epoch: 1588821811.2312405
 
 ** 33NF **
 
+__CIL_33bal_T3.1__
+
+TUNING GAINS
+alpha=1, beta=1
+-bad gains; oscillations
+
+simulation start time: 4198
+epoch: 1588879893.5074668
+2020-05-07 19:31:33.507505
+
+simulation end time 4798
+epoch: 1588880492.6407747
+2020-05-07 19:41:32.640829
+
+~~
+
+TUNING GAINS
+alpha=0.5, beta=0.5
+
+simulation start time: 5146
+epoch: 1588880841.7149122
+2020-05-07 19:47:21.714926
+
+simulation end time 5746
+epoch: 1588881440.8490622
+2020-05-07 19:57:20.849120
+
+- too slow and tiny oscillations around target
+
+~~
+
+TUNING GAINS
+alpha=0.3, beta=0.6
+
+simulation start time: 6249
+epoch: 1588881944.4570026
+2020-05-07 20:05:44.457034
+
+simulation end time 6849
+epoch: 1588882543.5912664
+2020-05-07 20:15:43.591338
+
+~~
+
+TUNING GAINS
+alpha=0.2, beta=0.7
+
+simulation start time: 7311
+epoch: 1588883006.1896996
+2020-05-07 20:23:26.189725
+
+simulation end time 7911
+epoch: 1588883605.823291
+2020-05-07 20:33:25.823341
+
+~~
+
+TUNING GAINS
+alpha=0.2, beta=0.7 changed kp_mag from 0.01 to 0.03
+
+simulation start time: 9582
+epoch: 1588885277.6830108
+2020-05-07 21:01:17.683043
+
+simulation end time 10182
+epoch: 1588885877.3192008
+2020-05-07 21:11:17.319248
+
+~~
+
+TUNING GAINS
+alpha=0.2, beta=1 changed kp_mag from 0.01 to 0.03
+
+simulation start time: 16617
+epoch: 1588892313.2060747
+2020-05-07 22:58:33.206100
+
+simulation end time 17217
+epoch: 1588892912.8426218
+2020-05-07 23:08:32.842694
+
+~~
+
+TUNING GAINS:
+
+alph = 0.2
+beta = 1
+kp_ang = [0.01*alph]
+ki_ang = [0.3*alph]
+kp_mag = [0.05*beta]
+ki_mag = [1*beta]
+
+simulation start time: 18410
+epoch: 1588894107.1016254
+2020-05-07 23:28:27.101649
+
+simulation end time 19010
+epoch: 1588894706.237747
+2020-05-07 23:38:26.237810
+
+-GOOD 
+-FINAL GAINS
+~~
+
+TUNING GAINS:
+
+alph = 0.2
+beta = 1
+kp_ang = [0.005*alph]
+ki_ang = [0.3*alph]
+kp_mag = [0.03*beta]
+ki_mag = [1.2*beta]
+
+simulation start time: 19493
+epoch: 1588895190.3424962
+2020-05-07 23:46:30.342526
+
+simulation end time 20093
+epoch: 1588895789.4785242
+2020-05-07 23:56:29.478599
+
+~~
+
+TUNING GAINS:
+
+alph = 0.2
+beta = 1
+kp_ang = [0.001*alph]
+ki_ang = [0.2*alph]
+kp_mag = [0.02*beta]
+ki_mag = [1*beta]
+
+simulation start time: 20473
+epoch: 1588896170.5603352
+2020-05-08 00:02:50.560357
+
+simulation end time 21073
+epoch: 1588896769.1966019
+2020-05-08 00:12:49.196640
+
+~~
+
+TUNING GAINS:
+
+alph = 0.1
+beta = 0.7
+kp_ang = [0.01 * alph]
+ki_ang = [0.3 * alph]
+kp_mag = [0.05 * beta]
+ki_mag = [1 * beta]
+
+simulation start time: 21387
+epoch: 1588897084.2645533
+2020-05-08 00:18:04.264572
+
+simulation end time 21987
+epoch: 1588897683.4010215
+2020-05-08 00:28:03.401077
+
+-OK/GOOD
+~~
+
+alph = 0.2
+beta = 1
+kp_ang = [0.01 * alph]
+ki_ang = [0.1 * alph]
+kp_mag = [0.05 * beta]
+ki_mag = [1 * beta]
+
+simulation start time: 22910
+epoch: 1588898606.9971716
+2020-05-08 00:43:26.997240
+
+simulation end time 23510
+epoch: 1588899206.6274862
+2020-05-08 00:53:26.627524
+
+-BAD OVERSHOOT
+
+~~
+
+FULL TEST: 
+
+simulation start time: 24413
+epoch: 1588900110.8230631
+2020-05-08 01:08:30.823084
+
+1588900132.2646115 
+
+simulation end time 27413
+epoch: 1588903110.0040953
+2020-05-08 01:58:30.004152
+
+
+~~
