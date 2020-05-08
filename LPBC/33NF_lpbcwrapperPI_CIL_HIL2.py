@@ -105,12 +105,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # 3.1 (33NF)
             # =============================================================================
 
-            alph = 0.1
-            beta = 0.7
+            alph = 0.2
+            beta = 1
             kp_ang = [0.01 * alph]
-            ki_ang = [0.3 * alph]
+            ki_ang = [0.1 * alph]
             kp_mag = [0.05 * beta]
-            ki_mag = [1 * beta]
+            ki_mag = [0.7 * beta]
 
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
