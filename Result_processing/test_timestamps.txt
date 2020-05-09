@@ -1694,7 +1694,15 @@ epoch: 1588899206.6274862
 
 ~~
 
+*Figure 33NF_T3-1*
 FULL TEST: 
+target: [-0.01], [-1] at 18a
+alph = 0.2
+beta = 1
+kp_ang = [0.01*alph]
+ki_ang = [0.3*alph]
+kp_mag = [0.05*beta]
+ki_mag = [1*beta]
 
 simulation start time: 24413
 epoch: 1588900110.8230631
@@ -1706,5 +1714,46 @@ simulation end time 27413
 epoch: 1588903110.0040953
 2020-05-08 01:58:30.004152
 
-
 ~~
+
+FULL TEST: 
+target: [-0.01], [-1] at 18a,b
+alph = 0.2
+beta = 1
+kp_ang = [0.01*alph] both phases
+ki_ang = [0.3*alph] both phases
+kp_mag = [0.05*beta] both phases
+ki_mag = [1*beta] both phases
+
+simulation start time: 12906
+epoch: 1588954145.4991882
+2020-05-08 16:09:05.499218
+
+1588954175.2177808
+
+simulation end time 15906
+epoch: 1588957145.1794376
+2020-05-08 16:59:05.179466
+
+-BAD GAINS on PH B
+~~
+
+FULL TEST: 
+target: [-0.01], [-1] at 18a,b
+alph = 0.2
+beta = 0.7
+kp_ang = [0.001* alph,0.001 * alph]
+ki_ang = [0.3 * alph,0.3 * alph]
+kp_mag = [0.01 * beta,0.01 * beta]
+ki_mag = [0.8 * beta,0.8 * beta]
+
+simulation start time: 26542
+epoch: 1588967782.4896014
+2020-05-08 19:56:22.489619
+
+1588967806.0648146
+
+simulation end time 29542
+epoch: 1588970782.670352
+2020-05-08 20:46:22.670455
+

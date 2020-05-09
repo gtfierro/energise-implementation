@@ -107,10 +107,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             alph = 0.2
             beta = 0.7
-            kp_ang = [0.001* alph,0.001 * alph]
-            ki_ang = [0.3 * alph,0.3 * alph]
-            kp_mag = [0.01 * beta,0.01 * beta]
-            ki_mag = [0.8 * beta,0.8 * beta]
+            kp_ang = [0.001* alph,0.001 * alph,0.001 * alph]
+            ki_ang = [0.3 * alph,0.3 * alph,0.3 * alph]
+            kp_mag = [0.01 * beta,0.01 * beta,0.01 * beta]
+            ki_mag = [0.8 * beta,0.8 * beta,0.8 * beta]
 
 
 
@@ -1015,7 +1015,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['18'] #nodes of actuation
     key = '18'
-    acts_to_phase_dict[key] = np.asarray(['A','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 
