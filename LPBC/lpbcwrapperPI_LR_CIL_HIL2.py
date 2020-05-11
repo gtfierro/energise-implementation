@@ -85,12 +85,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.45
-            beta = 0.35
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+#             alph = 0.45
+#             beta = 0.35
+#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -101,6 +101,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
+            # 33NF
+            alph = 0.2
+            beta = 0.7
+            kp_ang = [0.001* alph,0.001 * alph,0.001 * alph]
+            ki_ang = [0.3 * alph,0.3 * alph,0.2 * alph]
+            kp_mag = [0.01 * beta,0.01 * beta,0.01 * beta]
+            ki_mag = [0.8 * beta,0.8 * beta,0.7 * beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -998,8 +1005,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671'] #nodes of actuation
-    key = '671'
+    lpbcidx = ['26'] #nodes of actuation
+    key = '26'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
