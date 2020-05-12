@@ -1015,7 +1015,7 @@ elif testcase == '13bal':
 elif testcase == 'manual':
     lpbcidx = ['18'] #nodes of actuation
     key = '18'
-    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 
@@ -1114,7 +1114,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 10
+rate = 5
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
