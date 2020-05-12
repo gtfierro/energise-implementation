@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -77,12 +77,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.2
             # alph = 0.5
-            # beta = 0.4
+            # beta = 0.5
             # kp_ang = [0.00108*alph,0.0342*alph]
             # ki_ang = [0.0618*alph,0.0677*alph]
             # kp_mag = [0.6901*beta,1.6522*beta]
             # ki_mag = [3.46*beta,3.5004*beta]
-
             
             #3.3
 # =============================================================================
@@ -102,19 +101,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
-            # 3.1 (33NF)
-            # =============================================================================
-
+            # 33NF
             alph = 0.2
             beta = 0.7
             kp_ang = [0.001* alph,0.001 * alph,0.001 * alph]
             ki_ang = [0.3 * alph,0.3 * alph,0.2 * alph]
             kp_mag = [0.01 * beta,0.01 * beta,0.01 * beta]
             ki_mag = [0.8 * beta,0.8 * beta,0.7 * beta]
-
-
-
-
+            
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -250,9 +244,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
-
         self.scaling33NF = 3.
-
 
 
     def targetExtraction(self,phasor_target):
@@ -357,7 +349,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # loops though every reference uPMU reading starting from most recent
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
-
+                    
                     #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
@@ -372,6 +364,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                         V_mag_local = V_mag_local * self.scaling33NF
                         V_mag_ref = V_mag_ref * self.scaling33NF
+
                         # calculates relative phasors
                         self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
                         self.Vmag[phase] = V_mag_local
@@ -431,8 +424,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             phase_idx = plug_to_V_idx[plug] #assumes plug to V map is the same for uPMUp123 voltage, uPMU123 current and uPMU123 voltage
             V_mag[phase_idx] = local_phasors[plug][-1]['magnitude'] #pulls out vmeas from uPMU123 not uPMUP123
             V_ang[phase_idx] = local_phasors[plug][-1]['angle']
-            I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude'] # Check plugs!
-            I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle'] # Check plugs!
+            I_mag[phase_idx] = local_phasors[(nphases + plug)][-1]['magnitude'] #check plugs!
+            I_ang[phase_idx] = local_phasors[(nphases + plug)][-1]['angle'] #check plugs!
             theta[phase_idx] = np.radians(V_ang[phase_idx] - I_ang[phase_idx]) #angle comes in in degrees, theta is calced for each phase, so there shouldnt be any 2pi/3 offsets
             # P = (VI)cos(theta), Q = (VI)sin(theta)
             Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(theta[phase_idx]))/1000
@@ -649,18 +642,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if nphases == 3:
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
+            Q1, Q2, Q3 = 0, 0, 0
         # TODO modbus only: manually change phase actuation on modbus here if needed on different phase
         elif nphases == 1:
             P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
+            Q1, Q2, Q3 = 0, 0, 0
 
         elif nphases == 2: # Phase A, B only (change if needed)
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), 0
+            Q1, Q2, Q3 = 0, 0, 0
 
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
+
         sign_vec = []
         for p, q in zip(Pcmd_VA, Qcmd_VA):
             if p >= 0:
@@ -684,7 +678,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
         print('mtx : ' + str(mtx))
-        mtx_register = np.arange(1, 8).tolist()
+        mtx_register = [201,202,203,204,205,206,207]
         try:
             client.connect()
             # write switch positions for config
@@ -854,6 +848,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('self.sat_arrayQ ' + str(self.sat_arrayQ))
             if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+                self.Qcmd_kVA= [0] * self.nphases # for load racks TODO
+                self.Qcmd_pu = [0] * self.nphases # for load racks TODO
             elif self.controllerType == 'LQR':
                 if self.currentMeasExists:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
@@ -1013,11 +1009,10 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['18'] #nodes of actuation
-    key = '18'
+    lpbcidx = ['26'] #nodes of actuation
+    key = '26'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
-
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1089,17 +1084,17 @@ for key in lpbcidx:
 #entity corresponds to a given piece of hardware (eg a server), putting multiple entities so that the lpbcs could go on different pieces of hardware
 #these entity files are on the server (Leo)
 entitydict = dict()
-entitydict[0] = 'lpbc_1.ent'
-entitydict[1] = 'lpbc_2.ent'
-entitydict[2] = 'lpbc_3.ent'
-entitydict[3] = 'lpbc_4.ent'
-entitydict[4] = 'lpbc_5.ent'
-entitydict[5] = 'lpbc_6.ent'
+entitydict[0] = 'lpbc_6.ent'
+entitydict[1] = 'lpbc_5.ent'
+entitydict[2] = 'lpbc_4.ent'
+entitydict[3] = 'lpbc_3.ent'
+entitydict[4] = 'lpbc_2.ent'
+entitydict[5] = 'lpbc_1.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
-pmu123Channels = np.asarray([]) # DONE FOR CIL
+pmu123Channels = np.asarray([]) #DONE FOR CIL
 pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
@@ -1112,7 +1107,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/3.3
 loadScaling = 350
-CILscaling = 10 #in VA
+CILscaling = 100 #in VA
 
 rate = 10
 
