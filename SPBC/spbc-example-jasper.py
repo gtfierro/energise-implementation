@@ -34,11 +34,11 @@ if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
-    cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
+    cons_Vmag = [0.94,0.94,0.94] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # USED BELOW ONLY FOR T12
-    cons_Vang = [0 - 1, -120 - 1, 120 - 1]
+    cons_Vang = [0 - 0, -120 - 0, 120 - 0]
     cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # [INPUT HERE]
     #cons_kVbase = np.ones(3)*2.4017 # [INPUT HERE]
     cons_kVAbase = np.ones(3)*3000/3 # [INPUT HERE]
