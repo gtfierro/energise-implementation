@@ -116,8 +116,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             beta = 0.7
             kp_ang = [0.001 * alph, 0.001 * alph, 0.001 * alph]
             ki_ang = [0.3 * alph, 0.3 * alph, 0.2 * alph]
-            kp_mag = [0.05 * beta, 0.03 * beta, 0.03 * beta]
-            ki_mag = [0.6 * beta, 0.8 * beta, 0.7 * beta]
+
+            kp_ang = [0,0,0]
+            ki_ang = [0,0,0]
+            kp_mag = [0.1 * beta, 0.1 * beta, 0.1 * beta]
+            ki_mag = [0.3 * beta, 0.3 * beta, 0.3 * beta]
 
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -1118,7 +1121,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 10
+rate = 5
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
