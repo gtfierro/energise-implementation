@@ -28,14 +28,12 @@ modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
 loadfolder = "IEEE13/"
 loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 
-'BALANCED'
-# =============================================================================
-# filepath = "IEEE13/"
-# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-# 
-# loadfolder = "IEEE13/"
-# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
-# =============================================================================
+'IEEE13_BALANCED'
+# filepath = "IEEE13_bal/"
+# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+
+# loadfolder = "IEEE13_bal/"
+# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 
 '33NF'
 # filepath = "33/"
