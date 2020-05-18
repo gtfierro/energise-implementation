@@ -1828,7 +1828,7 @@ epoch: 1589416786.4467049
 
 ~~
 
-changed gains
+changed gains -better 
 ez targets
 
 simulation start time: 23622
@@ -1843,3 +1843,31 @@ epoch: 1589492207.7055962
 
 ~~
 
+
+changed gains 2 - good gains - see python script 
+ez targets
+[-0.06, -0.01]
+
+simulation start time: 30017
+epoch: 1589495603.4299433
+2020-05-14 22:33:23.429992
+
+1589495623.4847043
+
+simulation end time 33017
+epoch: 1589498603.598244
+2020-05-14 23:23:23.598303
+
+~~
+gains 2 , changed targets
+[-0.03, -0.01]
+
+simulation start time: 36022
+epoch: 1589501609.7386913
+2020-05-15 00:13:29.738734
+
+1589501640.910488
+
+simulation end time 39022
+epoch: 1589504608.9073696
+2020-05-15 01:03:28.907428
