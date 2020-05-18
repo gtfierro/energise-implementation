@@ -22,27 +22,27 @@ print(datetime.datetime.fromtimestamp(ts))
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 'UNBALANCED'
-filepath = "IEEE13/"
-modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-
-loadfolder = "IEEE13/"
-loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+# =============================================================================
+# filepath = "IEEE13/"
+# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+# 
+# loadfolder = "IEEE13/"
+# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+# =============================================================================
 
 'BALANCED'
-# =============================================================================
-# filepath = "IEEE13_bal/"
-# modelpath = filepath + "016 GB_IEEE13_balance all ver2.xls"
-# 
-# loadfolder = "IEEE13_bal/"
-# loadpath = loadfolder + "016 GB_IEEE13_balance_norm03.xlsx"
-# =============================================================================
+filepath = "IEEE13_bal/"
+modelpath = filepath + "016_GB_IEEE13_balance_all_ver2.xls"
+
+loadfolder = "IEEE13_bal/"
+loadpath = loadfolder + "016_GB_IEEE13_balance_norm03_act.xlsx"
 
 plot = 0 #turn plot on/off
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 subkVbase_phg = 4.16/np.sqrt(3)
 subkVAbase = 5000.
-timesteps = 2 #(16-8)*60  # [INPUT HERE] Manual input of start time
+timesteps = 3 #(16-8)*60  # [INPUT HERE] Manual input of start time
 
 #[HIL]
 date = datetime.datetime.now()
@@ -147,12 +147,12 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
             if lam1 > 0:
                 if bus.name == 'bus_671':
                     #print(key,bus.name)
-                    Vmag_match = [1, 0.99, 0.99]
-                    Vang_match = [0 - np.radians(0), 4/3*2*np.pi - np.radians(1), 2/3*np.pi - np.radians(1)] 
+                    Vmag_match = [.99, 1, 1]
+                    Vang_match = [0 - np.radians(1), 4/3*2*np.pi - np.radians(0), 2/3*np.pi - np.radians(0)] 
                     #pdb.set_trace()
                     'T12:'
                     obj += lam1*(cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]))
-                    obj += lam1*(cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]))
+                    obj += lam1*(cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]**2))
 
                     #if (bus.phasevec == np.ones((3,timesteps))).all():
                         #obj += lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
@@ -220,7 +220,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
     constraints = cvx_set_constraints(myfeeder,1) # Second argument turns actuators on/off
     prob = cp.Problem(objective, constraints)
-    result = prob.solve(verbose=False,eps_rel=1e-5,eps_abs=1e-5)
+    result = prob.solve(verbose=False,eps_rel=1e-5,eps_abs=1e-10)
     
     # In[7]:
     
