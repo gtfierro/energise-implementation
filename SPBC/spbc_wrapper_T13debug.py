@@ -13,35 +13,50 @@ from main_run_3 import *
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
-#init feeder & other vars (commented below because excel file is incomplete)
-#phase_size, feeder_init = feeder_init()
-#print('phases on network:',phase_size)
+#init feeder & other vars
+phase_size, feeder_init = feeder_init()
+print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['18','26'] # [INPUT HERE]
+lpbc_phases = ['a'] # [INPUT HERE]
+lpbc_nodeIDs = ['671','652','692'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
-TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
+'''
+Q RE T12 - do we have actuators tracking the phasor at their act node, or are they all using the performance 
+node as the local phasor? If they are all using the perf as their local, then we are going to have some trouble
+showing the ICDI because the varios LPBC's are receiving the same target. To create a better scenario to show ICDI
+i think we want two separate LPBCs both trying to acheive a single phasor target at a single perf node but measuring
+phasors from their local node - this way the change in capcities can be broadcasted to the different actuators that
+aren't at capacity in the form of altered phasor targets.
+'''
+
+# {actuation node: performance node}
+lpbcdict = {
+    '671': '671',
+    '652': '671',
+    '692': '671'
+}
+
+TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
 start_hour = 11 # [INPUT HERE]
 
 dummy_ref = True # [INPUT HERE]
-constant_phasor = True # [INPUT HERE]
+constant_phasor = False # [INPUT HERE]
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
-if constant_phasor == True:
+if constant_phasor == False:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
-    cons_Vmag = [0.97,0.97,0.97] # [INPUT HERE]
+    cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # USED BELOW ONLY FOR T12
-    cons_Vang = [0 - 0.1, -120 - 0.1, 120 - 0.1]
-    cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # [INPUT HERE]
-    #cons_kVbase = np.ones(3)*2.4017 # [INPUT HERE]
-    cons_kVAbase = np.ones(3)*3000/3 # [INPUT HERE]
+    cons_Vang = [0 - 1, 0 - 1, 0 - 1]
+    cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
+    cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
 
 
@@ -50,13 +65,14 @@ Vmag_prev = []
 #Vmag_prev = {}
 #Vmag_prev[key] = np.ones((3))*np.inf
 
-# TODO; put lpbc_nodes outsie of loop in init section?
+# TODO; put lpbc_nodes outside of loop in init section?
 #lpbc_nodes = []
 
 print()
 print('$$$$$$$$$$$$$$$$')
 print('~~ START SPBC ~~')
 print('$$$$$$$$$$$$$$$$')
+print()
 
 class myspbc(pbc.SPBCProcess):
     """
@@ -157,18 +173,15 @@ class myspbc(pbc.SPBCProcess):
         
         # define system phase size to define size of phasor reference
         #phase_size, feeder_init = feeder_init() ## doesnt work inside of __init__
-
         
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(30, self.compute_and_announce))
+        schedule(self.call_periodic(20, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
         self.iteration = -1
-        # self.P_flag = []
-        # self.Q_flag = []
         if TV_load == True:
             self.timestepcur = start_hour*60-1
         else:
@@ -212,7 +225,7 @@ class myspbc(pbc.SPBCProcess):
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
                 print('LPBC status:', lpbc,':', channel, ':', status)
-
+                
                 if channel == 'ph_A':
                     chanph = 'a'
                 if channel == 'ph_B':
@@ -220,8 +233,7 @@ class myspbc(pbc.SPBCProcess):
                 if channel == 'ph_C':
                     chanph = 'c'
                 # get perf nodes (lpbc nodes)
-                #for key, ibus in feeder_init.busdict.items(): #DEBUGGING
-                for key in lpbc_nodeIDs:
+                for key, ibus in feeder_init.busdict.items():
                     #if lpbc == 'lpbc_' + key:
                     if lpbc == key:
                         lpbc_nodes.append(key)
@@ -255,11 +267,10 @@ class myspbc(pbc.SPBCProcess):
         
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
-        phase_size = 3
         refphasor_init = np.ones((phase_size,2))*np.inf
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
-        print('here0')
+        
         for channel, data in self.reference_phasors.items():
             print(f"Channel {channel} has {len(data) if data else 0} points")
             if data != None:
@@ -286,14 +297,13 @@ class myspbc(pbc.SPBCProcess):
         
             
         #convert Vmag to p.u. (subKVbase_phg defined in main)
-        #commented below for debugging
-        #refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
+        refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
         #convert angle from degrees to rads
         # TODO: phases in right order?
         #[[1.00925961 2.04308987]
         #[1.00899569 6.2332654 ]
         #[1.01064548 4.13935041]]
-        #refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
+        refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
         
         if dummy_ref == False:
             print('phasor reference [pu-rad]:')
@@ -318,13 +328,12 @@ class myspbc(pbc.SPBCProcess):
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
-            print('here') #pass here because excel file is incomplete
-            #Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur)
-            
+            Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur) 
+            print(f'VTARGS: {Vtargdict}')
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
-
+    
             if constant_phasor == True:
                 Vtargdict = {}
                 refphasor[:,1] = refphasor[:,1]*180/np.pi
@@ -333,130 +342,85 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key] = {}
                     Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[1,0],cons_Vmag[2]-refphasor[2,0]]
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
-
-                    # if self.iteration < 13*2:
-                    '''CHANGED INDICIES FOR T12 CONFIG ONLY'''
-                    # Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
-                    # Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
-                    # if self.iteration > 59: #Change here if we want to set varying targets
-                    #     Vtargdict[key]['Vmag'] = [0.92 - refphasor[0, 0], 0.92 - refphasor[0, 0],
-                    #                               0.92 - refphasor[0, 0]]
-                    #     Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
-                        # if '671_a' and '671_b' and '671_c' not in Qsat_nodes:
-                        #     Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[0, 0],0.96 - refphasor[0, 0]]
-                        # if '671_a' and '671_b' and '671_c' not in Psat_nodes:
-                        #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
-
-                    '''ICDI short-term fix
-                    if '671_a' and '671_b' and '671_c' in Psat_nodes:
-                        self.P_flag = []
-                        self.P_flag.append(1)
-                    if '671_a' and '671_b' and '671_c' in Qsat_nodes:
-                        self.Q_flag = []
-                        self.Q_flag.append(1)
-                    '''
-                    # elif self.iteration >= 26*2: #Change here if we want to set varying targets
-                    #     if '671_a' and '671_b' and '671_c' not in Psat_nodes:
-                    #         Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -3 - refphasor[0, 1], -3 - refphasor[0, 1]]
-                    #
-                    #     if '671_a' and '671_b' and '671_c' not in Qsat_nodes:
-                    #         Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],
-                    #                                   0.94 - refphasor[0, 0]]
-                    #     if '671_a' and '671_b' and '671_c' in Psat_nodes:
-                    #         self.P_flag = []
-                    #         self.P_flag.append(2)
-                    #     if '671_a' and '671_b' and '671_c' in Qsat_nodes:
-                    #         self.Q_flag = []
-                    #         self.Q_flag.append(2)
-
+                    # if 13 <= self.iteration < 26: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
+                    # elif 26 <= self.iteration < 39: #Change here if we want to set varying targets
+                    #      Vtargdict[key]['Vmag'] = [0.97 - refphasor[0, 0], 0.97 - refphasor[1, 0],0.97 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-3 - refphasor[0, 1], -123 - refphasor[1, 1], 117 - refphasor[2, 1]]
                     # elif self.iteration >= 39: #Change here if we want to set varying targets
-                    #      Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],0.94 - refphasor[0, 0]]
-                    #      Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
-
-                    '''ICDI short-term fix
-                    if len(self.P_flag) > 0:
-                        if self.P_flag[0] == 1:
-                            Vtargdict[key]['Vang'] = [-2.5 - refphasor[0, 1], -2.5 - refphasor[0, 1], -2.5 - refphasor[0, 1]]
-                        elif self.P_flag[0] == 2:
-                            Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
-
-                    if len(self.Q_flag) > 0:
-                        if self.Q_flag[0] == 1:
-                            Vtargdict[key]['Vmag'] = [0.95 - refphasor[0, 0], 0.95 - refphasor[0, 0],0.95 - refphasor[0, 0]]
-                        if self.Q_flag[0] == 2:
-                            Vtargdict[key]['Vmag'] = [0.95 - refphasor[0, 0], 0.95 - refphasor[0, 0],0.95 - refphasor[0, 0]]
-                    '''
+                    #      Vtargdict[key]['Vmag'] = [0.96 - refphasor[0, 0], 0.96 - refphasor[1, 0],0.96 - refphasor[2, 0]]
+                    #      Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -124 - refphasor[1, 1], 116 - refphasor[2, 1]]
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
-
-            computed_targets = {}
-
-            #for key in act_keys: #DEBUG BELOW
-            #for key, ibus in myfeeder.busdict.items():
-            for key in lpbc_nodeIDs:
-                if key in lpbc_nodes:
-                    #lpbcID = 'lpbc_' + key
-                    lpbcID = key
-                    #intialize
-                    computed_targets[lpbcID] = {}
-                    #Vmag_prev = {}
-                    #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
-                    computed_targets[lpbcID]['phase'] = []
-                    computed_targets[lpbcID]['delV'] = []
-                    computed_targets[lpbcID]['delta'] = []
-                    computed_targets[lpbcID]['kvbase'] = []
-                    computed_targets[lpbcID]['kvabase'] = []
                     
-                    # TODO: shiff from line to phase channel tags
-                    #for ph in ibus.phases:
-                    for ph in lpbc_phases:
-                        if ph == 'a':
+            computed_targets = {}
+            
+            #for key in act_keys:
+            for key, ibus in myfeeder.busdict.items():
+                for iactnode,iperfnode in lpbcdict.items():
+                    if key == iactnode:
+                        #lpbcID = 'lpbc_' + key
+                        lpbcID = key
+                        #intialize
+                        computed_targets[lpbcID] = {}
+                        #Vmag_prev = {}
+                        #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
+                        computed_targets[lpbcID]['phase'] = []
+                        computed_targets[lpbcID]['delV'] = []
+                        computed_targets[lpbcID]['delta'] = []
+                        computed_targets[lpbcID]['kvbase'] = []
+                        computed_targets[lpbcID]['kvabase'] = []
+                        
+                        # TODO: shiff from line to phase channel tags
+                        #for ph in ibus.phases:
+
+                        if key == '671':
                             phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_A')
                             #computed_targets[lpbcID]['channels'].append('L1')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-                            
-                            #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
-
-                        if ph == 'b':
-                            phidx  = 1
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
+                                
+                                #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
+                        if key == '652':
+                            phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_B')
                             #computed_targets[lpbcID]['channels'].append('L2')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-
-                        if ph == 'c':
-                            phidx  = 2
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
+                            
+                        if key == '692':
+                            phidx  = 0
                             computed_targets[lpbcID]['phase'].append('ph_C')
                             #computed_targets[lpbcID]['channels'].append('L3')
-                            computed_targets[lpbcID]['delV'].append(Vtargdict[key]['Vmag'][phidx])
+                            computed_targets[lpbcID]['delV'].append(Vtargdict[iperfnode]['Vmag'][phidx])
                             if angle_unit == 'radians':
-                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[key]['Vang'][phidx]))
+                                computed_targets[lpbcID]['delta'].append(np.radians(Vtargdict[iperfnode]['Vang'][phidx]))
                             if angle_unit == 'degrees':
-                                computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
-                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
-                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-
-
-
+                                computed_targets[lpbcID]['delta'].append(Vtargdict[iperfnode]['Vang'][phidx])
+                            computed_targets[lpbcID]['kvbase'].append(Vtargdict[iperfnode]['KVbase'][phidx])
+                            computed_targets[lpbcID]['kvabase'].append(Vtargdict[iperfnode]['KVAbase'][phidx])
+                            
+                        
+                    
                 
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
-                print(f'announcing to lpbc: {lpbc_name}')
+                print(f'announcing to lpbc: {lpbc_name}, performance node: {lpbcdict[lpbc_name]}')
                 await self.broadcast_target(lpbc_name, targets['phase'], \
                                 targets['delV'], targets['delta'], targets['kvbase'], kvabases=targets['kvabase']) #kvabases=targets['kvabase']
 

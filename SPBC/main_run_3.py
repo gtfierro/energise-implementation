@@ -22,6 +22,13 @@ print(datetime.datetime.fromtimestamp(ts))
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
 'UNBALANCED'
+# filepath = "IEEE13/"
+# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+#
+# loadfolder = "IEEE13/"
+# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+
+'BALANCED'
 # =============================================================================
 # filepath = "IEEE13/"
 # modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
@@ -30,12 +37,12 @@ print(datetime.datetime.fromtimestamp(ts))
 # loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 # =============================================================================
 
-'BALANCED'
-filepath = "IEEE13_bal/"
-modelpath = filepath + "016_GB_IEEE13_balance_all_ver2.xls"
+'33NF'
+filepath = "33/"
+modelpath = filepath + "005_GB_UCB33_opal_v2.xls"
 
-loadfolder = "IEEE13_bal/"
-loadpath = loadfolder + "016_GB_IEEE13_balance_norm03_act.xlsx"
+loadfolder = "33/"
+loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 
 plot = 0 #turn plot on/off
 
@@ -93,7 +100,7 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
     
     #get feeder
-    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
+    feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,\
                          subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
     feeder_init
     

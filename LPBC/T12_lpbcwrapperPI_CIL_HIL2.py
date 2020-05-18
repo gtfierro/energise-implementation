@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 200):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 80):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -102,8 +102,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             ki_mag = [0,0,0]
 # =============================================================================
             # 12.3
-            alph = 0.75
-            beta = 0.75
+            alph = 0.15
+            beta = 0.1
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.1750*beta,0.1750*beta]
@@ -208,7 +208,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.sat_arrayQ = np.ones(nphases) #if no current measurements, then these will just stay zero and saturated == 0
         self.Pmax_pu = np.asarray([np.NaN] * nphases) #this signal is used by the SPBC if ICDI is true, otherwise its a nan
         self.Qmax_pu = np.asarray([np.NaN] * nphases)
-        self.saturationCounterLimit = 5
+        self.saturationCounterLimit = 12
         self.Psat = np.ones((nphases, self.saturationCounterLimit)) #set of sat_arrayPs
         self.Qsat = np.ones((nphases, self.saturationCounterLimit))
         self.ICDI_sigP = np.zeros((nphases, 1), dtype=bool) #I Cant Do It signal, defaulted to zero (that it can do it)
@@ -342,6 +342,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
         for phase in range(nphases):
+            if phase != 0:
+                break
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]):
                 # extract most recent ordered_local uPMU reading
@@ -373,6 +375,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
+
+        self.Vang[1] = self.Vang[0]
+        self.Vang[2] = self.Vang[0]
+        self.Vmag[1] = self.Vmag[0]
+        self.Vmag[2] = self.Vmag[0]
+        self.VmagRef[1] = self.VmagRef[0]
+        self.VmagRef[2] = self.VmagRef[0]
+        self.Vmag_relative[1] = self.Vmag_relative[0]
+        self.Vmag_relative[2] = self.Vmag_relative[0]
+
         return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
@@ -442,7 +454,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
-        ORT_max_VA_T12 = 100000
+        ORT_max_VA_T12 = 50000
         if self.actType == 'inverter':
 
             '''
@@ -490,7 +502,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
     def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
-        ORT_max_VA_T12 = 100000
+        ORT_max_VA_T12 = 50000
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
@@ -653,7 +665,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         '''
         '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
-        ORT_max_VA_T12 = 100000
+        ORT_max_VA_T12 = 50000
         # P,Q commands in W and VAR (not kilo)
         for phase in range(nphases):
             if phase == 0:
@@ -662,10 +674,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('ORT_max_VA/localSratio : ' + str(ORT_max_VA_T12/localSratio))
                 if abs(Pcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
                     print('Pcmd over Opal limit')
-                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
-                if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
+                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA_T12/localSratio
+                if abs(Qcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
                     print('Qcmd over Opal limit')
-                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
+                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA_T12/localSratio
             else:
                 print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
                 print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
@@ -784,6 +796,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
+
         '''
         print('REF upmu0: ')
         print(reference_phasors[0][0])
@@ -1044,8 +1057,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671a/652a/692a'] #nodes of actuation
-    key = '671a/652a/692a'
+    lpbcidx = ['671'] #nodes of actuation
+    key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1081,6 +1094,7 @@ for key in lpbcidx:
         pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
     if 'C' in acts_to_phase_dict[key]:
         pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
+
     pmu0_plugs_dict[key] = np.asarray(pmu0_plugs_dict[key])
 
     #Does not put local pmus measurements in A, B, C order, but does build plug_to_phase_Map
@@ -1132,9 +1146,9 @@ entitydict[5] = 'lpbc_6.ent'
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
 #changed below for T12 only
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L1','uPMU_123P/L1']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L1','uPMU_0/L1','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
+refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
 nlpbc = len(lpbcidx)
 

@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 200):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -77,17 +77,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.2
             # alph = 0.5
-            # beta = 0.4
+            # beta = 0.5
             # kp_ang = [0.00108*alph,0.0342*alph]
             # ki_ang = [0.0618*alph,0.0677*alph]
             # kp_mag = [0.6901*beta,1.6522*beta]
             # ki_mag = [3.46*beta,3.5004*beta]
-
             
             #3.3
 # =============================================================================
-            alph = 0.45
-            beta = 0.35
+            alph = 0.15
+            beta = 0.1
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
@@ -102,23 +101,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
-            # 3.1 (33NF)
-            # =============================================================================
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.01*alph]
-            # ki_ang = [0.3*alph]
-            # kp_mag = [0.01*beta]
-            # ki_mag = [0.3*beta]
-
-            #PG&E
-
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
-            # ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
-            # kp_mag = [3*beta, 3*beta, 3*beta]
-            # ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -448,11 +430,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return
 
 
-    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV):
+    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV, phasor_target):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
+        ORT_max_VA_T12 = 100000
         if self.actType == 'inverter':
 
             '''
@@ -468,8 +451,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             '''
 
-            indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
-            indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
+
+            '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
+            if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                indexP = np.where(abs(Pcmd)>= ORT_max_VA_T12/self.localSratio)[0]
+                indexQ = np.where(abs(Qcmd)>= ORT_max_VA_T12/self.localSratio)[0]
+            else:
+                indexP = np.where(abs(Pcmd) >= self.ORT_max_VA / self.localSratio)[0]
+                indexQ = np.where(abs(Qcmd) >= self.ORT_max_VA / self.localSratio)[0]
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -494,8 +483,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return(sat_arrayP,sat_arrayQ)
 
 
-    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
+    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu, phasor_target):
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
+        ORT_max_VA_T12 = 100000
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
@@ -507,6 +497,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #self.Pmax_pu[phase] = Pact_pu[phase] 
                     '''
                     self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
+                    '''ADDED BELOW FOR T12 ONLY'''
+                    if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                        self.Pmax_pu[phase] = ORT_max_VA_T12/ (self.localkVAbase[phase] * 1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -525,6 +518,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.Qmax_pu[phase] = Qact_pu[phase]
                     '''
                     self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
+                    if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                        self.Qmax_pu[phase] = ORT_max_VA_T12 / (self.localkVAbase[phase] * 1000)
+
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
@@ -631,19 +627,31 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
 
-    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
+    def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client, phasor_target ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
+        ORT_max_VA_T12 = 100000
         for phase in range(nphases):
-            print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
-            print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
-            print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
-            if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Pcmd over Opal limit')
-                Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
-            if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Qcmd over Opal limit')
-                Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
+            if 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+                print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+                print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+                print('ORT_max_VA/localSratio : ' + str(ORT_max_VA_T12/localSratio))
+                if abs(Pcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
+                    print('Pcmd over Opal limit')
+                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA_T12/localSratio
+                if abs(Qcmd_VA[phase]) > ORT_max_VA_T12/localSratio:
+                    print('Qcmd over Opal limit')
+                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA_T12/localSratio
+            else:
+                print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
+                print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+                print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
+                if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
+                    print('Pcmd over Opal limit')
+                    Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
+                if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
+                    print('Qcmd over Opal limit')
+                    Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
 
@@ -651,9 +659,69 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
             Q1, Q2, Q3 = abs(Qcmd_VA[0]), abs(Qcmd_VA[1]), abs(Qcmd_VA[2])
         # TODO modbus only: manually change phase actuation on modbus here if needed on different phase
-        elif nphases == 1:
-            P1, P2, P3 = abs(Pcmd_VA[0]), 0, 0
-            Q1, Q2, Q3 = abs(Qcmd_VA[0]), 0, 0
+
+        elif nphases == 1 and 'ph_A' in phasor_target['phasor_targets'][0]['channelName']:
+            P1 = abs(Pcmd_VA[0])
+            Q1 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P1, Q1, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [1,2,7]
+
+        elif nphases == 1 and 'ph_B' in phasor_target['phasor_targets'][0]['channelName']:
+            P2 = abs(Pcmd_VA[0])
+            Q2 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P2, Q2, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [3,4,7]
+
+        elif nphases == 1 and 'ph_C' in phasor_target['phasor_targets'][0]['channelName']:
+            P3 = abs(Pcmd_VA[0])
+            Q3 = abs(Qcmd_VA[0])
+
+            sign_vec = []
+            for p, q in zip(Pcmd_VA, Qcmd_VA):
+                if p >= 0:
+                    sign_vec.append(1)
+                if p < 0:
+                    sign_vec.append(0)
+                if q >= 0:
+                    sign_vec.append(1)
+                if q < 0:
+                    sign_vec.append(0)
+
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
+
+            mtx = [P3, Q3, sign_base]
+            print('mtx : ' + str(mtx))
+            mtx_register = [5,6,7]
 
         elif nphases == 2: # Phase A, B only (change if needed)
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), 0
@@ -661,30 +729,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # set signs of commands through sign_vec
         #           P,Q      1 is positive, 0 is negative
-        sign_vec = []
-        for p, q in zip(Pcmd_VA, Qcmd_VA):
-            if p >= 0:
-                sign_vec.append(1)
-            if p < 0:
-                sign_vec.append(0)
-            if q >= 0:
-                sign_vec.append(1)
-            if q < 0:
-                sign_vec.append(0)
-        if nphases == 3:
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[
-            3] + 2 ** 1 * sign_vec[4] + 2 ** 0 * sign_vec[5]
-        # TODO modbus only: manually change phase actuation on modbus here for sign base if needed on different phase
-        elif nphases == 1:
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
-
-        elif nphases == 2: # Phase A, B only (change if needed)
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[3]
 
 
-        mtx = [P1, Q1, P2, Q2, P3, Q3, sign_base]
-        print('mtx : ' + str(mtx))
-        mtx_register = np.arange(1, 8).tolist()
         try:
             client.connect()
             # write switch positions for config
@@ -844,8 +890,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Icomp_pu = [np.NaN]*self.nphases
 
             #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV, phasor_target)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu, phasor_target) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
             #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
@@ -883,7 +929,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client, phasor_target)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
                     disp('couldnt send commands because no current measurement available')
@@ -981,7 +1027,7 @@ Tells each LPBC whether it sends commands to loads or inverters
 '''
 
 
-SPBCname = 'spbc-jasper-1'
+SPBCname = 'spbc2'
 # SPBCname = 'spbc-example-jasper'
 
 #Manual entry here to determine test case, phases, etc.
@@ -1013,11 +1059,16 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
-    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    lpbcidx = ['671','652','692'] #nodes of actuation
+    key = '671'
+    acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
-
+    key = '652'
+    acts_to_phase_dict[key] = np.asarray(['','B','']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter'
+    key = '692'
+    acts_to_phase_dict[key] = np.asarray(['', '', 'C'])  # which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1047,9 +1098,9 @@ for key in lpbcidx:
     if 'A' in acts_to_phase_dict[key]:
         pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0]) #if ref needs to listen to A, listen to the PMU plug corresponding to A
     if 'B' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[1])
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
     if 'C' in acts_to_phase_dict[key]:
-        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[2])
+        pmu0_plugs_dict[key].append(pmu0_phase_to_plug_Map[0])
     pmu0_plugs_dict[key] = np.asarray(pmu0_plugs_dict[key])
 
     #Does not put local pmus measurements in A, B, C order, but does build plug_to_phase_Map
@@ -1100,7 +1151,7 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 

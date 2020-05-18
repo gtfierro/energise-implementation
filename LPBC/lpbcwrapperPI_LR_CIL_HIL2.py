@@ -85,12 +85,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.75
-            beta = 0.75
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+#             alph = 0.45
+#             beta = 0.35
+#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -101,6 +101,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
+            # 33NF
+            alph = 0.2
+            beta = 0.7
+            kp_ang = [0.001* alph,0.001 * alph,0.001 * alph]
+            ki_ang = [0.3 * alph,0.3 * alph,0.2 * alph]
+            kp_mag = [0.01 * beta,0.01 * beta,0.01 * beta]
+            ki_mag = [0.8 * beta,0.8 * beta,0.7 * beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -837,8 +844,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('self.sat_arrayQ ' + str(self.sat_arrayQ))
             if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-                self.Qcmd_kVA= 0 # for load racks TODO
-                self.Qcmd_pu = 0 # for load racks TODO
+                self.Qcmd_kVA= [0] * self.nphases # for load racks TODO
+                self.Qcmd_pu = [0] * self.nphases # for load racks TODO
             elif self.controllerType == 'LQR':
                 if self.currentMeasExists:
                     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
@@ -998,8 +1005,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671'] #nodes of actuation
-    key = '671'
+    lpbcidx = ['26'] #nodes of actuation
+    key = '26'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 

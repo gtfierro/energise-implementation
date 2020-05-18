@@ -86,12 +86,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.45
-            beta = 0.35
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+#             alph = 0.45
+#             beta = 0.35
+#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -104,22 +104,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 # =============================================================================
             # 3.1 (33NF)
             # =============================================================================
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.01*alph]
-            # ki_ang = [0.3*alph]
-            # kp_mag = [0.01*beta]
-            # ki_mag = [0.3*beta]
 
-            #PG&E
+            # alph = 0.2
+            # beta = 0.7
+            # kp_ang = [0.001* alph,0.001 * alph,0.001 * alph]
+            # ki_ang = [0.3 * alph,0.3 * alph,0.2 * alph]
+            # kp_mag = [0.01 * beta,0.01 * beta,0.01 * beta]
+            # ki_mag = [0.8 * beta,0.8 * beta,0.7 * beta]
 
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
-            # ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
-            # kp_mag = [3*beta, 3*beta, 3*beta]
-            # ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
-            
+            alph = 0.2
+            beta = 6
+            kp_ang = [0.001 * alph, 0.001 * alph, 0.001 * alph]
+            ki_ang = [0.2 * alph, 0.2 * alph, 0.2 * alph]
+
+            # kp_ang = [0,0,0]
+            # ki_ang = [0,0,0]
+            kp_mag = [0.5 * beta, 0.5 * beta, 0.5 * beta]
+            ki_mag = [0.9 * beta, 1 * beta, 1 * beta]
+
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -256,6 +258,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
+        self.scaling33NF = 3.
+
 
 
     def targetExtraction(self,phasor_target):
@@ -360,7 +364,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # loops though every reference uPMU reading starting from most recent
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
-                    
+
                     #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
@@ -372,6 +376,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+
+                        V_mag_local = V_mag_local * self.scaling33NF
+                        V_mag_ref = V_mag_ref * self.scaling33NF
                         # calculates relative phasors
                         self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
                         self.Vmag[phase] = V_mag_local
@@ -1013,8 +1020,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    lpbcidx = ['18'] #nodes of actuation
+    key = '18'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1114,7 +1121,7 @@ inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 5
+rate = 10
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
