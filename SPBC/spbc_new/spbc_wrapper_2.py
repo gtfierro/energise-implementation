@@ -1,3 +1,5 @@
+'wrapper 2 for spbc modules transfered 5/17/20 to spbc_new'
+
 from pyxbos.process import run_loop, schedule, config_from_file
 from pyxbos.drivers import pbc
 import logging
@@ -9,7 +11,7 @@ import numpy as np
 from setup_3 import *
 from constraints_3 import *
 from dss_3 import *
-from main_run_3 import *
+from main_run_3_new import *
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
@@ -34,8 +36,8 @@ aren't at capacity in the form of altered phasor targets.
 # {actuation node: performance node}
 lpbcdict = {
     '671': '671',
-    '652': '671',
-    '692': '671'
+    '652': '652',
+    '692': '692'
 }
 
 TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -365,7 +367,7 @@ class myspbc(pbc.SPBCProcess):
             
             #for key in act_keys:
             for key, ibus in myfeeder.busdict.items():
-                for iactnode,iperfnode in lpbcdict.items():
+                for iactnode, iperfnode in lpbcdict.items():
                     if key == iactnode:
                         #lpbcID = 'lpbc_' + key
                         lpbcID = key
