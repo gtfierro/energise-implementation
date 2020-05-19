@@ -1790,6 +1790,8 @@ epoch: 1589053091.369128
 
 __CIL_33bal_T8.1__
 
+*Figure 33NF_T8-1_QmagPdel*
+
 Pdel,Qmag
 simulation start time: 58566
 epoch: 1589327526.8190408
@@ -1803,6 +1805,8 @@ epoch: 1589330525.9938195
 
 ~~
 
+*Figure 33NF_T8-1_PmagQdel*
+
 Qdel,Pmag
 simulation start time: 3796
 epoch: 1589403837.0912786
@@ -1815,7 +1819,12 @@ epoch: 1589406836.2681522
 2020-05-13 21:53:56.268225
 
 ~~
+
+*Figure 33NF_T8-1_ezTargets*
+
 ezTargets
+[-0.06, -0.1]
+
 simulation start time: 13745
 epoch: 1589413786.7661352
 2020-05-13 23:49:46.766160
@@ -1843,6 +1852,7 @@ epoch: 1589492207.7055962
 
 ~~
 
+**Figure 33NF_T8-1_ezTargets_newGains**
 
 changed gains 2 - good gains - see python script 
 ez targets
@@ -1859,6 +1869,9 @@ epoch: 1589498603.598244
 2020-05-14 23:23:23.598303
 
 ~~
+
+*Figure 33NF_T8-1_harderTargets*
+
 gains 2 , changed targets
 [-0.03, -0.1]
 
@@ -1874,6 +1887,7 @@ epoch: 1589504608.9073696
 
 ~~
 
+*Figure 33NF_T8-1_mag096*
 [-0.04, -0.1]
 
 simulation start time: 40379
@@ -1881,4 +1895,38 @@ epoch: 1589826715.0660226
 2020-05-18 18:31:55.066073
 
 1589826772.5738354
+
+simulation end time 43379
+epoch: 1589829714.2464364
+2020-05-18 19:21:54.246508
+
+~~
+
+*33NF_T8-1_loadDisturbance*
+[-0.04, -0.1]
+Load racks as disturbance
++/- 300kW
+
+simulation start time: 53375
+epoch: 1589839712.1272576
+2020-05-18 22:08:32.127272
+
+1589839740.7476683
+
+simulation end time 56375
+epoch: 1589842711.811355
+2020-05-18 22:58:31.811429
+
+~~
+
+new/updated model (changed susceptances)
+[-0.03, -0.1]
+
+simulation start time: 702
+epoch: 1589844300.6884367
+2020-05-18 23:25:00.688468
+
+1589844378.0555584
+
+~~
 
