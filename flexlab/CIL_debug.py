@@ -40,8 +40,8 @@ finally:
 #Q1, Q2, Q3 = 2, 4, 6
 
 #RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
-P1, P2, P3 = 0, 0, 2000
-Q1, Q2, Q3 = 0, 0, 0
+P1, P2, P3 = 0, 0, 0
+Q1, Q2, Q3 = 2000, 0, 0
 
 
 
