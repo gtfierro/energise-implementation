@@ -40,7 +40,7 @@ finally:
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
-P1, P2, P3 = 3000, 3000, 3000
+P1, P2, P3 = 2000, 2000, 2000
 Q1, Q2, Q3 = 0, 0, 0
 
 sign_vec = [1,1,
@@ -62,13 +62,15 @@ mtx_register = [201,202,203,204,205,206,207]
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
 #mtx = [0]*6
-time.sleep(480)
+
+time.sleep(600)
+
 try:
     client.connect()
     # write switch positions for config
     for i in range(len(mtx)):
         client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
-    print('sent')
+    print('consuming sent')
     
     #client.write_registers(mtx_register, mtx, unit=id)
     #print('sent')
@@ -79,9 +81,11 @@ except Exception as e:
 finally:
     client.close()
 
-time.sleep(1400)
-    
-P1, P2, P3 = 3000, 3000, 3000
+
+time.sleep(300)
+
+
+P1, P2, P3 = 0, 0, 0
 Q1, Q2, Q3 = 0, 0, 0
 
 sign_vec = [0,0,
@@ -97,7 +101,7 @@ try:
     # write switch positions for config
     for i in range(len(mtx)):
         client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
-    print('sent')
+    print('disturbance off sent')
 
     # client.write_registers(mtx_register, mtx, unit=id)
     # print('sent')
@@ -107,3 +111,64 @@ except Exception as e:
 
 finally:
     client.close()
+
+
+time.sleep(600)
+
+
+P1, P2, P3 = 2000, 2000, 2000
+Q1, Q2, Q3 = 0, 0, 0
+
+sign_vec = [0,0,
+            0,0,
+            0,0]
+sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
+
+mtx = [P1,Q1,P2,Q2,P3,Q3,sign_base]
+mtx_register = [201,202,203,204,205,206,207]
+
+try:
+    client.connect()
+    # write switch positions for config
+    for i in range(len(mtx)):
+        client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+    print('injection sent')
+
+    # client.write_registers(mtx_register, mtx, unit=id)
+    # print('sent')
+
+except Exception as e:
+    print(e)
+
+finally:
+    client.close()
+
+time.sleep(300)
+
+P1, P2, P3 = 0, 0, 0
+Q1, Q2, Q3 = 0, 0, 0
+
+sign_vec = [0,0,
+            0,0,
+            0,0]
+sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
+
+mtx = [P1,Q1,P2,Q2,P3,Q3,sign_base]
+mtx_register = [201,202,203,204,205,206,207]
+
+try:
+    client.connect()
+    # write switch positions for config
+    for i in range(len(mtx)):
+        client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+    print('disturbance off sent')
+
+    # client.write_registers(mtx_register, mtx, unit=id)
+    # print('sent')
+
+except Exception as e:
+    print(e)
+
+finally:
+    client.close()
+
