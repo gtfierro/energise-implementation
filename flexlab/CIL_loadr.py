@@ -40,7 +40,7 @@ finally:
 #P1, P2, P3 = 1, 3, 5
 #Q1, Q2, Q3 = 2, 4, 6
 
-P1, P2, P3 = 0, 3000, 0
+P1, P2, P3 = 3000, 3000, 3000
 Q1, Q2, Q3 = 0, 0, 0
 
 sign_vec = [1,1,
@@ -62,7 +62,7 @@ mtx_register = [201,202,203,204,205,206,207]
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
 #mtx = [0]*6
-time.sleep(0)
+time.sleep(480)
 try:
     client.connect()
     # write switch positions for config
@@ -79,9 +79,9 @@ except Exception as e:
 finally:
     client.close()
 
-time.sleep(30)
+time.sleep(1400)
     
-P1, P2, P3 = 0, 3000, 0
+P1, P2, P3 = 3000, 3000, 3000
 Q1, Q2, Q3 = 0, 0, 0
 
 sign_vec = [0,0,
