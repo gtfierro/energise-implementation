@@ -42,7 +42,7 @@ finally:
 #RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
 c = 100  # scaling ratio
 P1, P2, P3 = 0*c, 0*c, 0*c
-Q1, Q2, Q3 = 0*c, 0*c, 300*c
+Q1, Q2, Q3 = 0*c, 0*c, 0*c
 
 
 
