@@ -42,7 +42,7 @@ finally:
 #RESET REGISTERS BACK TO ZERO TO RESTART OR END CIL TESTING
 c = 100  # scaling ratio
 P1, P2, P3 = 0*c, 0*c, 200*c
-Q1, Q2, Q3 = 0*c, 0*c, 0*c
+Q1, Q2, Q3 = 0*c, 0*c, 200*c
 
 
 
@@ -50,7 +50,7 @@ Q1, Q2, Q3 = 0*c, 0*c, 0*c
 #           P,Q      1 is positive, 0 is negative
 sign_vec = [0,0,
             0,0,
-            0,0]
+            1,0]
 sign_base = 2**5 * sign_vec[0] + 2**4 * sign_vec[1] + 2**3 * sign_vec[2] + 2**2 * sign_vec[3] + 2**1 * sign_vec[4] + 2**0  * sign_vec[5]
 # sign_list = (np.array(sign_vec)*np.array(sign_base)).tolist()
 
