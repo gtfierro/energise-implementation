@@ -710,14 +710,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(reference_phasors[0][0])
         print(reference_phasors[1][0])
         print(reference_phasors[2][0])
-        print('upmu4 voltage: ')
+        print('upmu123p voltage: ')
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
-        print('upmu123p voltage: ')
+        print('3,4,5 voltage: ')
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
+        print('6,7,8 readings:')
+        print('PHASE A: ',local_phasors[6][0])
+        print('PHASE B: ',local_phasors[7][0])
+        print('PHASE C: ', local_phasors[8][0])
+
 
 
         return
