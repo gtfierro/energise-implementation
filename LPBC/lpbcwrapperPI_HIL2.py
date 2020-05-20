@@ -58,7 +58,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 350):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -244,6 +244,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                                 debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 7000 #check with Maxime
+        self.local_Pcmd_VA_limit = 1000
+        self.local_Qcmd_VA_limit = 1000
 
         IP = '131.243.41.14'
         PORT = 504
@@ -458,8 +460,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #indexQ = np.where(abs(Qact_VA) < abs(Qcmd))[0]
             '''
 
-            indexP = np.where(abs(Pcmd)) > self.inv_Pmax
-            indexQ = np.where(abs(Qcmd)) > self.inv_Qmax
+            indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
+            indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -494,7 +496,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.actType == 'inverter':
 
                     #self.Pmax_pu[phase] = Pact_pu[phase]
-                    self.Pmax_pu[phase] = self.inv_Pmax[phase]/(self.localkVAbase[phase]  *1000)
+                    self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -510,7 +512,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.actType == 'inverter':
 
                     #self.Qmax_pu[phase] = Qact_pu[phase]
-                    self.Qmax_pu[phase] = self.inv_Qmax[phase] / (self.localkVAbase[phase] * 1000)
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
@@ -521,7 +523,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
 
-    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact, inv_Pmax, inv_Qmax):
+    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact, inv_Pmax, inv_Qmax, local_P_limit, local_Q_limit):
         # hostname: http://131.243.41.48:
         # port: 9090
         #  Sends P and Q command to actuator
@@ -583,10 +585,22 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
+            print(Pcmd_VA)
+            print(Qcmd_VA)
             Pcmd_VA = abs(
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            for i in range(len(Pcmd_VA)):
+                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: P over ORT MAX')
+                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: Q over ORT MAX')
+            print('absolute value of P/Q:')
+            print(Pcmd_VA)
+            print(Qcmd_VA)
             Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
             act_idxs = act_idxs.tolist()
@@ -594,7 +608,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if Pcmd_perc[i] > 100:
                     Pcmd_perc[i] = 100
                 if Pcmd_perc[i] == 0:
-                    Pcmd_perc[i] = 0.1
+                    Pcmd_perc[i] = 0.01
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
                 if Qcmd_perc[j] > 100:
                     Qcmd_perc[j] = 100

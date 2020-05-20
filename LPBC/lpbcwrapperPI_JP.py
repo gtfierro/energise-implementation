@@ -714,7 +714,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('PHASE A: ',local_phasors[0][0])
         print('PHASE B: ',local_phasors[1][0])
         print('PHASE C: ', local_phasors[2][0])
-        print('3,4,5 voltage: ')
+        print('13 current: ')
         print('PHASE A: ',local_phasors[3][0])
         print('PHASE B: ',local_phasors[4][0])
         print('PHASE C: ', local_phasors[5][0])
