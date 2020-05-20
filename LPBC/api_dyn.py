@@ -14,15 +14,16 @@ t0 = time.time()
 
 #~~~~~~~~~~~
 # INVERTER
-print('here')
+
 command = f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
 print(command)
+
 if loop == 0:
 
     r = requests.get(command)
     
     print(f'time to execute: {time.time()-t0}')
-    print(r)
+    print(r.status_code)
     print('api cmd:', command, dt.datetime.now())
 
 # CHANGE TO PARALLEL HTTP COMMANDS    
