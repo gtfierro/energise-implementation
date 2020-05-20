@@ -5,7 +5,7 @@ import datetime as dt
 
 # inverter values:
 Pcmd_perc_phase = 10.
-inv = 1
+inv = 0
     
 loop = 0
 #loop = 1
