@@ -59,7 +59,7 @@ t0 = time.time()
 #####  pf only
 #command = f'http://131.243.41.47:9090/control?pf_ctrl={pf_ctrl}' # works
 #####  batt / inv
-# command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
+command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},inv_id={inv_id}'  # works
 ##### batt / pf
 #command = f'http://131.243.41.47:9090/control?Batt_ctrl={Batt_ctrl},pf_ctrl={pf_ctrl}'  # no pf cmd? had no enable command
 ##### batt / pf / inv
