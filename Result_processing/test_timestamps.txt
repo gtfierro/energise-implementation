@@ -1930,3 +1930,36 @@ epoch: 1589844300.6884367
 
 ~~
 
+[-0.03, -0.1]
+Load racks as disturbance
++/- 300kW
+
+simulation start time: 5596
+epoch: 1589912742.6648126
+2020-05-19 18:25:42.664848
+
+1589912773.1391864
+
+simulation end time 8596
+epoch: 1589912742.6648126
+2020-05-19 19:15:42.346350
+
+-hit saturation all phases
+~~
+
+[-0.03, -0.1]
+Load racks as disturbance
++/- 200kW
+
+simulation start time: 10434
+epoch: 1589917581.244405
+2020-05-19 19:46:21.244437
+
+1589917599.209674
+
+simulation end time 13434
+epoch: 1589920580.928823
+2020-05-19 20:36:20.928919
+
+~~
+
