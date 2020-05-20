@@ -14,10 +14,11 @@ t0 = time.time()
 
 #~~~~~~~~~~~
 # INVERTER
-
+print('here')
 command = f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
-
+print('here2')
 if loop == 0:
+    print('here3')
     r = requests.get(command)
     
     print(f'time to execute: {time.time()-t0}')
