@@ -207,7 +207,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.sat_arrayQ = np.ones(nphases) #if no current measurements, then these will just stay zero and saturated == 0
         self.Pmax_pu = np.asarray([np.NaN] * nphases) #this signal is used by the SPBC if ICDI is true, otherwise its a nan
         self.Qmax_pu = np.asarray([np.NaN] * nphases)
-        self.saturationCounterLimit = 5
+        self.saturationCounterLimit = 10
         self.Psat = np.ones((nphases, self.saturationCounterLimit)) #set of sat_arrayPs
         self.Qsat = np.ones((nphases, self.saturationCounterLimit))
         self.ICDI_sigP = np.zeros((nphases, 1), dtype=bool) #I Cant Do It signal, defaulted to zero (that it can do it)
@@ -234,7 +234,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
-        self.mode = 1 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
+        self.mode = 4 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
@@ -242,8 +242,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.pf_ctrl = np.ones(nphases)
         self.flexgrid = Flexgrid_API(inv_ids=[1, 2, 3], portNames=['COM3'], baudrate=115200, parallel=False, safety=True,
                                 debug=False, ComClient=ModbusRTUClient)
-        self.Pmax = 5000 #check with Maxime
-        self.Qmax = 5000 #check with Maxime
+        self.inv_Pmax = 7000 #check with Maxime
+        self.inv_Qmax = 7000 #check with Maxime
 
         IP = '131.243.41.14'
         PORT = 504
@@ -417,6 +417,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         theta = [0.0] * nphases
         Pact_kVA = np.asarray([0.0] * nphases)
         Qact_kVA = np.asarray([0.0] * nphases)
+
         for plug in range(nphases):
             phase_idx = plug_to_V_idx[plug] #assumes plug to V map is the same for uPMUp123 voltage, uPMU123 current and uPMU123 voltage
             V_mag[phase_idx] = local_phasors[nphases*2 + plug][-1]['magnitude'] #pulls out vmeas from uPMU123 not uPMUP123
@@ -427,6 +428,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # P = (VI)cos(theta), Q = (VI)sin(theta)
             Pact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.cos(theta[phase_idx]))/1000
             Qact_kVA[phase_idx] = V_mag[phase_idx] * I_mag[phase_idx] * (np.sin(theta[phase_idx]))/1000
+
         return (Pact_kVA,Qact_kVA)
 
 
@@ -443,6 +445,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
         if self.actType == 'inverter':
+            '''
             # find indicies where Pact + tolerance is less than Pcmd
             indexP = np.where(abs(Pact_VA + (0.03 * Pcmd)) < abs(Pcmd))[0] #will be zero if Pcmd is zero
             print(f'PactVA: {Pact_VA}, abs(Pcmd): {abs(Pcmd)}')
@@ -453,6 +456,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'QactVA: {abs(Qact_VA)}, abs(Qcmd): {abs(Qcmd)}')
             #indexQ = np.where(abs(Qact_VA) + 250 < abs(Qcmd))[0]
             #indexQ = np.where(abs(Qact_VA) < abs(Qcmd))[0]
+            '''
+
+            indexP = np.where(abs(Pcmd)) > self.inv_Pmax
+            indexQ = np.where(abs(Qcmd)) > self.inv_Qmax
+
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
             indexQ = np.where(abs(Qcmd) > self.loadrackPlimit/2)[0]
@@ -484,7 +492,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if phase in np.where(~self.Psat.any(axis=1))[0]: #if each row doesnt have a 1 in it, then send ICDI for that phase
                 self.ICDI_sigP[phase] = True
                 if self.actType == 'inverter':
-                    self.Pmax_pu[phase] = Pact_pu[phase]
+
+                    #self.Pmax_pu[phase] = Pact_pu[phase]
+                    self.Pmax_pu[phase] = self.inv_Pmax[phase]/(self.localkVAbase[phase]  *1000)
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -498,19 +508,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if phase in np.where(~self.Qsat.any(axis=1))[0]:
                 self.ICDI_sigQ[phase] = True
                 if self.actType == 'inverter':
-                    self.Qmax_pu[phase] = Qact_pu[phase]
+
+                    #self.Qmax_pu[phase] = Qact_pu[phase]
+                    self.Qmax_pu[phase] = self.inv_Qmax[phase] / (self.localkVAbase[phase] * 1000)
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
-                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase *1000)
+                    self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
             else:
                 self.ICDI_sigQ[phase] = False
                 self.Qmax_pu[phase] = np.NaN
         return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
 
-    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact):
-        # hostname: http://131.243.41.47:
+    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact, inv_Pmax, inv_Qmax):
+        # hostname: http://131.243.41.48:
         # port: 9090
         #  Sends P and Q command to actuator
         #needs an up-to-date Pact, which requires a current measurement
@@ -568,6 +580,39 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.pf_ctrl[i] = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
+
+
+        if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
+            Pcmd_VA = abs(
+                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            Qcmd_VA = abs(
+                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
+            act_idxs = act_idxs.tolist()
+            for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
+                if Pcmd_perc[i] > 100:
+                    Pcmd_perc[i] = 100
+                if Pcmd_perc[i] == 0:
+                    Pcmd_perc[i] = 0.1
+            for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
+                if Qcmd_perc[j] > 100:
+                    Qcmd_perc[j] = 100
+            if 3 in act_idxs:
+                print('warning phase C activated')
+                return
+            for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
+                Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
+                inv = inv.item()  # changes data type
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}")
+
+                ''' COMMENTED OUT Q CONTROL FOR DEBUGGING
+            for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
+                Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
+                Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
+                inv = inv.item()  # changes data type
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase}, dyn_Q_ctrl={Qcmd_perc_phase}, inv_id={inv}")
+                '''
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
         for i in range(nphases):
@@ -891,10 +936,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             if self.actType == 'inverter':
-                if self.currentMeasExists or self.mode == 3:
-                    #self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
+                if self.currentMeasExists or self.mode == 3 or self.mode == 4:
+                    self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
                     self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
-                    self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
+                    #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
                 else:
                     disp('couldnt send inverter commands because no current measurement available')
@@ -1109,7 +1154,7 @@ entitydict[5] = 'lpbc_6.ent'
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
 pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
-refChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
+refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
 nlpbc = len(lpbcidx)
 
@@ -1117,7 +1162,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-inverterScaling = 500/3.3
+inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 500/3.3
 

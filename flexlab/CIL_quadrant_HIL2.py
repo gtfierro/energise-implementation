@@ -122,8 +122,8 @@ Pcmd_kVA = np.array([[x,x,x],[-x,-x,-x],[-x,-x,-x], [x,x,x], [0,0,0]]) #3 phase 
 Qcmd_kVA = np.array([[x,x,x],[x,x,x], [-x,-x,-x], [-x,-x,-x], [0,0,0]])
 Pact = np.array([[0,0,0],[x,x,x], [-x,-x,-x], [-x,-x,-x], [x,x,x]])
 Qact = np.array([[0,0,0],[x,x,x], [x,x,x], [-x,-x,-x], [-x,-x,-x]])
-act_idxs = np.array([1,2,3]) #phases
-for i in range(len(Pcmd_kVA)):
+act_idxs = np.array([1,2]) #phases
+for i in range(len(act_idxs)):
     modbustoOpal_quadrant(Pcmd_kVA[i], Qcmd_kVA[i], Pact[i], Qact[i], act_idxs, client)
     print('wait 30 sec...')
     time.sleep(30)
