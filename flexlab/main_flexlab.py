@@ -73,7 +73,7 @@ filepath = pathname+filename
 
 
 test_ID = 'T12.4' # which test case you want to run
-sim_length_min = 50 # amount of time to record for in minutes
+sim_length_min = 2 # amount of time to record for in minutes
 # In[run]:
 
 # run functions...
