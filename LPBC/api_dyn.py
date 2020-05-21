@@ -6,7 +6,7 @@ import datetime as dt
 # inverter values:
 Pcmd_perc_phase = 3.
 inv = 1
-    
+
 loop = 2
     
 t0 = time.time()
