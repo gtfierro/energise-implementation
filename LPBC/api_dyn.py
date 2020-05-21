@@ -4,7 +4,7 @@ import time
 import datetime as dt
 
 # inverter values:
-Pcmd_perc_phase = 10.
+Pcmd_perc_phase = 15.
 inv = 1
     
 loop = 0
