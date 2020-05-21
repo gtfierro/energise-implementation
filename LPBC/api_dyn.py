@@ -15,7 +15,9 @@ t0 = time.time()
 #~~~~~~~~~~~
 # INVERTER
 
-command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+# command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/status”
+
 print(command)
 
 if loop == 0:
