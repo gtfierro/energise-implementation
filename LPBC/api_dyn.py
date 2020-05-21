@@ -4,10 +4,10 @@ import time
 import datetime as dt
 
 # inverter values:
-Pcmd_perc_phase = 15.
+Pcmd_perc_phase = 3.
 inv = 1
     
-loop = 2
+loop = 0
 #loop = 1
 # loop = 2
     
@@ -48,3 +48,13 @@ if loop == 2:
         Pcmd_perc_phase += 5
         time.sleep(5)
 
+if loop == 3:
+    Pcmd_perc_phase = [5.,10.,8.,5.]
+    for itr in range(0,4):
+        t0 = time.time()
+        command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase[itr]},inv_id={inv}"
+        r = requests.get(command)
+        print(f'time to execute: {time.time()-t0}')
+        print(r.status_code)
+        print('api cmd:', command, dt.datetime.now())
+        time.sleep(5)
