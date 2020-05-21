@@ -7,9 +7,7 @@ import datetime as dt
 Pcmd_perc_phase = 3.
 inv = 1
     
-loop = 0
-#loop = 1
-# loop = 2
+loop = 3
     
 t0 = time.time()
 
