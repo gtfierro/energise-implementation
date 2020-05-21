@@ -7,7 +7,7 @@ import datetime as dt
 Pcmd_perc_phase = 3.
 inv = 1
     
-loop = 3
+loop = 2
     
 t0 = time.time()
 
@@ -44,7 +44,7 @@ if loop == 2:
         print(r.status_code)
         print('api cmd:', command, dt.datetime.now())
         Pcmd_perc_phase += 5
-        time.sleep(5)
+        time.sleep(10)
 
 if loop == 3:
     Pcmd_perc_phase = [5.,10.,8.,5.]
