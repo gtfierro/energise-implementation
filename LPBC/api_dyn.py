@@ -46,4 +46,5 @@ if loop == 2:
         print(r.status_code)
         print('api cmd:', command, dt.datetime.now())
         Pcmd_perc_phase += 5
-        print(Pcmd_perc_phase)
+        time.sleep(2)
+
