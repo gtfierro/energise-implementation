@@ -605,13 +605,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
-                if Pcmd_perc[i] > 95:
-                    Pcmd_perc[i] = 95
+                if Pcmd_perc[i] > 50:
+                    Pcmd_perc[i] = 50
                 if Pcmd_perc[i] < 0.05:
                     Pcmd_perc[i] = 0.05
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
-                if Qcmd_perc[j] > 95:
-                    Qcmd_perc[j] = 95
+                if Qcmd_perc[j] > 50:
+                    Qcmd_perc[j] = 50
             if 3 or 2 in act_idxs:
                 print('warning phase B or C activated')
                 return
