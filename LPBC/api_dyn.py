@@ -7,7 +7,7 @@ import datetime as dt
 Pcmd_perc_phase = 15.
 inv = 1
     
-loop = 0
+loop = 2
 #loop = 1
 # loop = 2
     
@@ -38,7 +38,7 @@ if loop == 0:
 
 if loop == 2:
     Pcmd_perc_phase = 5.
-    for itr in range(0,10):
+    for itr in range(0,5):
         t0 = time.time()
         command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
         r = requests.get(command)
@@ -46,5 +46,5 @@ if loop == 2:
         print(r.status_code)
         print('api cmd:', command, dt.datetime.now())
         Pcmd_perc_phase += 5
-        time.sleep(2)
+        time.sleep(5)
 
