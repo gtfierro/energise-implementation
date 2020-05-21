@@ -529,8 +529,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #  Sends P and Q command to actuator
         #needs an up-to-date Pact, which requires a current measurement
         #HERE Pact is defined as positive out of the network into the inverter (Pact, Pbatt and P_PV are all positive out of the network in flexlab). This convention should be swithced in later implemetations, but shouldnt require changing (too many) signs
-        Pcmd_VA = -Pcmd_kVA*1000
-        Qcmd_VA = -Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
+        Pcmd_VA = Pcmd_kVA*1000 # *** SIGNS CHANGED 5/21/20!!! ***
+        Qcmd_VA = Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
         #initialize parallel API command:
         session = FuturesSession()
         urls = []
@@ -605,20 +605,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
-                if Pcmd_perc[i] > 100:
-                    Pcmd_perc[i] = 100
-                if Pcmd_perc[i] == 0:
-                    Pcmd_perc[i] = 0.01
+                if Pcmd_perc[i] > 95:
+                    Pcmd_perc[i] = 95
+                if Pcmd_perc[i] < 0.05:
+                    Pcmd_perc[i] = 0.05
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
-                if Qcmd_perc[j] > 100:
-                    Qcmd_perc[j] = 100
-            if 3 in act_idxs:
-                print('warning phase C activated')
+                if Qcmd_perc[j] > 95:
+                    Qcmd_perc[j] = 95
+            if 3 or 2 in act_idxs:
+                print('warning phase B or C activated')
                 return
             for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 inv = inv.item()  # changes data type
-                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}")
+                if inv == 1:
+                    urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}")
+                else:
+                    print('inv != 1')
+                    return
 
                 ''' COMMENTED OUT Q CONTROL FOR DEBUGGING
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
