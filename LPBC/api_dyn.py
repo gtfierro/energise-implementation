@@ -55,4 +55,4 @@ if loop == 3:
         print(f'time to execute: {time.time()-t0}')
         print(r.status_code)
         print('api cmd:', command, dt.datetime.now())
-        time.sleep(5)
+        time.sleep(15)
