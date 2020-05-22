@@ -638,6 +638,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'success'
             else:
                 commandReceipt[i] = 'failure'
+        print(commandReceipt)
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
@@ -1089,7 +1090,7 @@ elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'modbus' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1184,7 +1185,7 @@ inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 10
+rate = 15
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
