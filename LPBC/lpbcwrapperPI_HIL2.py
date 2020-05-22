@@ -607,20 +607,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
                 if Pcmd_perc[i] > 100:
                     Pcmd_perc[i] = 100
-                if Pcmd_perc[i] == 0:
-                    Pcmd_perc[i] = 0.01
+                if Pcmd_perc[i] < 0.05:
+                    Pcmd_perc[i] = 0.05
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
                 if Qcmd_perc[j] > 100:
                     Qcmd_perc[j] = 100
-            if 3 in act_idxs:
+
+             '''DEBUGGING '''
+            if 3 or 2 in act_idxs:
                 print('warning phase C activated')
                 return
             for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 inv = inv.item()  # changes data type
                 urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}")
+            '''DEBUGGING'''
 
-                ''' COMMENTED OUT Q CONTROL FOR DEBUGGING
+            ''' COMMENTED OUT Q CONTROL FOR DEBUGGING
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
@@ -1085,7 +1088,7 @@ elif testcase == 'manual':
     lpbcidx = ['675'] #nodes of actuation
     key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','','']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'modbus' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
