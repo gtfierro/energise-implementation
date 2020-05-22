@@ -732,19 +732,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv_act_idxs_registers[i] = inv_2
                 elif inv_act_idxs_registers[i] == 3:
                     inv_act_idxs_registers[i] = inv_3
-            # Quadrant mapping - 4: Q1, 3: Q2, 2: Q4, 1: Q3
+            # Quadrant value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
+            # multipliers to inverter values [P, Q] - so 4 corresponds to injecting P and Q.
             for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 4
+                    value[j] = 1
                 if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
                     value[j] = 3
                 if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 1
+                    value[j] = 4
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 2
             try:
-
+    
                 for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
+                    print(value[i])
                     client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
                     print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
 
