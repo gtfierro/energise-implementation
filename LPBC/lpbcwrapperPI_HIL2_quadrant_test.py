@@ -694,13 +694,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def modbustoOpal_quadrant(self, Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
         'quadrant debug'
         if self.iteration_counter <= 2: #Q1
-            Pcmd_kVA, Qcmd_kVA = [0.5], [0.5]
+            Pcmd_kVA, Qcmd_kVA = [0.1], [0.1]
         if self.iteration_counter <= 4: #Q2
-            Pcmd_kVA, Qcmd_kVA = [-0.5], [0.5]
+            Pcmd_kVA, Qcmd_kVA = [-0.1], [0.1]
         if self.iteration_counter <= 6: #Q3
-            Pcmd_kVA, Qcmd_kVA = [-0.5], [-0.5]
+            Pcmd_kVA, Qcmd_kVA = [-0.1], [-0.1]
         if self.iteration_counter <= 8: #Q4
-            Pcmd_kVA, Qcmd_kVA = [0.5], [-0.5]
+            Pcmd_kVA, Qcmd_kVA = [0.1], [-0.1]
 
         id = 3
         inv_1 = 101
@@ -724,15 +724,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv_act_idxs_registers[i] = inv_2
                 elif inv_act_idxs_registers[i] == 3:
                     inv_act_idxs_registers[i] = inv_3
+            # Quadrant mapping - 4: Q1, 3: Q2, 2: Q4, 1: Q3
             for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 1
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
-                    value[j] = 2
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 3
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 4
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+                    value[j] = 3
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+                    value[j] = 1
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+                    value[j] = 2
             try:
 
                 for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
