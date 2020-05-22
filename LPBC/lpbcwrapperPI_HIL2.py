@@ -591,6 +591,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            print(f'PCMD_VA: {Pcmd_VA}')
             for i in range(len(Pcmd_VA)):
                 if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
                     Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
@@ -602,6 +603,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(Pcmd_VA)
             print(Qcmd_VA)
             Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
+            print(f'PCMD_%: {Pcmd_perc}') # TEMP
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
@@ -638,7 +640,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'success'
             else:
                 commandReceipt[i] = 'failure'
-        print(commandReceipt)
+        print(f'INV COMMAND RECEIPT: {commandReceipt}')
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
