@@ -609,8 +609,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
                 if Pcmd_perc[i] > 50:
                     Pcmd_perc[i] = 50
-                if Pcmd_perc[i] < 0.05:
-                    Pcmd_perc[i] = 0.05
+                if Pcmd_perc[i] < 0.002:
+                    Pcmd_perc[i] = 0.002
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
                 if Qcmd_perc[j] > 50:
                     Qcmd_perc[j] = 50
