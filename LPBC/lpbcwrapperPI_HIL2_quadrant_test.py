@@ -695,12 +695,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         'quadrant debug'
         if self.iteration_counter <= 2: #Q1
             Pcmd_kVA, Qcmd_kVA = [0.1], [0.1]
+            Pact, Qact = -Pcmd_kVA, -Qcmd_kVA # so that it will go through the register setting process
         if self.iteration_counter <= 4: #Q2
             Pcmd_kVA, Qcmd_kVA = [-0.1], [0.1]
+            Pact, Qact = -Pcmd_kVA, -Qcmd_kVA
         if self.iteration_counter <= 6: #Q3
             Pcmd_kVA, Qcmd_kVA = [-0.1], [-0.1]
+            Pact, Qact = -Pcmd_kVA, -Qcmd_kVA
         if self.iteration_counter <= 8: #Q4
             Pcmd_kVA, Qcmd_kVA = [0.1], [-0.1]
+            Pact, Qact = -Pcmd_kVA, -Qcmd_kVA
+
+        print(f'~~~ QUADRANT DEBUG ~~~ iter = {self.iteration_counter}')
+        print(f'Pcmd_kVA: {Pcmd_kVA}, Qcmd_kVA: {Qcmd_kVA}')
+        print(f'Pact: {Pact}, Qact: {Qact}')
 
         id = 3
         inv_1 = 101
