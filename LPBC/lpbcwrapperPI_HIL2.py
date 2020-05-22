@@ -240,8 +240,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
         self.P_PV = np.zeros(nphases)
         self.pf_ctrl = np.ones(nphases)
-        self.flexgrid = Flexgrid_API(inv_ids=[1, 2, 3], portNames=['COM3'], baudrate=115200, parallel=False, safety=True,
-                                debug=False, ComClient=ModbusRTUClient)
+        # self.flexgrid = Flexgrid_API(inv_ids=[1, 2, 3], portNames=['COM3'], baudrate=115200, parallel=False, safety=True,
+        #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 7000 #check with Maxime
         self.local_Pcmd_VA_limit = 1000
