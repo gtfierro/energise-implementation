@@ -523,7 +523,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
 
 
-    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact, inv_Pmax, inv_Qmax, local_P_limit, local_Q_limit):
+    def httptoInverters(self, nphases, act_idxs, Pcmd_kVA, Qcmd_kVA, Pact, inv_Pmax, inv_Qmax): #, local_P_limit, local_Q_limit):
         # hostname: http://131.243.41.48:
         # port: 9090
         #  Sends P and Q command to actuator
