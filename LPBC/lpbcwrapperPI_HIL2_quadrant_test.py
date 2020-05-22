@@ -692,6 +692,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return commandReceipt
 
     def modbustoOpal_quadrant(self, Pcmd_kVA, Qcmd_kVA, Pact, Qact, act_idxs, client):
+        'quadrant debug'
+        if self.iteration_counter <= 2: #Q1 
+            Pcmd_kVA, Qcmd_kVA = [0.1], [0.1]
+            Pact, Qact = (-np.array(Pcmd_kVA)).tolist(), (-np.array(Qcmd_kVA)).tolist() # so that it will go through the register setting process
+        if self.iteration_counter > 2 and self.iteration_counter <= 4: #Q2
+            Pcmd_kVA, Qcmd_kVA = [-0.1], [0.1]
+            Pact, Qact = (-np.array(Pcmd_kVA)).tolist(), (-np.array(Qcmd_kVA)).tolist()
+        if self.iteration_counter > 4 and self.iteration_counter <= 6: #Q3
+            Pcmd_kVA, Qcmd_kVA = [-0.1], [-0.1]
+            Pact, Qact = (-np.array(Pcmd_kVA)).tolist(), (-np.array(Qcmd_kVA)).tolist()
+        if self.iteration_counter > 6 and self.iteration_counter <= 8: #Q4
+            Pcmd_kVA, Qcmd_kVA = [0.1], [-0.1]
+            Pact, Qact = (-np.array(Pcmd_kVA)).tolist(), (-np.array(Qcmd_kVA)).tolist()
+
+        print(f'~~~ QUADRANT DEBUG ~~~ iter = {self.iteration_counter}')
+        print(f'Pcmd_kVA: {Pcmd_kVA}, Qcmd_kVA: {Qcmd_kVA}')
+        print(f'Pact: {Pact}, Qact: {Qact}')
+
         id = 3
         inv_1 = 101
         inv_2 = 102
@@ -726,8 +744,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 2
             try:
-
+    
                 for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
+                    print(value[i])
                     client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
                     print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
 
@@ -741,8 +760,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
-        Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
-        Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
+
         id = 3
         # Connect to client
         client.connect()
@@ -960,7 +978,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4:
-                    self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
+                    # self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
                     self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
                     #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')

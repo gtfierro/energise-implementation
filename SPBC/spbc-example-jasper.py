@@ -18,8 +18,8 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 #print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['18','26'] # [INPUT HERE]
+lpbc_phases = ['a'] # [INPUT HERE]
+lpbc_nodeIDs = ['675'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -39,7 +39,8 @@ if constant_phasor == True:
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # USED BELOW ONLY FOR T12
     cons_Vang = [0 - 1, -120 - 1, 120 - 1]
-    cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # [INPUT HERE]
+    cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 33NF [INPUT HERE]
+    # cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # 33NF [INPUT HERE]
     #cons_kVbase = np.ones(3)*2.4017 # [INPUT HERE]
     cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
@@ -162,7 +163,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(30, self.compute_and_announce))
+        schedule(self.call_periodic(60, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
