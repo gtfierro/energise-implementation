@@ -2,6 +2,7 @@ import requests
 import numpy as np
 import time
 import datetime as dt
+from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 IP = '131.243.41.14'
 PORT = 504
