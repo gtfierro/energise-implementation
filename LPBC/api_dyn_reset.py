@@ -51,7 +51,7 @@ try:
     client.connect()
     for i in inv_act_idxs_registers:  # write quadrant changes to modbus registers
         client.write_registers(i, quadrant, unit=id)
-        print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', quadrant)
+        print('Quadrant change for inv:', i, 'to quadrant', quadrant)
 
 except Exception as e:
     print(e)
