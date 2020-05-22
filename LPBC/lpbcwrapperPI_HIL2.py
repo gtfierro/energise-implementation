@@ -585,23 +585,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
-            print(Pcmd_VA)
-            print(Qcmd_VA)
             Pcmd_VA = abs(
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             print(f'PCMD_VA: {Pcmd_VA}')
+            print(f'QCMD_VA: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
                 if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
                     Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: P over ORT MAX')
+                    print(i,' inverter: P over ORT MAX ([0,1,2])')
                 if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
                     Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: Q over ORT MAX')
-            print('absolute value of P/Q:')
-            print(Pcmd_VA)
-            print(Qcmd_VA)
+                    print(i,' inverter: Q over ORT MAX ([0,1,2])')
+            print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
+
             Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
             print(f'PCMD_%: {Pcmd_perc}') # TEMP
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
@@ -614,6 +612,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
                 if Qcmd_perc[j] > 50:
                     Qcmd_perc[j] = 50
+
+            # Debugging section
             if 3 or 2 in act_idxs:
                 print('warning phase B or C activated')
                 return
@@ -714,8 +714,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv_act_idxs_registers[i] = inv_2
                 elif inv_act_idxs_registers[i] == 3:
                     inv_act_idxs_registers[i] = inv_3
+
             # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
             # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
+            # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
+            # Quadrant 1: P consume, Q consume
+            # Quadrant 2: P inject, Q consume
+            # Quadrant 3: P consume, Q inject
+            # Quadrant 4: P inject, Q inject
+
             for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
                     value[j] = 4
