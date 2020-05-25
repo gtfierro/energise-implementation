@@ -53,13 +53,13 @@ feederID = 'PL0001'
 plot = 0 #turn plot on/off
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
-if feederID == 'IEEE13'
+if feederID == 'IEEE13':
     subkVbase_phg = 4.16/np.sqrt(3)
     subkVAbase = 5000.
-if feederID == 'UCB33'
+if feederID == 'UCB33':
     subkVbase_phg = 12.47/np.sqrt(3)
     subkVAbase = 3000.
-if feederID == 'PL0001'
+if feederID == 'PL0001':
     subkVbase_phg = 12.6/np.sqrt(3)
     subkVAbase = 1500.
 timesteps = 3 #(16-8)*60  # [INPUT HERE] Manual input of start time
