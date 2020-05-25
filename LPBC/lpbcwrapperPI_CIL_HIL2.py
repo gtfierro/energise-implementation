@@ -86,12 +86,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.45
-            beta = 0.35
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+#             alph = 0.45
+#             beta = 0.35
+#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -112,13 +112,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # ki_mag = [0.3*beta]
 
             #PG&E
-
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
-            # ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
-            # kp_mag = [3*beta, 3*beta, 3*beta]
-            # ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
+            alph = 1
+            beta = 1
+            kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
+            ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
+            kp_mag = [3*beta, 3*beta, 3*beta]
+            ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
