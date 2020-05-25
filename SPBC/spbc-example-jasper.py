@@ -37,7 +37,7 @@ if constant_phasor == True:
     cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
-    # USED BELOW ONLY FOR T12
+    # FOR T12 - all angles should be the same value since all on phase A.
     cons_Vang = [0 - 1, -120 - 1, 120 - 1]
     'IEEE13'
     # cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 13NF [INPUT HERE]
@@ -342,9 +342,10 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
 
                     # if self.iteration < 13*2:
-                    '''CHANGED INDICIES FOR T12 CONFIG ONLY'''
+                    '''T12 below - CHANGED INDICIES FOR T12 CONFIG ONLY'''
                     # Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
                     # Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
+                    '''T12 above'''
                     # if self.iteration > 31:
                     #     Vtargdict[key]['Vmag'] = [0.98 - refphasor[0, 0], 0.98 - refphasor[1, 0],0.98 - refphasor[2, 0]]
                     #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -122 - refphasor[1, 1], 118 - refphasor[2, 1]]
@@ -378,10 +379,11 @@ class myspbc(pbc.SPBCProcess):
                     #     if '671_a' and '671_b' and '671_c' in Qsat_nodes:
                     #         self.Q_flag = []
                     #         self.Q_flag.append(2)
-
+                    '''T12 below'''
                     # elif self.iteration >= 39: #Change here if we want to set varying targets
                     #      Vtargdict[key]['Vmag'] = [0.94 - refphasor[0, 0], 0.94 - refphasor[0, 0],0.94 - refphasor[0, 0]]
                     #      Vtargdict[key]['Vang'] = [-4 - refphasor[0, 1], -4 - refphasor[0, 1], -4 - refphasor[0, 1]]
+                    '''T12 above'''
 
                     '''ICDI short-term fix
                     if len(self.P_flag) > 0:
