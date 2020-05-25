@@ -68,12 +68,12 @@ functions from ORT_modbus_energise:
 # feeder =
 # Choose from [13NF_bal, 13NF_unbal]
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL_switch_matrix_PL0001.xlsx'
+filename = 'HIL_switch_matrix_PL0001_CIL.xlsx'
 filepath = pathname+filename
 
 
 test_ID = 'T9.3' # which test case you want to run
-sim_length_min = 50 # amount of time to record for in minutes
+sim_length_min = 5 # amount of time to record for in minutes
 # In[run]:
 
 # run functions...
