@@ -21,32 +21,47 @@ print(datetime.datetime.fromtimestamp(ts))
 # All GridBright load files should be in the following folder
 #loadfolder = "/Users/jasperpakshong/Documents/Berkeley/ENERGISE/IEEE13/"
 #loadpath = loadfolder + "IEEE13testload_w_extreme_act.xlsx"
-'UNBALANCED'
+
+'IEEE13_UNBALANCED'
 # filepath = "IEEE13/"
 # modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-
 # loadfolder = "IEEE13/"
 # loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+# feederID = 'IEEE13'
 
 'IEEE13_BALANCED'
-filepath = "IEEE13_bal/"
-modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-
-loadfolder = "IEEE13_bal/"
-loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+# filepath = "IEEE13_bal/"
+# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+# loadfolder = "IEEE13_bal/"
+# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+# feederID = 'IEEE13'
 
 '33NF'
 # filepath = "33/"
 # modelpath = filepath + "005_GB_UCB33_opal_v2.xls"
-
 # loadfolder = "33/"
 # loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+# feederID = 'UCB33'
+
+'PL0001'
+filepath = "PL0001/"
+modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
+loadfolder = "33/"
+loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
+feederID = 'PL0001'
 
 plot = 0 #turn plot on/off
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
-subkVbase_phg = 4.16/np.sqrt(3)
-subkVAbase = 5000.
+if feederID == 'IEEE13'
+    subkVbase_phg = 4.16/np.sqrt(3)
+    subkVAbase = 5000.
+if feederID == 'UCB33'
+    subkVbase_phg = 12.47/np.sqrt(3)
+    subkVAbase = 3000.
+if feederID == 'PL0001'
+    subkVbase_phg = 12.6/np.sqrt(3)
+    subkVAbase = 1500.
 timesteps = 3 #(16-8)*60  # [INPUT HERE] Manual input of start time
 
 #[HIL]

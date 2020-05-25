@@ -19,7 +19,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 # SETTINGS
 lpbc_phases = ['a'] # [INPUT HERE]
-lpbc_nodeIDs = ['675'] # [INPUT HERE]
+lpbc_nodeIDs = ['N_300063911'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
@@ -39,10 +39,16 @@ if constant_phasor == True:
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # USED BELOW ONLY FOR T12
     cons_Vang = [0 - 1, -120 - 1, 120 - 1]
-    cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 33NF [INPUT HERE]
+    'IEEE13'
+    # cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 13NF [INPUT HERE]
+    # cons_kVAbase = np.ones(3)*5000/3 # 13NF [INPUT HERE]
+    'UCB33'
     # cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # 33NF [INPUT HERE]
-    #cons_kVbase = np.ones(3)*2.4017 # [INPUT HERE]
-    cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
+    # cons_kVAbase = np.ones(3)*3000/3 # 33NF [INPUT HERE]
+    'PL0001'
+    cons_kVbase = np.ones(3)*(12.6/np.sqrt(3)) # PL0001 [INPUT HERE]
+    cons_kVAbase = np.ones(3)*1500/3 # PL0001 [INPUT HERE]
+    
     print('WARNING: constant_phasor ON')
 
 
