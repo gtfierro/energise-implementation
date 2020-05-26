@@ -38,7 +38,7 @@ if constant_phasor == True:
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     # FOR T12 - all angles should be the same value since all on phase A.
-    cons_Vang = [0 - 1, -120 - 1, 120 - 1]
+    cons_Vang = [0 - 3, -120 - 3, 120 - 3]
     'IEEE13'
     # cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 13NF [INPUT HERE]
     # cons_kVAbase = np.ones(3)*5000/3 # 13NF [INPUT HERE]
