@@ -1902,7 +1902,6 @@ epoch: 1589829714.2464364
 
 ~~
 
-*33NF_T8-1_loadDisturbance*
 [-0.04, -0.1]
 Load racks as disturbance
 +/- 300kW
@@ -1947,6 +1946,7 @@ epoch: 1589912742.6648126
 -hit saturation all phases
 ~~
 
+*33NF_T8-1_loadDisturbance*
 [-0.03, -0.1]
 Load racks as disturbance
 +/- 200kW
@@ -1962,4 +1962,31 @@ epoch: 1589920580.928823
 2020-05-19 20:36:20.928919
 
 ~~
+~~~~
+
+__CIL_PL0001_T9.2__
+
+
+[-0.01, -1] target
+
+simulation start time: 22749
+epoch: 1590454873.2431045
+2020-05-26 01:01:13.243122
+
+1590454885.739032
+
+simulation end time 25749
+epoch: 1590457872.9302082
+2020-05-26 01:51:12.930280
+
+~~
+
+[-0.03, -1] target
+
+simulation start time: 25815
+epoch: 1590457939.944554
+2020-05-26 01:52:19.944574
+
+1590457955.1541717
+
 
