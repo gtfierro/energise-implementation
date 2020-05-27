@@ -622,20 +622,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
-                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+                Pcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
             Qcmd_VA = abs(
-                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+                Qcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
             for i in range(len(Pcmd_VA)):
                 if i == 0:
+                    if Pcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
+                        Pcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
+                    if Qcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
+                        Qcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
+                else:
+                    if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                        Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                        print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
 
-                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                    if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                        Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                        print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
 
-                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
-            print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
+            print(f'absolute value of P/Q to inverters:{Pcmd_VA},{Qcmd_VA}')
 
             Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
@@ -1135,8 +1140,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    lpbcidx = ['671'] #nodes of actuation
+    key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
