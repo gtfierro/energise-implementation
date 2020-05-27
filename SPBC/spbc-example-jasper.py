@@ -18,15 +18,17 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 #print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['N_300063911'] # [INPUT HERE]
-angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
+# lpbc_phases = ['a','b','c']     # [INPUT HERE]
+# lpbc_nodeIDs = ['N_300063911']  # [INPUT HERE]
+angle_unit = 'radians'      # - 'degrees' or 'radians' - settled on radians
 
-TV_load = False # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
-start_hour = 11 # [INPUT HERE]
+TV_load = False             # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
+start_hour = 11             # [INPUT HERE]
 
-dummy_ref = True # [INPUT HERE]
-constant_phasor = True # [INPUT HERE]
+dummy_ref = True            # [INPUT HERE]
+constant_phasor = True      # [INPUT HERE]
+feederID =  'PL0001'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T9.3'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
@@ -37,17 +39,98 @@ if constant_phasor == True:
     cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
+    cons_Vang = [0 - 3, -120 - 3, 120 - 3]
     # FOR T12 - all angles should be the same value since all on phase A.
     cons_Vang = [0 - 3, -120 - 3, 120 - 3]
-    'IEEE13'
-    # cons_kVbase = np.ones(3)*(4.16/np.sqrt(3)) # 13NF [INPUT HERE]
-    # cons_kVAbase = np.ones(3)*5000/3 # 13NF [INPUT HERE]
-    'UCB33'
-    # cons_kVbase = np.ones(3)*(12.47/np.sqrt(3)) # 33NF [INPUT HERE]
-    # cons_kVAbase = np.ones(3)*3000/3 # 33NF [INPUT HERE]
-    'PL0001'
-    cons_kVbase = np.ones(3)*(12.6/np.sqrt(3)) # PL0001 [INPUT HERE]
-    cons_kVAbase = np.ones(3)*1500/3 # PL0001 [INPUT HERE]
+
+    ICDI_toggle = False
+    varying_targ_toggle = False
+
+    if feederID == '13bal': # @LEO can you check these scenarios/targets to make sure they look right
+        cons_kVbase = np.ones(3)*(4.16/np.sqrt(3))
+        cons_kVAbase = np.ones(3)*5000/3
+        if testID == 'T3.3':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['675']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 -1, -120 -1, 120 -1]
+        if testID == 'T12.1':
+            lpbc_phases = ['a']
+            lpbc_nodeIDs = ['671']
+            cons_Vmag = [0.99]
+            cons_Vang = [0 -1]
+            varying_targ_toggle = True
+            ICDI_toggle = True
+            if varying_targ_toggle:
+                cons_Vmag_2 = [0.92]
+                cons_Vang_2 = [0 -4]
+                vary_iter = 39  
+            if ICDI_toggle:
+                cons_Vmag_ICDI = [0.95]
+                cons_Vang_ICDI = [0 -2.5]
+        if testID == 'T12.3':
+            lpbc_phases = ['a']
+            lpbc_nodeIDs = ['671','652','692'] # @LEO is this right? I know you had some '/'s in the lpbc_nodeIDs at some point
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 - 1, 0 - 1, 0 - 1] # all on phase A
+            varying_targ_toggle = True
+            ICDI_toggle = True
+            if varying_targ_toggle:
+                cons_Vmag_2 = [0.92,0.92,0.92]
+                cons_Vang_2 = [0 -4, 0 -4, 0 -4] # all on phase A
+                vary_iter = 39     
+            if ICDI_toggle:
+                cons_Vmag_ICDI = [0.95,0.95,0.95]
+                cons_Vang_ICDI = [0 -2.5, 0 -2.5, 0 - 2.5] # all on phase A
+    if feederID == '13unbal':
+        cons_kVbase = np.ones(3)*(4.16/np.sqrt(3))
+        cons_kVAbase = np.ones(3)*5000/3
+        if testID == 'T3.3':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['675']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 -1, -120 -1, 120 -1]
+        if testID == 'T8.1':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['675']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 -1, -120 -1, 120 -1]
+        if testID == 'T8.2':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['675','671']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 -1, -120 -1, 120 -1]
+    if feederID == 'UCB33':
+        cons_kVbase = np.ones(3)*(12.47/np.sqrt(3))
+        cons_kVAbase = np.ones(3)*3000/3
+        if testID == 'T3.3':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['18']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 -1, -120 -1, 120 -1]
+        if testID == 'T8.1':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['18']
+            cons_Vmag = []
+            cons_Vang = []
+        if testID == 'T8.3':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
+            cons_Vmag = []
+            cons_Vang = []
+    if feederID == 'PL0001':
+        cons_kVbase = np.ones(3)*(12.6/np.sqrt(3))
+        cons_kVAbase = np.ones(3)*1500/3
+        if testID == 'T9.2':
+            lpbc_phases = ['a']
+            lpbc_nodeIDs = ['N_300063911']
+            cons_Vmag = [0.97,0.97,0.97]
+            cons_Vang = [0 - 1, -120 - 1, 120 - 1]
+        if testID == 'T9.3':
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['N_300063911']
+            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vang = [0 - 3, -120 - 3, 120 - 3]
     
     print('WARNING: constant_phasor ON')
 
@@ -342,7 +425,7 @@ class myspbc(pbc.SPBCProcess):
                     Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[1,1],cons_Vang[2]-refphasor[2,1]]
 
                     # if self.iteration < 13*2:
-                    '''T12 below - CHANGED INDICIES FOR T12 CONFIG ONLY'''
+                    '''T12 below - CHANGED INDICIES FOR T12 CONFIG ONLY''' # @LEO
                     # Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[1]-refphasor[0,0],cons_Vmag[2]-refphasor[0,0]]
                     # Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[1]-refphasor[0,1],cons_Vang[2]-refphasor[0,1]]
                     '''T12 above'''
@@ -398,6 +481,33 @@ class myspbc(pbc.SPBCProcess):
                         if self.Q_flag[0] == 2:
                             Vtargdict[key]['Vmag'] = [0.95 - refphasor[0, 0], 0.95 - refphasor[0, 0],0.95 - refphasor[0, 0]]
                     '''
+
+                    # @LEO T12 and ICDI update
+                    if testID=='T12.1' or testID=='T12.2' or testID=='T12.3' # for T12.1-3, all actuators track the same phase a target
+                        Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0]]
+                        Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1]]
+                        'for T12 varying targets:'
+                        if varying_targ_toggle:
+                            if self.iteration >= vary_iter: #Change here if we want to set varying targets
+                                Vtargdict[key]['Vmag'] = [cons_Vmag_2[0] - refphasor[0, 0], cons_Vmag_2[0] - refphasor[0, 0], cons_Vmag_2[0] - refphasor[0, 0]]
+                                Vtargdict[key]['Vang'] = [cons_Vang_2[0] - refphasor[0, 1], cons_Vang_2[0] - refphasor[0, 1], cons_Vang_2[0] - refphasor[0, 1]]
+                        'ICDI short-term fix'
+                        if ICDI_toggle:
+                            # set ICDI flags
+                            if '671_a' and '671_b' and '671_c' in Psat_nodes:
+                                self.P_flag = [1]
+                            if '671_a' and '671_b' and '671_c' in Qsat_nodes:
+                                self.Q_flag = [1]
+                            # adjust to ICDI target
+                            if len(self.P_flag) > 0:
+                                if self.P_flag[0] == 1:
+                                    Vtargdict[key]['Vang'] = [cons_Vang_ICDI[0]-refphasor[0, 1], cons_Vang_ICDI[0]-refphasor[0, 1], cons_Vang_ICDI[0]-refphasor[0, 1]]
+                                # elif self.P_flag[0] == 2:
+                                #     Vtargdict[key]['Vang'] = [-2 - refphasor[0, 1], -2 - refphasor[0, 1], -2 - refphasor[0, 1]]
+                            if len(self.Q_flag) > 0:
+                                if self.Q_flag[0] == 1:
+                                    Vtargdict[key]['Vmag'] = [cons_Vmag_ICDI[0]-refphasor[0, 0], cons_Vmag_ICDI[0]-refphasor[0, 0], cons_Vmag_ICDI[0]-refphasor[0, 0]]
+
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
 
