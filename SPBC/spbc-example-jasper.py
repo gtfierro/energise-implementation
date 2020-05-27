@@ -69,8 +69,11 @@ if constant_phasor == True:
                 cons_Vmag_ICDI = [0.95]
                 cons_Vang_ICDI = [0 -2.5]
         if testID == 'T12.3':
-            lpbc_phases = ['a']
-            lpbc_nodeIDs = ['671','652','692'] # @LEO is this right? I know you had some '/'s in the lpbc_nodeIDs at some point
+            # lpbc_phases = ['a']
+            # lpbc_nodeIDs = ['671','652','692'] # @LEO is this right? I know you had some '/'s in the lpbc_nodeIDs at some point
+            # @JASPER : see below for correct format
+            lpbc_phases = ['a','b','c']
+            lpbc_nodeIDs = ['671']
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 - 1, 0 - 1, 0 - 1] # all on phase A
             varying_targ_toggle = True
@@ -483,7 +486,7 @@ class myspbc(pbc.SPBCProcess):
                     '''
 
                     # @LEO T12 and ICDI update
-                    if testID=='T12.1' or testID=='T12.2' or testID=='T12.3' # for T12.1-3, all actuators track the same phase a target
+                    if testID=='T12.1' or testID=='T12.2' or testID=='T12.3': # for T12.1-3, all actuators track the same phase a target
                         Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0]]
                         Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1]]
                         'for T12 varying targets:'
