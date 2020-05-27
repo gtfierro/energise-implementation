@@ -69,10 +69,7 @@ if constant_phasor == True:
                 cons_Vmag_ICDI = [0.95]
                 cons_Vang_ICDI = [0 -2.5]
         if testID == 'T12.3':
-            # lpbc_phases = ['a']
-            # lpbc_nodeIDs = ['671','652','692'] # @LEO is this right? I know you had some '/'s in the lpbc_nodeIDs at some point
-            # @JASPER : see below for correct format
-            lpbc_phases = ['a','b','c']
+            lpbc_phases = ['a','b','c'] # here a,b,c are jsut referring to the different nodes (671,652,692)
             lpbc_nodeIDs = ['671']
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 - 1, 0 - 1, 0 - 1] # all on phase A
@@ -114,13 +111,13 @@ if constant_phasor == True:
         if testID == 'T8.1':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18']
-            cons_Vmag = []
-            cons_Vang = []
-        if testID == 'T8.3':
+            cons_Vmag = [0.97,0.97,0.97]
+            cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
+        if testID == 'T8.2':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
-            cons_Vmag = []
-            cons_Vang = []
+            cons_Vmag = [0.97,0.97,0.97]
+            cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
     if feederID == 'PL0001':
         cons_kVbase = np.ones(3)*(12.6/np.sqrt(3))
         cons_kVAbase = np.ones(3)*1500/3
