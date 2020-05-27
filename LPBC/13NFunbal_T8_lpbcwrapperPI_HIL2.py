@@ -58,7 +58,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 80):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -107,14 +107,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
-            # 12.3
-            alph = 0.15
-            beta = 0.1
+
+            # 13 unbal T8
+            alph = 0.45
+            beta = 0.35
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.1750*beta,0.1750*beta]
+            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
-            
+
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -241,7 +242,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
-        self.mode = 4 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only, mode 4: HIL2 dyn P/Q
+        self.mode = 4 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
@@ -251,7 +252,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 7000 #check with Maxime
-        self.ORT_max_kVA_T12 = 50
 
         IP = '131.243.41.14'
         PORT = 504
@@ -383,16 +383,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
-
-        self.Vang[1] = self.Vang[0]
-        self.Vang[2] = self.Vang[0]
-        self.Vmag[1] = self.Vmag[0]
-        self.Vmag[2] = self.Vmag[0]
-        self.VmagRef[1] = self.VmagRef[0]
-        self.VmagRef[2] = self.VmagRef[0]
-        self.Vmag_relative[1] = self.Vmag_relative[0]
-        self.Vmag_relative[2] = self.Vmag_relative[0]
-
         return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
@@ -457,12 +447,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return
 
 
-    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV, ORT_max_kVA_T12):
+    def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV):
         Pcmd = Pcmd_kVA * 1000
         Qcmd = Qcmd_kVA * 1000
         Pact_VA = Pact*1000
         Qact_VA = Qact*1000
-        ORT_max_VA_T12 = ORT_max_kVA_T12 * 1000
         if self.actType == 'inverter':
             '''
             # find indicies where Pact + tolerance is less than Pcmd
@@ -479,12 +468,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             indexP = np.where(abs(Pcmd)>= self.ORT_max_VA/self.localSratio)[0]
             indexQ = np.where(abs(Qcmd)>= self.ORT_max_VA/self.localSratio)[0]
-
-            '''ADDED BELOW ONLY FOR T12 for separate capacity. 0-> 671, 1->652, 2->692'''
-            if abs(Pcmd[0]) >= ORT_max_VA_T12/self.localSratio:
-                indexP = np.append(indexP,0)
-            if abs(Qcmd[0]) >= ORT_max_VA_T12/self.localSratio:
-                indexQ = np.append(indexQ,0)
 
         elif self.actType == 'load':
             indexP = np.where(abs(Pcmd) > self.loadrackPlimit/2)[0]
@@ -509,9 +492,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return(sat_arrayP,sat_arrayQ)
 
 
-    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu, ORT_max_kVA_T12):
+    def determineICDI(self, nphases, sat_arrayP, sat_arrayQ, Pact_pu, Qact_pu):
         # saturation counter check to determine if I Cant Do It signal should be sent to SPBC
-        ORT_max_VA_T12 = ORT_max_kVA_T12 * 1000
         self.Psat = np.append(self.Psat, np.expand_dims(sat_arrayP, axis=1), axis=1)
         self.Psat = self.Psat[:, 1:] #iterates the Psat counter array to include the new value, discards the old
         for phase in range(nphases):
@@ -521,11 +503,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                     #self.Pmax_pu[phase] = Pact_pu[phase]
                     self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
-
-                    '''ADDED BELOW FOR T12 ONLY. If want to switch nodes, switch phases index 0-> 671, 1->652, 2->692'''
-                    if phase == 0:
-                        self.Pmax_pu[phase] = ORT_max_VA_T12/ (self.localkVAbase[phase] * 1000)
-
                 elif self.actType == 'load':
                     self.Pmax_pu[phase] = (self.loadrackPlimit/2)/(self.localkVAbase[phase]  *1000) #Sratio double counted in localkVAbase
                 elif self.actType == 'modbus':
@@ -542,11 +519,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                     #self.Qmax_pu[phase] = Qact_pu[phase]
                     self.Qmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
-
-                    '''ADDED BELOW FOR T12 ONLY. If want to switch nodes, switch phases index 0-> 671, 1->652, 2->692'''
-                    if phase == 0:
-                        self.Qmax_pu[phase] = ORT_max_VA_T12 / (self.localkVAbase[phase] * 1000)
-
                 elif self.actType == 'load':
                     self.Qmax_pu[phase] = 0
                 elif self.actType == 'modbus':
@@ -622,25 +594,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
-                Pcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
+                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
-                Qcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
+                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             for i in range(len(Pcmd_VA)):
-                if i == 0:
-                    if Pcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
-                        Pcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
-                    if Qcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
-                        Qcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
-                else:
-                    if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                        Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                        print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
-
-                    if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                        Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                        print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
-
-            print(f'absolute value of P/Q to inverters:{Pcmd_VA},{Qcmd_VA}')
+                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+            print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
             Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
             Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
@@ -980,8 +944,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Icomp_pu = [np.NaN]*self.nphases
 
             #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV, self.ORT_max_kVA_T12)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu, self.ORT_max_kVA_T12) #this and the line above have hardcoded variables for Flexlab tests
+            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
             print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
@@ -1140,8 +1104,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['671'] #nodes of actuation
-    key = '671'
+    lpbcidx = ['675'] #nodes of actuation
+    key = '675'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1224,7 +1188,7 @@ entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
