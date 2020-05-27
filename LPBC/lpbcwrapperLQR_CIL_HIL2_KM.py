@@ -34,7 +34,7 @@ Inverter power factor commands are for Q only, defined positive for reactive pow
 
 Changes made for flexlab convention:
 Did not change enaythign within PQcalc or phasorI_calc
-Did switch the sign of self.Icomp_pu, which is fed intot the impedance estimator only
+Did switch the sign of self.Icomp_pu, which is fed into the impedance estimator only
 Did not switch the sign of Pact and Qact (which are positive out of network), or Pcmd and Qcmd (which are positive into the network)
 Switched signs of Pact and Qact that are fed into check saturation and ICDI (which still communicates to SPBC using postive into network convention)
 inverters are positive P out of the netowrk for batt commands (positive P into the network for inverter-limiting commands)
@@ -57,84 +57,69 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #HERE put in optional accumulator term for PI controller
 
-        self.controllerType = 'PI' #set controller to 'PI' or 'LQR'
+        self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
 
-        if self.controllerType == 'PI':
-            # controller gains must be list, even if single phase. can use different gains for each phase
-            # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
-            print('made a PI controller')
-
-            # TODO: CHANGE CONTROLLER GAINS HERE
-            #3.1
-# =============================================================================
-#             alph = 1
-#             beta = 1
-#             kp_ang = [0.0034*alph]
-#             ki_ang = [0.0677*alph]
-#             kp_mag = [0.5670*beta]
-#             ki_mag = [3.4497*beta]
-# =============================================================================
-            
-            #3.2
-            # alph = 0.5
-            # beta = 0.4
-            # kp_ang = [0.00108*alph,0.0342*alph]
-            # ki_ang = [0.0618*alph,0.0677*alph]
-            # kp_mag = [0.6901*beta,1.6522*beta]
-            # ki_mag = [3.46*beta,3.5004*beta]
-
-            
-            #3.3
-# =============================================================================
-#             alph = 0.45
-#             beta = 0.35
-#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
-# =============================================================================
-
-            #5.1
-# =============================================================================
-#             alph = 0.75
-#             kp_ang = [0.004*alph]*3
-#             ki_ang = [0.0798*alph]*3
-#             kp_mag = [0,0,0]
-#             ki_mag = [0,0,0]
-# =============================================================================
-            # 3.1 (33NF)
-            # =============================================================================
-            # alph = 1
-            # beta = 1
-            # kp_ang = [0.01*alph]
-            # ki_ang = [0.3*alph]
-            # kp_mag = [0.01*beta]
-            # ki_mag = [0.3*beta]
-
-            #PG&E
-            alph = 1
-            beta = 1
-            kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
-            ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
-            kp_mag = [3*beta, 3*beta, 3*beta]
-            ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
-            
+        if self.controllerType = 'PI':
+            # ang_scale = 1
+            # mag_scale = 1
+            # kp_ang = [0.01*ang_scale]
+            # ki_ang = [0.3*ang_scale]
+            # kp_mag = [0.01*mag_scale]
+            # ki_mag = [0.3*mag_scale]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
+
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
-            Zskpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv'
+
+            #Get Zeff
+            # Zeffkpath = 'Zsks/Zsks_pu_' + str(testcase) + '/Zsk_bus' + str(busId) + '.csv' #HHHERE this is how the Zsk csv files should be saved
+            # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+            #     Zeffkpath = 'Zsks/Zsks_pu_' + '13bal' + '/Zsk_bus' + str(busId) + '.csv'
+            #HHHERE this is how the Zsk csv files should be saved, but use the name Zeffk 
+            Zeffkpath = 'Zeffks/Zeffks_pu_' + str(testcase) + '/Zeffk_bus' + str(busId) + '.csv'
             if testcase == 'manual': #HERE for debugging, assumes 13bal is used
-                Zskpath = 'Zsks/Zsks_pu_' + '13bal' + '/Zsk_bus' + str(busId) + '.csv'
-            Zsk_df = pd.read_csv(Zskpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
-            Zsk_df = Zsk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
-            Zskinit = np.asmatrix(Zsk_df.values)
-            #LQR controller params
-            Qcost = np.eye(nphases*4) #state costs (errors then entegrated errors)
-            Rcost = np.eye(nphases*2)*10e-1 #controll costs (P and Q)
-            lpAlpha = .1 #DOBC parameter, larger alpha changes estimate faster
-            lam = .99 #Zskest parameter, smaller lam changes estimate faster
-            use_Zsk_est = 0
-            self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam)
+                Zeffkpath = 'Zeffks/Zeffks_pu_' + '13bal' + '/Zeffk_bus' + str(busId) + '.csv'
+            Zeffk_df = pd.read_csv(Zeffkpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
+            Zeffk_df = Zeffk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
+            Zeffk_init = np.asmatrix(Zeffk_df.values)
+
+            ######################## LQR Controller Parameters #######################
+            #General controller parameters
+            linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
+
+            #LQR parameters
+            #Q matrix determines the penalties placed on state errors
+            #first 3 states are the mag error at a given time step for each phase,
+            #4 thru 6 are the ang error, 7 thru 9 are integrated mag error, 10 thru 12 are integrated ang error
+            Qcost = np.asmatrix(np.eye(12))
+            # Qcost[3:6,3:6] = Qcost[3:6,3:6]*10 #penalize ang state error
+            # Qcost[9:12,9:12] = Qcost[9:12,9:12]*10  #penalize integrated ang error
+            Qcost[6:12,6:12] = Qcost[6:12,6:12]*10 #penalize all integrated state error
+
+            #R matrix determines the penalties placed on control effort
+            #the first 3 are P control effort for each state, the second 3 are Q control effort
+            Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
+            # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
+            Rcost = Rcost*1e-1 #for cheap P and Q
+
+            #DOBC parameters
+            #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
+            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
+            lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
+            # lpAlpha = .5
+
+            #REIE parameters
+            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            # lam = .999 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
+            lam = .95
+            # lam = .5
+            # GtInitScale = 1
+            GtInitScale = 10
+            controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
+
+            assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
+            self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant)
+            # self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam) old version
         else:
             error('error in controller type')
 
@@ -163,7 +148,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Vmag_relative_pu = np.zeros(nphases)
         self.phasor_error_ang = np.zeros(nphases)
         self.phasor_error_mag_pu = np.zeros(nphases)
-        self.VmagRef = np.zeros(nphases)
+        self.VmagRef = np.zeros(nphases) #rename these V0mag at some point
         self.VmagRef_pu = np.zeros(nphases)
         self.VangRef = np.zeros(nphases)
 
@@ -359,7 +344,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # loops though every reference uPMU reading starting from most recent
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
-                    
+
                     #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
@@ -503,7 +488,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.actType == 'inverter':
                     '''
                     COMMENTED OUT FOR CIL TESTING
-                    #self.Pmax_pu[phase] = Pact_pu[phase] 
+                    #self.Pmax_pu[phase] = Pact_pu[phase]
                     '''
                     self.Pmax_pu[phase] = self.ORT_max_VA /(self.localkVAbase[phase] *1000)
                 elif self.actType == 'load':
@@ -737,9 +722,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
         log_actuation= {}
-        
+
         log_actuation['phases'] = phases
-        log_actuation['P_cmd'] = P_cmd.tolist() 
+        log_actuation['P_cmd'] = P_cmd.tolist()
         log_actuation['Q_cmd'] = Q_cmd.tolist()
         log_actuation['P_act'] = P_act.tolist()
         log_actuation['Q_act'] = Q_act.tolist()
@@ -774,7 +759,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.iteration_counter > 1:
             print(f'time since last iteration {iterstart-self.iterstart}')
         self.iterstart = pytime.time()
-        
+
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
             pass
@@ -842,7 +827,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 self.Icomp_pu = [np.NaN]*self.nphases
 
-            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
+            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
@@ -894,10 +879,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
-            
+
             self.Pact_kVA = self.Pact
             self.Qact_kVA = self.Qact
-            
+
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
             print(log_actuation)
