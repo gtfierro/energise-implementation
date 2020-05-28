@@ -419,7 +419,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     DSS_alltimesteps(myfeeder,0) # Second argument turns voltage alarms on/off
     
     'turn export targets on/off here'
-    export_Vtargets(myfeeder)
+    # export_Vtargets(myfeeder)
     ##[jasper] - fn to get target in vector format for LPBC
     #nodes_arr,Vmag_targ,Vang_targ,KVbase = get_targets(myfeeder)
     
