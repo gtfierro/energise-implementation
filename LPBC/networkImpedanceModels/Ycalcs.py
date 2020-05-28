@@ -15,7 +15,9 @@ import pprint
 # import copy
 
 import os
-from setup import *
+# from setup import *
+from setup_JP import *
+# from setup_3 import *
 # from dss_functions import *
 
 
@@ -174,6 +176,8 @@ os.chdir('../') #os.chdir() is eq to terminal cd
 os.chdir('../') #second call brings you back to energise implementation
 # print(os.getcwd())
 SPBCfolderPath = os.getcwd() + '/SPBC/'
+# os.chdir('SPBC')
+# from setup_3 import *
 # print(SPBCfolderPath)
 os.chdir(baseDirectory) #put directory back to LPBC folder
 # print(os.getcwd())
@@ -187,20 +191,20 @@ os.chdir(baseDirectory) #put directory back to LPBC folder
 # testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
 
 'IEEE13_BALANCED'
-filepath = SPBCfolderPath + "IEEE13_bal/"
-modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-loadfolder = SPBCfolderPath + "IEEE13_bal/"
-loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
-feederID = 'IEEE13'
-testcase = '13bal'
+# filepath = SPBCfolderPath + "IEEE13_bal/"
+# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+# loadfolder = SPBCfolderPath + "IEEE13_bal/"
+# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+# feederID = 'IEEE13'
+# testcase = '13bal'
 
-# '33NF'
-# filepath = SPBCfolderPath + "33/"
-# modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
-# loadfolder = SPBCfolderPath + "33/"
-# loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
-# feederID = 'UCB33'
-# testcase = '33'
+'33NF'
+filepath = SPBCfolderPath + "33/"
+modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
+loadfolder = SPBCfolderPath + "33/"
+loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+feederID = 'UCB33'
+testcase = '33'
 
 'PL0001'
 # filepath = SPBCfolderPath + "PL0001/"
@@ -229,26 +233,26 @@ actpath = loadpath
 timesteps = 1
 timestepcur = 0
 
-# #[HIL] - input constnats for PV forecasting
-# PV_on = False # True for ON
-# PVnodes = ['671','680']
-#
-# PVforecast = {}
-# PVforecast['on_off'] = PV_on
-# for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
-#     PVforecast[node] = {}
-#     PVforecast[node]['on_off'] = PV_on
-#     PVforecast[node]['lat'] = 37.87
-#     PVforecast[node]['lon'] = -122
-#     PVforecast[node]['maridian'] = -120
-#     PVforecast[node]['PVfrac'] = 0.3
-#
-# refphasor = np.ones((3,2))
-# refphasor[:,0]=1
-# refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-#
-# Psat_nodes = []
-# Qsat_nodes = []
+#[HIL] - input constnats for PV forecasting
+PV_on = False # True for ON
+PVnodes = ['671','680']
+
+PVforecast = {}
+PVforecast['on_off'] = PV_on
+for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
+    PVforecast[node] = {}
+    PVforecast[node]['on_off'] = PV_on
+    PVforecast[node]['lat'] = 37.87
+    PVforecast[node]['lon'] = -122
+    PVforecast[node]['maridian'] = -120
+    PVforecast[node]['PVfrac'] = 0.3
+
+refphasor = np.ones((3,2))
+refphasor[:,0]=1
+refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+
+Psat_nodes = []
+Qsat_nodes = []
 ###############################################################
 #####################
 # Create feeder object
