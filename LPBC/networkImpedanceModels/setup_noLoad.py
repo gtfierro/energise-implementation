@@ -298,7 +298,7 @@ def fixconnections(tree,headnode,assignednodes=[]):
         succlist.append(inode)
     for inode in succlist:
         if all(elem in assignlist for elem in succlist):
-            return        
+            return
         if inode in assignlist:
             continue
         else:
@@ -308,7 +308,7 @@ def fixconnections(tree,headnode,assignednodes=[]):
 
 def propogatebasesup(tree,currnode,kVbase_phg,assignednodes=[]):
     # Sets the voltage bases of every node on a path upstream from a given node. Stops if it hits a transformer.
-    # 'tree' should be a networkx graph object            
+    # 'tree' should be a networkx graph object
     predlist = list()
     assignlist = assignednodes
     assignlist.append(currnode)
@@ -325,11 +325,11 @@ def propogatebasesup(tree,currnode,kVbase_phg,assignednodes=[]):
             continue
         else:
             propogatebasesup(tree,inode,kVbase_phg,assignlist)
-        
+
 def propogatebasesdown(tree,currnode,kVbase_phg,assignednodes=[]):
     # Sets the voltage bases of every node on a path downtream from a given node. Stops if it hits a transformer.
-    # 'tree' should be a networkx graph object  
-    succlist = list()   
+    # 'tree' should be a networkx graph object
+    succlist = list()
     assignlist = assignednodes
     assignlist.append(currnode)
     currnode.kVbase_phg = kVbase_phg
@@ -343,7 +343,7 @@ def propogatebasesdown(tree,currnode,kVbase_phg,assignednodes=[]):
             continue
         else:
             propogatebasesdown(tree,inode,kVbase_phg,assignlist)
-        
+
 def propogatetrans(tree,currnode,assignednodes=[]):
     # Uses propogatebasesup and down to set appropriate voltage bases throughout a networkx graph based on transformer ratings.
     edgelist = list()
@@ -549,12 +549,12 @@ def shuntbuilder(modeldata, busdict,timesteps):
 # Create load dictionary from ePHASORsim model and Gridbright load files
 # Create load dictionary from ePHASORsim model and Gridbright load files
 def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur = 11*60):
-    
+
     # This creates the load objects from the ePHASORsim model, but ignores the specified values (values are set with a Gridbright load file)
     loadsheet = modeldata.parse('Multiphase Load')
     loaddict = dict()
-    
-    for idx, row in loadsheet.iterrows():          
+
+    for idx, row in loadsheet.iterrows():
         if row['Bus1']:
             indkey = row['Bus1'][:len(row['Bus1'])-2]
             loadname = row['Bus1']
@@ -577,7 +577,7 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur = 11*60):
         if row['Bus3'] and isinstance(row['Bus3'],str):
             indphase = row['Bus3'][len(row['Bus3'])-1]
             loaddict[indkey].phases.append(indphase)
-        
+
         loaddict[indkey].id = row['ID']
         loaddict[indkey].node = busdict[indkey]
         loaddict[indkey].type = row['Type']
@@ -588,28 +588,28 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur = 11*60):
         loaddict[indkey].constI = row['K_i']
         loaddict[indkey].constP = row['K_p']
         loaddict[indkey].status = row['Status']
-        
-        
+
+
         busdict[indkey].loads.append(loaddict[indkey])
-        
+
     loadfile = pd.ExcelFile(loadpath)
     loaddf = loadfile.parse('Time_Series_data')
     #[HIL] - parse out current timestep
     loaddf = loaddf[timestepcur:timestepcur+timesteps]
     loaddf.index -= timestepcur
-    
+
     # scale load
     ld_scale = 0.3
     if ld_scale != 1 == True:
         print(f'*** WARNING - load scale = {ld_scale} ***')
     loaddf = loaddf * ld_scale
-    
-    
+
+
 
     # Populate the load dictionary's P and Q schedules with a Gridbright load file
-    
+
 #JPEDIT START
-    
+
     multiph = ['1','2','3'] ##generalize to 1,2,3 instead of first second third
     for key, iload in loaddict.items():
         Pkey = []
@@ -629,38 +629,38 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur = 11*60):
                 if idx+1 > len(Pkey):
                     kW = 0
                     kVAR = 0
-                else: 
+                else:
                     kW = loaddf[Pkey[idx]][ts]
                     kVAR = loaddf[Qkey[idx]][ts]
-                    
+
                 S = kW + 1j*kVAR
-                    
+
                 if not (S==0):
                     Z = np.conj(np.square(iload.node.kVbase_phg)*1000/S)
                 else:
                     Z = 0
-                
+
                 if phkey[idx] == 'a':
                     iload.Psched[0,ts] = kW
                     iload.Qsched[0,ts] = kVAR
-    
+
                     iload.Rsched[0,ts] = np.real(Z)
                     iload.Xsched[0,ts] = np.imag(Z)
-    
+
                 if phkey[idx] == 'b':
                     iload.Psched[1,ts] = kW
                     iload.Qsched[1,ts] = kVAR
-    
+
                     iload.Rsched[1,ts] = np.real(Z)
                     iload.Xsched[1,ts] = np.imag(Z)
-    
+
                 if phkey[idx] == 'c':
                     iload.Psched[2,ts] = kW
                     iload.Qsched[2,ts] = kVAR
-    
+
                     iload.Rsched[2,ts] = np.real(Z)
                     iload.Xsched[2,ts] = np.imag(Z)
-                
+
 #JPEDIT END - replaced edited out code, see old backup versions if this needs to be restored
 
     for key, iload in loaddict.items():
@@ -671,7 +671,7 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur = 11*60):
                 iload.phasevec = iload.phasevec + np.array([[0],[1],[0]])
             elif iload.phases[idx] == 'c':
                 iload.phasevec = iload.phasevec + np.array([[0],[0],[1]])
-            
+
     return loaddict
 
 
@@ -761,7 +761,7 @@ def linebuilder(modeldata, busdict, timesteps):
 
         linedict[indkey].id = row['ID']
         linedict[indkey].length = row['Length (length_unit)']
-        
+
         # [Jasper] - capacity edit
         if 'MVA rating' in linesheet.columns:
             if row['MVA rating']:
@@ -905,17 +905,18 @@ def switchbuilder(modeldata, busdict, timesteps):
 def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     # Multiple formats due to impedance model building process -> 3phase and Multiphase formats
     # Turn on/off the transformer mode as necessary according to the impedance model
-    
-    #transtype = 'multiphase' # [multiphase OR 3phase]
-    transtype = '3phase' 
-    
+
+    #PL0001 needs multiphase, others need '3phase'
+    # transtype = 'multiphase' # [multiphase OR 3phase]
+    transtype = '3phase'
+
     'Transformer 3-PHASE'
     if transtype == '3phase':
         transsheet = modeldata.parse('Transformer 3-phase')
         #[HIL] - NEW CODE index misalignment during parse
         if transsheet.iloc[0][0] == 'ID':
             transsheet = modeldata.parse('Transformer 3-phase', index_col=0)
-        
+
         # Prep transformer column headers (This is built to handle a 2-winding transformer)
         windcols = transsheet.columns.get_loc('winding 1') - transsheet.columns.get_loc('winding 0')
         othercols = len(transsheet.columns) - transsheet.columns.get_loc('winding 1') - windcols
@@ -925,69 +926,69 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
             transsheet.iloc[0][idx] = 'w1_' + transsheet.iloc[0][idx]
         transsheet.columns = transsheet.iloc[0]
         transsheet = transsheet.drop(transsheet.index[0]);
-        
+
         # Create dictionary
         transdict = dict()
-        
+
         for idx, row in transsheet.iterrows():
             if row['w0_bus a']:
-                indkeyw0 = row['w0_bus a'][:len(row['w0_bus a'])-2]       
+                indkeyw0 = row['w0_bus a'][:len(row['w0_bus a'])-2]
             elif row['w0_bus b']:
                 indkeyw0 = row['w0_bus b'][:len(row['w0_bus b'])-2]
             elif row['w0_bus c']:
-                indkeyw0 = row['w0_bus c'][:len(row['w0_bus c'])-2] 
-    
+                indkeyw0 = row['w0_bus c'][:len(row['w0_bus c'])-2]
+
             if row['w1_bus_a']:
-                indkeyw1 = row['w1_bus_a'][:len(row['w1_bus_a'])-2]       
+                indkeyw1 = row['w1_bus_a'][:len(row['w1_bus_a'])-2]
             elif row['w1_bus_b']:
                 indkeyw1 = row['w1_bus_b'][:len(row['w1_bus_b'])-2]
             elif row['w1_bus_c']:
-                indkeyw1 = row['w1_bus_c'][:len(row['w1_bus_c'])-2]     
-            
-            indkey = indkeyw0 + 'to' + indkeyw1    
-        
+                indkeyw1 = row['w1_bus_c'][:len(row['w1_bus_c'])-2]
+
+            indkey = indkeyw0 + 'to' + indkeyw1
+
             transdict[indkey] = transformer(indkey, timesteps)
             transdict[indkey].id = idx
-            
+
             busdict[indkeyw0].edges_out.append(transdict[indkey])
             busdict[indkeyw1].edges_in.append(transdict[indkey])
-            
+
             if row['w0_bus a']:
-                transdict[indkey].w0_phases.append('a')    
+                transdict[indkey].w0_phases.append('a')
             if row['w0_bus b']:
-                transdict[indkey].w0_phases.append('b')   
+                transdict[indkey].w0_phases.append('b')
             if row['w0_bus c']:
                 transdict[indkey].w0_phases.append('c')
-            
+
             transdict[indkey].w0_name = indkeyw0
             transdict[indkey].w0_node = busdict[indkeyw0]
-        
-            transdict[indkey].w0_kVbase_phg = row['w0_kV (ph-ph RMS)']/np.sqrt(3) 
+
+            transdict[indkey].w0_kVbase_phg = row['w0_kV (ph-ph RMS)']/np.sqrt(3)
             transdict[indkey].w0_kVAbase = row['w0_kVA_base']
-            transdict[indkey].w0_rpu = row['w0_R_w0 (pu)'] 
+            transdict[indkey].w0_rpu = row['w0_R_w0 (pu)']
             #transdict[indkey].w0_conn = row[headmap['w0_conn']]
             transdict[indkey].w0_conn = row['w0_conn'] #[HIL] - edit, error
-    
+
             if row['w1_bus_a']:
-                transdict[indkey].w1_phases.append('a')    
+                transdict[indkey].w1_phases.append('a')
             if row['w1_bus_b']:
-                transdict[indkey].w1_phases.append('b')   
+                transdict[indkey].w1_phases.append('b')
             if row['w1_bus_c']:
                 transdict[indkey].w1_phases.append('c')
-                
+
             for idx in range(0,len(transdict[indkey].w1_phases)):
                 transdict[indkey].phasevec = transdict[indkey].phasevec + phase2vec(transdict[indkey].w1_phases[idx])
-    
+
             transdict[indkey].w1_name = indkeyw1
             transdict[indkey].w1_node = busdict[indkeyw1]
-        
-            transdict[indkey].w1_kVbase_phg = row['w1_kV (ph-ph RMS)']/np.sqrt(3) 
-            transdict[indkey].w1_kVAbase = row['w1_kVA_base'] 
-            transdict[indkey].w1_rpu = row['w1_R_w1 (pu)'] 
-            transdict[indkey].w1_conn = row['w1_conn'] 
-            
-            transdict[indkey].xpu = row['X (pu)'] 
-    
+
+            transdict[indkey].w1_kVbase_phg = row['w1_kV (ph-ph RMS)']/np.sqrt(3)
+            transdict[indkey].w1_kVAbase = row['w1_kVA_base']
+            transdict[indkey].w1_rpu = row['w1_R_w1 (pu)']
+            transdict[indkey].w1_conn = row['w1_conn']
+
+            transdict[indkey].xpu = row['X (pu)']
+
             if row['Tap A']:
                 transdict[indkey].tappos.append(row['Tap A'])
             else:
@@ -1000,27 +1001,27 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
                 transdict[indkey].tappos.append(row['Tap C'])
             else:
                 transdict[indkey].tappos.append(0)
-        
-            transdict[indkey].taprange_high = row['Highest Tap'] 
+
+            transdict[indkey].taprange_high = row['Highest Tap']
             transdict[indkey].taprange_low = row['Lowest Tap']
             transdict[indkey].taprangepct_high = row['Max Range (%)']
             transdict[indkey].taprangepct_low = row['Min Range (%)']
-            
+
             # Build Z, Y matrices
-            assert(transdict[indkey].w1_kVAbase == transdict[indkey].w0_kVAbase) 
+            assert(transdict[indkey].w1_kVAbase == transdict[indkey].w0_kVAbase)
             tempz = (transdict[indkey].w0_rpu + transdict[indkey].w1_rpu + 1j*transdict[indkey].xpu)*subkVAbase/transdict[indkey].w0_kVAbase
             tempy = 1/tempz
-    
-        
+
+
             w0_ph_lst = list(map(string.ascii_lowercase.index,transdict[indkey].w0_phases))
             w1_ph_lst = list(map(string.ascii_lowercase.index,transdict[indkey].w1_phases))
-        
+
             for idx in range(0, len(w0_ph_lst)):
                 transdict[indkey].Zpu[w0_ph_lst[idx], w1_ph_lst[idx]] = tempz
                 transdict[indkey].Ypu[w0_ph_lst[idx], w1_ph_lst[idx]] = tempy
-                
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  MULTIPHASE  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #                
-                
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  MULTIPHASE  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+
     'Transformer MULTIPHASE'
     if transtype == 'multiphase':
         transsheet = modeldata.parse('Multiphase Transformer')
@@ -1028,7 +1029,7 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
 # =============================================================================
 #         if transsheet.iloc[0][0] == 'ID':
 #             transsheet = modeldata.parse('Transformer 3-phase', index_col=0)
-#         
+#
 #         # Prep transformer column headers (This is built to handle a 2-winding transformer)
 #         windcols = transsheet.columns.get_loc('winding 1') - transsheet.columns.get_loc('winding 0')
 #         othercols = len(transsheet.columns) - transsheet.columns.get_loc('winding 1') - windcols
@@ -1039,69 +1040,69 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
 #         transsheet.columns = transsheet.iloc[0]
 #         transsheet = transsheet.drop(transsheet.index[0]);
 # =============================================================================
-        
+
         # Create dictionary
         transdict = dict()
-        
+
         for idx, row in transsheet.iterrows():
             if row['W1Bus 1']:
-                indkeyw0 = row['W1Bus 1'][:len(row['W1Bus 1'])-2]       
+                indkeyw0 = row['W1Bus 1'][:len(row['W1Bus 1'])-2]
             elif row['W1Bus 2']:
                 indkeyw0 = row['W1Bus 2'][:len(row['W1Bus 2'])-2]
             elif row['W1Bus 3']:
-                indkeyw0 = row['W1Bus 3'][:len(row['W1Bus 3'])-2] 
-    
+                indkeyw0 = row['W1Bus 3'][:len(row['W1Bus 3'])-2]
+
             if row['W2Bus 1']:
-                indkeyw1 = row['W2Bus 1'][:len(row['W2Bus 1'])-2]       
+                indkeyw1 = row['W2Bus 1'][:len(row['W2Bus 1'])-2]
             elif row['W2Bus 2']:
                 indkeyw1 = row['W2Bus 2'][:len(row['W2Bus 2'])-2]
             elif row['W2Bus 3']:
-                indkeyw1 = row['W2Bus 3'][:len(row['W2Bus 3'])-2]     
-            
-            indkey = indkeyw0 + 'to' + indkeyw1    
-        
+                indkeyw1 = row['W2Bus 3'][:len(row['W2Bus 3'])-2]
+
+            indkey = indkeyw0 + 'to' + indkeyw1
+
             transdict[indkey] = transformer(indkey, timesteps)
             transdict[indkey].id = idx
-            
+
             busdict[indkeyw0].edges_out.append(transdict[indkey])
             busdict[indkeyw1].edges_in.append(transdict[indkey])
 
             # phases (a,b,c)
             if row['W1Bus 1'] and isinstance(row['W1Bus 1'],str):
-                transdict[indkey].w0_phases.append(row['W1Bus 1'][len(row['W1Bus 1'])-1])    
+                transdict[indkey].w0_phases.append(row['W1Bus 1'][len(row['W1Bus 1'])-1])
             if row['W1Bus 2'] and isinstance(row['W1Bus 2'],str):
-                transdict[indkey].w0_phases.append(row['W1Bus 2'][len(row['W1Bus 2'])-1])   
+                transdict[indkey].w0_phases.append(row['W1Bus 2'][len(row['W1Bus 2'])-1])
             if row['W1Bus 3'] and isinstance(row['W1Bus 3'],str):
-                transdict[indkey].w0_phases.append(row['W1Bus 3'][len(row['W1Bus 3'])-1]) 
-    
+                transdict[indkey].w0_phases.append(row['W1Bus 3'][len(row['W1Bus 3'])-1])
+
             if row['W2Bus 1'] and isinstance(row['W2Bus 1'],str):
-                transdict[indkey].w1_phases.append(row['W2Bus 1'][len(row['W2Bus 1'])-1])    
+                transdict[indkey].w1_phases.append(row['W2Bus 1'][len(row['W2Bus 1'])-1])
             if row['W2Bus 2'] and isinstance(row['W2Bus 2'],str):
-                transdict[indkey].w1_phases.append(row['W2Bus 2'][len(row['W2Bus 2'])-1])   
+                transdict[indkey].w1_phases.append(row['W2Bus 2'][len(row['W2Bus 2'])-1])
             if row['W2Bus 3'] and isinstance(row['W2Bus 3'],str):
                 transdict[indkey].w1_phases.append(row['W2Bus 3'][len(row['W2Bus 3'])-1])
-            
+
             transdict[indkey].w0_name = indkeyw0
             transdict[indkey].w0_node = busdict[indkeyw0]
-        
-            transdict[indkey].w0_kVbase_phg = row['W1V (kV)']/np.sqrt(3) 
+
+            transdict[indkey].w0_kVbase_phg = row['W1V (kV)']/np.sqrt(3)
             transdict[indkey].w0_kVAbase = row['W1S_base (kVA)']
-            transdict[indkey].w0_rpu = row['W1R (pu)'] 
+            transdict[indkey].w0_rpu = row['W1R (pu)']
             transdict[indkey].w0_conn = row['W1Conn. type']
-                
+
             for idx in range(0,len(transdict[indkey].w1_phases)):
                 transdict[indkey].phasevec = transdict[indkey].phasevec + phase2vec(transdict[indkey].w1_phases[idx])
-    
+
             transdict[indkey].w1_name = indkeyw1
             transdict[indkey].w1_node = busdict[indkeyw1]
-        
-            transdict[indkey].w1_kVbase_phg = row['W2V (kV)']/np.sqrt(3) 
+
+            transdict[indkey].w1_kVbase_phg = row['W2V (kV)']/np.sqrt(3)
             transdict[indkey].w1_kVAbase = row['W2S_base (kVA)']
-            transdict[indkey].w1_rpu = row['W2R (pu)'] 
+            transdict[indkey].w1_rpu = row['W2R (pu)']
             transdict[indkey].w1_conn = row['W2Conn. type']
-            
-            transdict[indkey].xpu = row['X (pu)'] 
-    
+
+            transdict[indkey].xpu = row['X (pu)']
+
             if row['Tap 1']:
                 transdict[indkey].tappos.append(row['Tap 1'])
             else:
@@ -1114,25 +1115,25 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
                 transdict[indkey].tappos.append(row['Tap 3'])
             else:
                 transdict[indkey].tappos.append(0)
-        
-            transdict[indkey].taprange_high = row['Highest Tap'] 
+
+            transdict[indkey].taprange_high = row['Highest Tap']
             transdict[indkey].taprange_low = row['Lowest Tap']
             transdict[indkey].taprangepct_high = row['Max Range (%)']
             transdict[indkey].taprangepct_low = row['Min Range (%)']
-            
+
             # Build Z, Y matrices
-            assert(transdict[indkey].w1_kVAbase == transdict[indkey].w0_kVAbase) 
+            assert(transdict[indkey].w1_kVAbase == transdict[indkey].w0_kVAbase)
             tempz = (transdict[indkey].w0_rpu + transdict[indkey].w1_rpu + 1j*transdict[indkey].xpu)*subkVAbase/transdict[indkey].w0_kVAbase
             tempy = 1/tempz
-    
-        
+
+
             w0_ph_lst = list(map(string.ascii_lowercase.index,transdict[indkey].w0_phases))
             w1_ph_lst = list(map(string.ascii_lowercase.index,transdict[indkey].w1_phases))
-        
+
             for idx in range(0, len(w0_ph_lst)):
                 transdict[indkey].Zpu[w0_ph_lst[idx], w1_ph_lst[idx]] = tempz
                 transdict[indkey].Ypu[w0_ph_lst[idx], w1_ph_lst[idx]] = tempy
-            
+
     return transdict
 
 
@@ -1164,10 +1165,10 @@ def network_mapper(modeldata,busdict,linedict,transdict,switchdict):
     for inode in list(network):
         if inode.type == 'SLACK' or inode.type == 'Slack' or inode.type == 'slack':
             slacknode = inode
-    
+
     fixconnections(network,slacknode)
     propogatetrans(network,slacknode)
-    
+
     return network
 
 
@@ -1209,7 +1210,7 @@ def calc_Zeffks(Y, busidx):
         ei[k*3:(k+1)*3,0:3] = np.eye(3)
         e1[0:3,0:3] = np.eye(3)
         Zeffk = np.transpose((e1 - ei))*Z*(e1 - ei)
-        
+
         if print_network_values == 1:
             print('Zeffk for bus ' + str(bus) + ': ' + str(Zeffk))
         Zeffk_dict[bus] = Zeffk

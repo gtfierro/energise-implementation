@@ -15,21 +15,8 @@ import pprint
 # import copy
 
 import os
-# from setup import *
 from setup_noLoad import *
-# from setup_3 import * #see below
 # from dss_functions import *
-
-# print(os.getcwd())
-baseDirectory = os.getcwd()
-os.chdir('../') #os.chdir() is eq to terminal cd
-os.chdir('../') #second call brings you back to energise implementation
-# print(os.getcwd())
-SPBCfolderPath = os.getcwd() + '/SPBC/'
-# os.chdir('SPBC'); from setup_3 import * #uncomment this line if you want to import setup_3.py
-# print(SPBCfolderPath)
-os.chdir(baseDirectory) #put directory back to LPBC folder
-# print(os.getcwd())
 
 
 def calc_Zeffk(Y, busidx, busidxs): #calc just one Zeffk
@@ -181,7 +168,16 @@ def calc_Ybus(myfeeder):
         #this will require making the shunt elements constant impedance, and putting them in pu
     return(Ypu, Y, busidx)
 
-
+# print(os.getcwd())
+baseDirectory = os.getcwd()
+os.chdir('../') #os.chdir() is eq to terminal cd
+os.chdir('../') #second call brings you back to energise implementation
+# print(os.getcwd())
+SPBCfolderPath = os.getcwd() + '/SPBC/'
+# os.chdir('SPBC'); from setup_3 import * #uncomment this line if you want to import setup_3.py
+# print(SPBCfolderPath)
+os.chdir(baseDirectory) #put directory back to LPBC folder
+# print(os.getcwd())
 
 'IEEE13_UNBALANCED'
 # filepath = SPBCfolderPath + "IEEE13/"
@@ -190,6 +186,7 @@ def calc_Ybus(myfeeder):
 # loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 # feederID = 'IEEE13'
 # testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
+#13unb needs transphase in serup_noload.py to be 3phase
 
 'IEEE13_BALANCED'
 # filepath = SPBCfolderPath + "IEEE13_bal/"
@@ -198,6 +195,7 @@ def calc_Ybus(myfeeder):
 # loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 # feederID = 'IEEE13'
 # testcase = '13bal'
+#13bal needs transphase in serup_noload.py to be 3phase
 
 '33NF'
 # filepath = SPBCfolderPath + "33/"
@@ -206,6 +204,7 @@ def calc_Ybus(myfeeder):
 # loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 # feederID = 'UCB33'
 # testcase = '33'
+#33 needs transphase in serup_noload.py to be 3phase
 
 'PL0001'
 filepath = SPBCfolderPath + "PL0001/"
@@ -214,6 +213,7 @@ loadfolder = SPBCfolderPath + "PL0001/"
 loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
 feederID = 'PL0001'
 testcase = 'PL0001'
+#PL0001 needs transphase in serup_noload.py to be multiphase
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 if feederID == 'IEEE13':
