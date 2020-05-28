@@ -63,7 +63,7 @@ class feeder:
         self.busdict = busbuilder(self.modeldata, subkVbase_phg, subkVAbase, timesteps)
         self.Vsrcdict = Vsrcbuilder(self.modeldata, self.busdict)
         self.shuntdict = shuntbuilder(self.modeldata, self.busdict,timesteps)
-        self.loaddict = loadbuilderPQ(self.modeldata, self.busdict, loadpath, timesteps)
+        # self.loaddict = loadbuilderPQ(self.modeldata, self.busdict, loadpath, timesteps)
         self.actdict = actbuilder(self.modeldata, self.busdict, loadpath, timesteps)
         self.linedict = linebuilder(self.modeldata, self.busdict, timesteps)
         self.transdict = transbuilder(self.modeldata, self.busdict, self.subkVAbase, timesteps)
