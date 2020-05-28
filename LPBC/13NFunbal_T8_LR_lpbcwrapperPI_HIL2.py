@@ -1104,10 +1104,10 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    lpbcidx = ['671'] #nodes of actuation
+    key = '671'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'load' #choose: 'inverter', 'load', or 'modbus'
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1179,12 +1179,12 @@ for key in lpbcidx:
 #entity corresponds to a given piece of hardware (eg a server), putting multiple entities so that the lpbcs could go on different pieces of hardware
 #these entity files are on the server (Leo)
 entitydict = dict()
-entitydict[0] = 'lpbc_1.ent'
-entitydict[1] = 'lpbc_2.ent'
-entitydict[2] = 'lpbc_3.ent'
-entitydict[3] = 'lpbc_4.ent'
-entitydict[4] = 'lpbc_5.ent'
-entitydict[5] = 'lpbc_6.ent'
+entitydict[0] = 'lpbc_6.ent'
+entitydict[1] = 'lpbc_5.ent'
+entitydict[2] = 'lpbc_4.ent'
+entitydict[3] = 'lpbc_3.ent'
+entitydict[4] = 'lpbc_2.ent'
+entitydict[5] = 'lpbc_1.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
