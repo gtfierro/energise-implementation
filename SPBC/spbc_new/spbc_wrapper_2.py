@@ -20,8 +20,8 @@ phase_size, feeder_init = feeder_init()
 print('phases on network:',phase_size)
 
 # SETTINGS
-lpbc_phases = ['a'] # [INPUT HERE]
-lpbc_nodeIDs = ['671','652','692'] # [INPUT HERE]
+lpbc_phases = ['a','b','c'] # [INPUT HERE]
+lpbc_nodeIDs = ['18'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 '''
@@ -34,21 +34,21 @@ aren't at capacity in the form of altered phasor targets.
 '''
 
 # {actuation node: performance node}
-lpbcdict = {
-    '671': '671',
-    '652': '652',
-    '692': '692'
+lpbcdict = { '18': '18'
+    # '671': '671',
+    # '652': '652',
+    # '692': '692'
 }
 
 TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
-start_hour = 11 # [INPUT HERE]
+start_hour = 0 # [INPUT HERE]
 
 dummy_ref = True # [INPUT HERE]
 constant_phasor = False # [INPUT HERE]
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
-if constant_phasor == False:
+if constant_phasor == True:
     # set phasor target values here (not relative)
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)

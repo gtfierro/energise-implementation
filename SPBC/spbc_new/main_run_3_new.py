@@ -179,9 +179,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
 # phasor target settings:
     if lam1 > 0:
-        target_key = '671'
-        Vmag_match = [.99]*3
-        Vang_match = [0 - np.radians(1), 4/3*np.pi - np.radians(1), 2/3*np.pi - np.radians(1)] 
+        target_key = '18'
+        Vmag_match = [.97]*3
+        Vang_match = [0 - np.radians(.1), 4/3*np.pi - np.radians(.1), 2/3*np.pi - np.radians(.1)] 
     
 # phase balancing settings:
     # no settings to change for this objective
@@ -241,14 +241,14 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
             if lam1 > 0:
                 if key == target_key:
                     '3phase'
-# =============================================================================
-#                     if (bus.phasevec == np.ones((3,timesteps))).all():
-#                         obj = obj + lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
-#                         obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]**2) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]**2) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2]**2)))
-# =============================================================================
+                    if (bus.phasevec == np.ones((3,timesteps))).all():
+                        obj = obj + lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
+                        obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]**2) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]**2) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2]**2)))
                     'T12.4'
-                    obj += lam1*(cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]))
-                    obj += lam1*(cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]**2))
+# =============================================================================
+#                     obj += lam1*(cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]))
+#                     obj += lam1*(cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]**2))
+# =============================================================================
 
     # objective 2 - phase balancing
             if lam2 > 0:

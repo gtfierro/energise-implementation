@@ -585,7 +585,7 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
     loaddf.index -= timestepcur
     
     # scale load
-    ld_scale = 1
+    ld_scale = 0.5
     if ld_scale != 1 == True:
         print(f'*** WARNING - load scale = {ld_scale} ***')
     loaddf = loaddf * ld_scale
