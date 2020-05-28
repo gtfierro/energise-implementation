@@ -186,7 +186,7 @@ def cons_missingline(feeder):
 def cons_Vineq(feeder):
 # Sets upper and lower bounds on nodal voltages. The allowable band may need to be reduced to get good nonlinear solutions!
     conslist = list()
-    Vmax, Vmin = 1.05, 0.95
+    Vmax, Vmin = 1.1, 0.9
     
     for key, inode in feeder.busdict.items():
         for ts in range(0,feeder.timesteps):

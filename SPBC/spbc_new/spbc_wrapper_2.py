@@ -179,7 +179,7 @@ class myspbc(pbc.SPBCProcess):
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
-        schedule(self.call_periodic(10, self.compute_and_announce))
+        schedule(self.call_periodic(15, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
         
          #~~ initialize values ~~#
@@ -334,7 +334,7 @@ class myspbc(pbc.SPBCProcess):
             print('VTARGS [pu, deg, kV, kVA]')
             for node, key in Vtargdict.items():
                 for key2, targ in key.items():
-                    print(f'{node}_{key2}: {np.round(targ,5)}')
+                    print(f'{node}_{key2}: {np.round(targ,5)} (pu, deg)')
             #print(f'VTARGS: {Vtargdict}')
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?

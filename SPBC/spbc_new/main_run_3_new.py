@@ -416,7 +416,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
     # In[7]:
     
-    DSS_alltimesteps(myfeeder,1) # Second argument turns voltage alarms on/off
+    DSS_alltimesteps(myfeeder,0) # Second argument turns voltage alarms on/off
     
     'turn export targets on/off here'
     export_Vtargets(myfeeder)
