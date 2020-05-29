@@ -3,7 +3,7 @@ import numpy as np
 from scipy.linalg import solve_discrete_are as dare
 from numpy.linalg import inv
 
-#using matrices rather than nd.arrays bc ecah controller only needs 2 dimensions, makes math easier
+#using matrices rather than nd.arrays bc each controller only needs 2 dimensions, makes math easier
 #all voltages, powers and impedances in pu
 
 #HHERE how to account for P and Q commands not being true
