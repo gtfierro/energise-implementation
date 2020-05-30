@@ -1024,7 +1024,7 @@ elif testcase == 'manual':
     lpbcidx = ['18'] #nodes of actuation
     key = '18'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
-    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    actType_dict[key] = 'modbus' #choose: 'inverter', 'load', or 'modbus'
 
 
 #these should be established once for the FLexlab,
@@ -1120,7 +1120,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/3.3
 loadScaling = 350
-CILscaling = 10 #in VA
+CILscaling = 150/15000*1000 #in VA
 
 rate = 5
 
