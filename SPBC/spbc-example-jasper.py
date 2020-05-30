@@ -27,7 +27,7 @@ start_hour = 11             # [INPUT HERE]
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  'UCB33'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+feederID =  '13unbal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
 testID = 'T8.1'
 
 if dummy_ref == True:
@@ -111,10 +111,8 @@ if constant_phasor == True:
         if testID == 'T8.1':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18']
-            # cons_Vmag = [0.97,0.97,0.97]
-            # cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
-            cons_Vmag = [0.99,0.99,0.99]
-            cons_Vang = [0 -0.00001, -120 -0.00001, 120 -0.00001]
+            cons_Vmag = [0.97,0.97,0.97]
+            cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
         if testID == 'T8.2':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
