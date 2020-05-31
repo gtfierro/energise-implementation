@@ -77,11 +77,28 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #or 2) just save the correct pu impedance and use that.
             #(1) would be more robust
             #HHHERE implement 1
-            # Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
-            Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
-            if testcase == 'manual': #HERE for debugging, assumes 13bal is used
-                # Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
-                Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
+            '''
+            Controller feedback:
+            controller gets a pu voltage, all the internal controller comps are done in pu, and the output is a pu power
+            output power is multiplied by localSbase then Sratio, so effectively networkSbase (networkSbase determines how the power injection affects the local voltage, not localSbase)
+            so the Zeff that is used should be the nonPU Zeff, divided by Zbase = Vbase^2/networkSbase
+
+            Zestimation:
+            current that is measured is based on localSbase, not networkSbase
+            so the current measurement used to estimate Z should use localSbase
+            '''
+            self.usingNonpuZeff = 1
+            self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
+            if self.usingNonpuZeff:
+                ZeffkinitInPU = 0
+                Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
+                if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+                    Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
+            else:
+                ZeffkinitInPU = 1
+                Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
+                if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+                    Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
             Zeffk_df = pd.read_csv(Zeffkpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zeffk_df = Zeffk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zeffk_init = np.asmatrix(Zeffk_df.values)
@@ -121,7 +138,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
 
             assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
-            self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant)
+            self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
             # self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam) old version
         else:
             error('error in controller type')
@@ -226,7 +243,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
         self.act_idxs = np.asarray(act_idxs)
- #'inverter' or 'load'
+        #'inverter' or 'load'
         if self.actType == 'inverter':
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
 
@@ -543,11 +560,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return (Pact_kVA,Qact_kVA)
 
 
-    def checkSaturationWoImeas(self, nphases, Vcomp, VPcmd_kVA, Qcmd_kVA,):
+    def checkSaturationWoImeas(self, nphases, Vcomp, Pcmd_kVA, Qcmd_kVA,):
         # compare self.VcompPrev w Vcomp and if it keeps missing in the same direction declare that its saturated
         #could be confused by Q offset
-        pass
-        return
+        sat_arrayP = np.ones(nphases) # 1 indicates not saturated
+        sat_arrayQ = np.ones(nphases)
+        return sat_arrayP, sat_arrayQ
 
 
     def checkSaturation(self, nphases, Pact, Qact, Pcmd_kVA, Qcmd_kVA, P_PV):
@@ -906,11 +924,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
                 #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
                 self.localkVbase = self.kVbase/self.localVratio
-                self.localkVAbase = self.network_kVAbase/self.localSratio
+                self.localkVAbase = self.network_kVAbase/self.localSratio #self.localkVAbase takes into account self.localSratio here
                 self.localIbase = self.localkVAbase/self.localkVbase
                 print('self.localSratio : ' + str(self.localSratio))
                 print('self.localkVAbase : ' + str(self.localkVAbase))
                 print('self.localkVbase : ' + str(self.localkVbase))
+
+                if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
+                    Zbase = 1000*self.kVbase**2/self.network_kVAbase #HHHERE is the 1000 correct?
+                    self.controller.setZeffandZeffkestinitWnewZbase(Zbase)
+                    self.ZeffkestinitHasNotBeenInitialized = 0
 
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
@@ -939,7 +962,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('Vang_notRelative bus ' + str(self.busId) + ' : ' + str(self.Vang_notRelative))
             print('self.VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
             print('self.VangTarg_notRelative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_notRelative))
-            #this is here so that Relative angles can be used as LQR inputs
+            #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
             Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_notRelative) + self.Vmag_pu*np.sin(self.Vang_notRelative)*1j
 
             #these are used for PI controller
@@ -954,21 +977,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
                         self.Icomp_pu = [np.NaN]*self.nphases
                     else:
-                        # self.Iang_notRelative, self.Iang_relative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                         self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
                         self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                         #HERE havent checked that the current measurements are legit yet
-                        self.Icomp_pu = self.Icomp / self.localIbase #this takes into account Sratio
+                        self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
+                        #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
                         self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
                 # calculate P/Q from actuators
                 (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
                 self.Pact_pu = self.Pact / self.localkVAbase
                 self.Qact_pu = self.Qact / self.localkVAbase
+
+                self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             else:
                 self.Icomp_pu = [np.NaN]*self.nphases
+                #havent built checkSaturationWoImeas yet
+                self.sat_arrayP, self.sat_arrayQ = checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
 
             #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
             #run control loop
@@ -998,6 +1024,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Pcmd_pu[2] = 0
             # self.Qcmd_pu = np.zeros(nphases)
 
+            # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 

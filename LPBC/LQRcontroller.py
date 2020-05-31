@@ -8,7 +8,7 @@ printDOBCterms = 0
 printControlterms = 0
 
 class LQRcontroller:
-    def __init__(self,lpbcbus,nphases,timesteplength,Qcost,Rcost,Zeffkinit,est_Zeffk=0,cancelDists=1,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1):
+    def __init__(self,lpbcbus,nphases,timesteplength,Qcost,Rcost,Zeffkinit,est_Zeffk=0,cancelDists=1,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1,ZeffkinitInPU=1):
         self.lpbcbus = lpbcbus
         self.nphases = nphases
         self.V0mag = np.NaN
@@ -36,8 +36,11 @@ class LQRcontroller:
         self.dtItThreshold = 1e-3 #could pass these thresholds in when you make the controller
         self.dtVtThreshold = 1e-3
         self.powerThresholdForIcompEst = 1e-3 #this is different than self.dtItThreshold. Idea is to prevent noisy Icom estiamtes when there isnt an S command. Downside is that you lose a useful measurement when S command goes to zero from a nonzero value. Could fix that case with an if statement, though.
-        self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
-        self.Zeffkest = np.asmatrix(Zeffkinit)
+        if ZeffkinitInPU:
+            self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
+            self.Zeffkest = np.asmatrix(Zeffkinit)
+        else: #waits for setZeffandZeffkestinitWnewZbase to be called to set self.Zeffkestinit and self.Zeffkest
+            self.ZeffkestinitNonPu = np.asmatrix(Zeffkinit)
         self.IcompPrevExists = 0
         if Gt is None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
@@ -46,8 +49,9 @@ class LQRcontroller:
             self.Gt = Gt
 
         #Controller and state initialization
-        (self.A, self.B, self.Babbrev) = self.makeABmatrices(Zeffkinit,timesteplength)
-        self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
+        if ZeffkinitInPU:
+            (self.A, self.B, self.Babbrev) = self.makeABmatrices(Zeffkinit,timesteplength)
+            self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
         self.state = np.asmatrix(np.zeros(4*nphases))
         self.u = np.asmatrix(np.zeros(2*nphases))
 
@@ -71,6 +75,15 @@ class LQRcontroller:
     def setVtarget(self,VmagTarg,VangTarg):
         self.VmagTarg = VmagTarg
         self.VangTarg = VangTarg
+        return
+
+
+    def setZeffandZeffkestinitWnewZbase(self,Zbase):
+        self.Zeffkestinit = self.ZeffkestinitNonPu/Zbase
+        self.Zeffkest = self.ZeffkestinitNonPu/Zbase
+        # (self.A, self.B, self.Babbrev) = self.makeABmatrices(self.Zeffkest,self.timesteplength)
+        (self.A, self.B, self.Babbrev) = self.makeABmatrices(np.asarray(self.Zeffkest),self.timesteplength) #not sure the asarray is necessary..
+        self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
         return
 
 
