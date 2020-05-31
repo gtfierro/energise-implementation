@@ -983,17 +983,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.currentMeasExists:
                     # commented out version is an untested way of running LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
                     # need self.linearizeplant = 1 within LQR eqns, which is the default I think
-                    # # fakeVangRef = np.zeros(self.nphases)
-                    # if self.nphases = 3:
-                    #     fakeVangRef = self.VangRef + np.asarray([0, 120, -120]) #should make em ~[0,0,0]
-                    # elif: self.nphases = 2:
-                    #     fakeVangRef = self.VangRef + np.asarray([0, 120,])
-                    # else:
-                    #     fakeVangRef = self.VangRef
-                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #the relative measuremetns may be more consistent, but this would req changing the LQR code
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    # fakeVangRef = np.zeros(self.nphases)
+                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu)
+                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
