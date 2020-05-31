@@ -2,7 +2,7 @@
 #SPBC-HIL files moved 7/15/19
 
 # In[1]:
-    
+
 from setup_3 import *
 from constraints_3 import *
 from dss_3 import *
@@ -46,7 +46,8 @@ print(datetime.datetime.fromtimestamp(ts))
 'PL0001'
 filepath = "PL0001/"
 modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
-loadfolder = "33/"
+# loadfolder = "33/"
+loadfolder = "PL0001/"
 loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
 feederID = 'PL0001'
 
@@ -95,7 +96,7 @@ for node in PVnodes: # this sets all nodes the same, would have to manually chan
 def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     modeldata = pd.ExcelFile(modelpath)
     actpath = loadpath
-    
+
     # set dummy values for undefined variables
     date = datetime.datetime.now()
     month = date.month
@@ -104,71 +105,71 @@ def feeder_init(Psat_nodes=[],Qsat_nodes=[]):
     minute = date.minute
     #timestepcur = hour*60+minute
     timestepcur = 11*60
-    
+
     Psat_nodes = []
     Qsat_nodes = []
-    
+
     refphasor = np.ones((3,2))
     refphasor[:,0]=1
     refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-    
+
     #get feeder
     feeder_init = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,\
                          subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
     feeder_init
-    
+
     phase_size = 0
     for key, inode in feeder_init.busdict.items():
         if inode.type == 'SLACK' or inode.type == 'Slack' or inode.type == 'slack':
             for ph in inode.phases:
                 phase_size += 1
-    
+
     return phase_size, feeder_init
 
 # In[4]:
 
     ## WORKSPACE: CURRENT MODEL FOR TARGET GENERATION ###
-def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'none' if doesnt exist    
-    
-    modeldata = pd.ExcelFile(modelpath) 
+def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'none' if doesnt exist
+
+    modeldata = pd.ExcelFile(modelpath)
     actpath = loadpath
-    
+
     # Enter name of actuator costs file - should be in same folder as the load file
     costfn_on_off = 0 # 0=off, 1=on
-    
+
     # set tuning parameters: 0 = off. lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
     lam1 = 1
     lam2 = 0
     lam3 = 0
-    
+
     if costfn_on_off == 1:
         actcostpath = loadfolder + 'act_costs_2_1_try2.xlsx'
         actcostdata = pd.read_excel(actcostpath, index_col=0)
-    
+
     # Create feeder object
     myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur,
-                         subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)    
+                         subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
     myfeeder
-    
+
     # In[6]:
-    
+
     # Run optimization problem and generate targets
-    
-    
-    
+
+
+
     obj = 0
     #pdb.set_trace()
     for ts in range(0,myfeeder.timesteps):
         for key, bus in myfeeder.busdict.items():
         #for key, bus in myfeeder.busdict['633']:
             #print(bus.name)
-            
-    # objective 1 - phasor target  
+
+    # objective 1 - phasor target
             if lam1 > 0:
                 if bus.name == 'bus_671':
                     #print(key,bus.name)
                     Vmag_match = [.99, 1, 1]
-                    Vang_match = [0 - np.radians(1), 4/3*2*np.pi - np.radians(0), 2/3*np.pi - np.radians(0)] 
+                    Vang_match = [0 - np.radians(1), 4/3*2*np.pi - np.radians(0), 2/3*np.pi - np.radians(0)]
                     #pdb.set_trace()
                     'T12:'
                     obj += lam1*(cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]))
@@ -178,7 +179,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
                         #obj += lam1*((cp.square(bus.Vang_linopt[0,ts]-Vang_match[0]) + cp.square(bus.Vang_linopt[1,ts]-Vang_match[1]) + cp.square(bus.Vang_linopt[2,ts]-Vang_match[2])))
                         #obj += lam1*((cp.square(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.square(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.square(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
                         #obj += ((cp.abs(bus.Vmagsq_linopt[0,ts]-Vmag_match[0]) + cp.abs(bus.Vmagsq_linopt[1,ts]-Vmag_match[1]) + cp.abs(bus.Vmagsq_linopt[2,ts]-Vmag_match[2])))
-            
+
     # objective 2 - phase balancing
             if lam2 > 0:
                 if (bus.phasevec == np.array([[1],[1],[0]])).all():
@@ -189,7 +190,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
                     obj = obj + lam2*cp.square(bus.Vmagsq_linopt[1,ts]-bus.Vmagsq_linopt[2,ts])
                 if (bus.phasevec == np.ones((3,timesteps))).all():
                     obj = obj + lam2*(cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[1,ts]) + cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[2,ts]) + cp.square(bus.Vmagsq_linopt[1,ts]-bus.Vmagsq_linopt[2,ts]))
-    
+
     # objective 3.1 - power flow
 
 
@@ -201,16 +202,16 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
                         obj += lam3*cp.square(bus.Vmagsq_linopt[0,ts]-bus.Vmagsq_linopt[0,ts-1]+
                                               bus.Vmagsq_linopt[1,ts]-bus.Vmagsq_linopt[1,ts-1]+
                                               bus.Vmagsq_linopt[2,ts]-bus.Vmagsq_linopt[2,ts-1])
-    
-    
-    # voltage volatility doesn't really make sense for only 2 timesteps? compute over horizon? 
+
+
+    # voltage volatility doesn't really make sense for only 2 timesteps? compute over horizon?
     # OR (preferred) find way to store value from previous iteration?
         # is this equivalent even though not all cvx vars anymore?
         # initialize by minimizing volatility over first 10 timesteps...
     # alternative method:
         # consider previous timestep as well as next X timesteps
         # weigh previous timestep more heavily than future timesteps
-    
+
     # TODO: vmagprev
     #Vmag_prev = {}
     #Vmag_prev[key] = np.ones((3,myfeeder.timesteps))
@@ -224,32 +225,32 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
                                           bus.Vmagsq_linopt[1,ts]-Vmag_prev[key][1]+
                                           bus.Vmagsq_linopt[2,ts]-Vmag_prev[key][2])
     '''
-                
-    # add cost function to actuators       
+
+    # add cost function to actuators
     if costfn_on_off == 1:
-        for ts in range(0,myfeeder.timesteps):  
-                    
+        for ts in range(0,myfeeder.timesteps):
+
             for key, inode in myfeeder.busdict.items():
                 for iact in inode.actuators:
                     key_str = str(key)
                     for idx in range(0,3):
                         obj += cp.square(iact.Pgen[idx,ts:ts+1] * actcostdata[key_str][ts])
-                    
-     
-    objective = cp.Minimize(obj) 
-    
+
+
+    objective = cp.Minimize(obj)
+
     constraints = cvx_set_constraints(myfeeder,1) # Second argument turns actuators on/off
     prob = cp.Problem(objective, constraints)
     result = prob.solve(verbose=False,eps_rel=1e-5,eps_abs=1e-10)
-    
+
     # In[7]:
-    
+
     DSS_alltimesteps(myfeeder,1) # Second argument turns voltage alarms on/off
-    
+
     #export_Vtargets(myfeeder)
     ##[jasper] - fn to get target in vector format for LPBC
     #nodes_arr,Vmag_targ,Vang_targ,KVbase = get_targets(myfeeder)
-    
+
     # Vtargdict[key(nodeID)][Vmag/Vang/KVbase]
     Vtargdict, act_keys = get_targets(myfeeder) #timestepcur might need to be input to update which target is being taken
     #lpbc_keys = [lpbc_node1,lpbc_node2,lpbc_node3,lpbc_node4]
@@ -259,9 +260,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
 # In[8]:
 # Run main_run
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
 
-    ### dummy values ###    
+    ### dummy values ###
     Psat = []
     Qsat = []
     perf_nodes = []
@@ -269,7 +270,7 @@ if __name__ == '__main__':
     refphasor = np.ones((3,2))
     refphasor[:,0]=1
     refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-    
+
     Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat,Qsat,perf_nodes,timestepcur)
     '''
     #tf = time.time()
@@ -282,7 +283,7 @@ if __name__ == '__main__':
 
 tsp = 0 # select timestep for convergence plot
 
-# DSS_alltimesteps(myfeeder,1) 
+# DSS_alltimesteps(myfeeder,1)
 plot = 1 #turn plot on/off
 def plot_results():
     if plot == 1:
@@ -293,12 +294,12 @@ def plot_results():
         ph2 = []
         ph3 = []
         for key, bus in myfeeder.busdict.items():
-        
+
             ph1.append(np.sqrt(bus.Vmagsq_linopt[0,0].value))
             ph2.append(np.sqrt(bus.Vmagsq_linopt[1,0].value))
             ph3.append(np.sqrt(bus.Vmagsq_linopt[2,0].value))
-        
-        
+
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
@@ -307,9 +308,9 @@ def plot_results():
         plt.ylim((0.8, 1.1))
         plt.legend()
         plt.show()
-        
+
         print('Nonlinear sln')
-        
+
         # Plot NL actuation result
         ph1 = list()
         ph2 = list()
@@ -318,7 +319,7 @@ def plot_results():
             ph1.append(bus.Vmag_NL[0,0]/(bus.kVbase_phg*1000))
             ph2.append(bus.Vmag_NL[1,0]/(bus.kVbase_phg*1000))
             ph3.append(bus.Vmag_NL[2,0]/(bus.kVbase_phg*1000))
-        
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
@@ -327,9 +328,9 @@ def plot_results():
         plt.ylim((0.8, 1.1))
         plt.legend()
         plt.show()
-        
+
         print('Vang linear')
-        
+
         ph1 = list()
         ph2 = list()
         ph3 = list()
@@ -337,7 +338,7 @@ def plot_results():
             ph1.append(bus.Vang_linopt[0,0].value)
             ph2.append(bus.Vang_linopt[1,0].value)
             ph3.append(bus.Vang_linopt[2,0].value)
-        
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
@@ -346,9 +347,9 @@ def plot_results():
         plt.ylim((-1, 6))
         plt.legend()
         plt.show()
-        
+
         print('Vang nonlinear')
-        
+
         ph1 = list()
         ph2 = list()
         ph3 = list()
@@ -356,7 +357,7 @@ def plot_results():
             ph1.append(bus.Vang_NL[0,0]*np.pi/180)
             ph2.append((bus.Vang_NL[1,0]*-2)*np.pi/180)
             ph3.append(bus.Vang_NL[2,0]*np.pi/180)
-        
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
@@ -365,19 +366,19 @@ def plot_results():
         plt.ylim((-1, 6))
         plt.legend()
         plt.show()
-        
+
         #plot difference
-        
+
         print('Vmag convergence')
         ph1 = list()
         ph2 = list()
         ph3 = list()
         for key, bus in myfeeder.busdict.items():
-        
+
             ph1.append(np.abs((np.sqrt(bus.Vmagsq_linopt[0,tsp].value)-bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))))
             ph2.append(np.abs((np.sqrt(bus.Vmagsq_linopt[1,tsp].value)-bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))))
             ph3.append(np.abs((np.sqrt(bus.Vmagsq_linopt[2,tsp].value)-bus.Vmag_NL[2,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[2,tsp]/(bus.kVbase_phg*1000))))
-        
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
@@ -386,9 +387,9 @@ def plot_results():
         plt.ylim((-.01, .02))
         plt.legend()
         plt.show()
-        
+
         print('Vang convergence')
-        
+
         ph1 = list()
         ph2 = list()
         ph3 = list()
@@ -401,7 +402,7 @@ def plot_results():
             ph1.append(np.abs((bus.Vang_linopt[0,tsp].value-bus.Vang_NL[0,tsp]*np.pi/180)))
             ph2.append(np.abs((bus.Vang_linopt[1,tsp].value-(bus.Vang_NL[1,tsp]*-2)*np.pi/180)))
             ph3.append(np.abs((bus.Vang_linopt[2,tsp].value-bus.Vang_NL[2,tsp]*np.pi/180)))
-            
+
         plt.plot(ph1,'ro', label='ph1')
         plt.plot(ph2,'go', label='ph2')
         plt.plot(ph3,'bo', label='ph3')
