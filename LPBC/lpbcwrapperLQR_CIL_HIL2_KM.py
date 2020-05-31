@@ -939,6 +939,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('Vang_notRelative bus ' + str(self.busId) + ' : ' + str(self.Vang_notRelative))
             print('self.VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
             print('self.VangTarg_notRelative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_notRelative))
+            #this is here so that Relative angles can be used as LQR inputs
+            Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_notRelative) + self.Vmag_pu*np.sin(self.Vang_notRelative)*1j
+
             #these are used for PI controller
             self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
@@ -976,12 +979,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.controllerType == 'PI':
                 (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controllerType == 'LQR':
+                # if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #HERE uncomment code in phasorV_calc that makes default measurements NaN rather than previous meas and uncomment this
                 if self.currentMeasExists:
-                    #HHHERE need to build a version of the LQR controller that can use self.Vang_relative, gets passed Vcomp_pu, and maybe has a flag for whether its getting a relative or non relative v
-                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, Vcomp, self.Icomp_pu) #the relative measuremetns may be more consistent, but this would req changing the LQR code
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
+                    # commented out version is an untested way of running LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
+                    # need self.linearizeplant = 1 within LQR eqns, which is the default I think
+                    # # fakeVangRef = np.zeros(self.nphases)
+                    # if self.nphases = 3:
+                    #     fakeVangRef = self.VangRef + np.asarray([0, 120, -120]) #should make em ~[0,0,0]
+                    # elif: self.nphases = 2:
+                    #     fakeVangRef = self.VangRef + np.asarray([0, 120,])
+                    # else:
+                    #     fakeVangRef = self.VangRef
+                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #the relative measuremetns may be more consistent, but this would req changing the LQR code
+                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
+                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu)
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))

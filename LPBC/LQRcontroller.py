@@ -218,8 +218,16 @@ class LQRcontroller:
             self.Gt = self.Gt
         return self.Zeffkest, self.Gt
 
+    '''
+    Vcomp calc (needs to be base [0,0,0], and therefore ~[0,-120,120])
+    state: diff bn V and Vtarg
+    unaive: diff bn Vtarg and V0 if linearize plant is used (trickier if pfEqns3phase is used)
+    d_m: diff bn Vtarg and V0 if linearize plant is used (trickier if pfEqns3phase is used)
 
-    def LQRupdate(self,VmagArray,VangArray,VmagTargArray,VangTargArray,V0magArray,V0angArray,sat_arrayP=None,sat_arrayQ=None,IcompArray=None):
+    so if V and Vtarg are relative, and V0 is ~[0,0,0] (instead of ~[0,-120,120]), and Vcomp is set seperately to be ~[0,-120,120] for the Zest calc,
+    then it should work to pass LQR relative targets and V0 =~ [0,0,0]
+    '''
+    def LQRupdate(self,VmagArray,VangArray,VmagTargArray,VangTargArray,V0magArray,V0angArray,sat_arrayP=None,sat_arrayQ=None,VcompArray=None,IcompArray=None):
         '''
         Internal Controller Accounting, feedback calculation, and Z estimation (if self.est_Zeffk was set to 1)
         LQR uses matrix computations internally, but gets ndarrays in and passes ndarrays out
@@ -232,7 +240,10 @@ class LQRcontroller:
             sat_arrayQ = np.ones(self.nphases)
 
         #Convert Vs to mp.matrices
-        Vcomp = np.asmatrix(VmagArray*np.cos(VangArray) + VmagArray*np.sin(VangArray)*1j) #Vang has to include the 120 deg shifts
+        if VcompArray is not None:
+            Vcomp = np.asmatrix(VcompArray)
+        else:
+            Vcomp = np.asmatrix(VmagArray*np.cos(VangArray) + VmagArray*np.sin(VangArray)*1j) #Vang has to include the 120 deg shifts
         Vmag = np.asmatrix(VmagArray) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
         Vang = np.asmatrix(VangArray)
         VmagTarg = np.asmatrix(VmagTargArray)
