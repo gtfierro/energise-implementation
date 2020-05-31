@@ -68,7 +68,7 @@ functions from ORT_modbus_energise:
 # feeder =
 # Choose from [13NF_bal, 13NF_unbal]
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL_switch_matrix_13NF_unbal_CIL.xlsx'
+filename = 'HIL_switch_matrix_33NF_bal_CIL.xlsx'
 filepath = pathname+filename
 
 
@@ -82,8 +82,8 @@ dfsw_in,dfsw_out = read_sw_mat(filepath)
 
 #set_switches(dfsw_in,dfsw_out,test_ID)
 
-sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+# sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
 
 # sim_start_pause_stop(sim_length_min)
 
-# sim_stop()
+sim_stop()
