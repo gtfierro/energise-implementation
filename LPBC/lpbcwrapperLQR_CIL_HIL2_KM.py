@@ -59,7 +59,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.controllerType = 'LQR' #set controller to 'PI' or 'LQR'
 
-        if self.controllerType = 'PI':
+        if self.controllerType == 'PI':
             # ang_scale = 1
             # mag_scale = 1
             # kp_ang = [0.01*ang_scale]
@@ -71,13 +71,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
 
-            # kV and kVA base are recieved in targetExtraction, which is called by step.
-            #when LPBC is created, step hasnt been called yet
-            #so you either need to adjust the code so that 1) the base impedance is given when lpbcwrapper is made,
-            #or 2) just save the correct pu impedance and use that.
-            #(1) would be more robust
-            #HHHERE implement 1
             '''
+            kV and kVA base are recieved in targetExtraction, which is called by step.
+            when LPBC is created, step hasnt been called yet.
+            so I created ZeffkinitInPU so that LQR can wait for the first target from the SPBC to set its Zeffkinit
+
             Controller feedback:
             controller gets a pu voltage, all the internal controller comps are done in pu, and the output is a pu power
             output power is multiplied by localSbase then Sratio, so effectively networkSbase (networkSbase determines how the power injection affects the local voltage, not localSbase)
@@ -931,7 +929,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('self.localkVbase : ' + str(self.localkVbase))
 
                 if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
-                    Zbase = 1000*self.kVbase**2/self.network_kVAbase #HHHERE is the 1000 correct?
+                    Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
                     self.controller.setZeffandZeffkestinitWnewZbase(Zbase)
                     self.ZeffkestinitHasNotBeenInitialized = 0
 
