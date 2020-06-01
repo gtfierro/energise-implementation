@@ -51,6 +51,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
+        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print(f'Building LPBC for performance node {busId}')
         # INITIALIZATION
         self.busId = busId
         self.timesteplength = timesteplength
@@ -85,7 +87,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
             '''
-            self.usingNonpuZeff = 1
+            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads teh non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -134,6 +136,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # GtInitScale = 1
             GtInitScale = 10
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
+
+            # #for testing the Zeffestimator
+            # Zeffk_init_mult = .5
+            # Zeffk_init = Zeffk_init*Zeffk_init_mult
+            # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
+
+            if est_Zeffk:
+                Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
+            else:
+                Gt = None
 
             assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
             self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
