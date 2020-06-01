@@ -590,7 +590,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             # ADD OFFSET FUNCATIONALITAY
-
+            
             
             
             for i in range(len(Pcmd_VA)):
