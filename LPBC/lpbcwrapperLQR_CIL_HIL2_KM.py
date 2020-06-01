@@ -388,12 +388,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # loops through each set of voltage measurements for each phase
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
-        # Vang_notRelative = [np.NaN]*nphases
-        # self.VangRef = [np.NaN]*nphases
-        # Vang_relative = [np.NaN]*nphases
-        # Vmag = [np.NaN]*nphases
-        # VmagRef = [np.NaN]*nphases
-        # Vmag_relative = [np.NaN]*nphases
+        #HERE
+        Vang_notRelative = [np.NaN]*nphases
+        self.VangRef = [np.NaN]*nphases
+        Vang_relative = [np.NaN]*nphases
+        Vmag = [np.NaN]*nphases
+        VmagRef = [np.NaN]*nphases
+        Vmag_relative = [np.NaN]*nphases
 
         # V_ang_ref_firstPhase = [np.NaN]
         V_ang_ref_firstPhase = [np.NaN]*nphases #using this for back-compatibility
@@ -427,22 +428,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
 
                         # calculates relative phasors
-                        self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-                        self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-                        # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
-                        # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-                        self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-                        self.Vmag[phase] = V_mag_local
-                        self.VmagRef[phase] = V_mag_ref
-                        self.Vmag_relative[phase] = V_mag_local - V_mag_ref
-                        self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-                        self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-                        # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
-                        # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
-                        # Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-                        # Vmag[phase] = V_mag_local
-                        # VmagRef[phase] = V_mag_ref
-                        # Vmag_relative[phase] = V_mag_local - V_mag_ref
+                        # self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+                        # self.Vmag[phase] = V_mag_local
+                        # self.VmagRef[phase] = V_mag_ref
+                        # self.Vmag_relative[phase] = V_mag_local - V_mag_ref
+                        # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+                        # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
+                        # # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+                        # # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
+                        #HERE
+                        Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+                        Vmag[phase] = V_mag_local
+                        VmagRef[phase] = V_mag_ref
+                        Vmag_relative[phase] = V_mag_local - V_mag_ref
+                        Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+                        VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
+                        # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+                        # VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
                         flag[phase] = 0
                         break
                 if flag[phase] == 0:
@@ -451,8 +453,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
                 #self. vars are assigned and returned so that if a match isnt found, it returns the previous match
-        return (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
-        # return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        # return (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
         # #alternative to find a timestamp at which all voltages are aligned
@@ -941,7 +943,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
                 print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
                 print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
-                print('calcualted Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
+                print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
                 print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
                 self.kVbase  = np.asarray(self.kVbase)
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
@@ -967,7 +969,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
                 return
             if Vmeas_all_phases == 0:
-                print('Didnt receive a measurement for each phase, not acting')
+                print(f'~~~ Didnt receive a measurement for each phase, not running the controller this round')
                 return
             #these are used by the LQR controller
             self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases)
