@@ -86,7 +86,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
             '''
-            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads teh non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+            self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads teh non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -154,7 +154,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Gt = None
 
             assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
-            self.useRelativeMeas = 1 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
+            self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
             self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
             # self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam) old version
         else:
