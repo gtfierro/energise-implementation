@@ -80,7 +80,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0.5670]
 #             ki_mag = [3.4497]
 # =============================================================================
-            
+
             #3.2
             alph = 0.4
             beta = 0.75
@@ -88,7 +88,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             ki_ang = [0.0618*alph,0.0677*alph]
             kp_mag = [0.6901*beta,1.6522*beta]
             ki_mag = [3.46*beta,3.5004*beta]
-            
+
             #3.3
 # =============================================================================
 #             alph = 0.45
@@ -107,7 +107,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 #             kp_mag = [0,0,0]
 #             ki_mag = [0,0,0]
 # =============================================================================
-            
+
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -234,7 +234,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
-        self.mode = 4 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
+        self.mode = 4 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only, mode 4: HIL2 dynamic P and Q control
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
@@ -353,7 +353,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # loops though every reference uPMU reading starting from most recent
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
-                    
+
                     #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
@@ -848,9 +848,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
         log_actuation= {}
-        
+
         log_actuation['phases'] = phases
-        log_actuation['P_cmd'] = P_cmd.tolist() 
+        log_actuation['P_cmd'] = P_cmd.tolist()
         log_actuation['Q_cmd'] = Q_cmd.tolist()
         log_actuation['P_act'] = P_act.tolist()
         log_actuation['Q_act'] = Q_act.tolist()
@@ -869,7 +869,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.iteration_counter > 1:
             print(f'time since last iteration {iterstart-self.iterstart}')
         self.iterstart = pytime.time()
-        
+
         #Initilizes actuators, makes sure you're getting through to them
         if self.iteration_counter == 1:
             pass
@@ -937,7 +937,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 self.Icomp_pu = [np.NaN]*self.nphases
 
-            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
+            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
             (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
@@ -981,10 +981,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
-            
+
             self.Pact_kVA = self.Pact
             self.Qact_kVA = self.Qact
-            
+
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
             print(log_actuation)

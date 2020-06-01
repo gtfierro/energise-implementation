@@ -154,6 +154,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Gt = None
 
             assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
+            self.useRelativeMeas = 1 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
             self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
             # self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam) old version
         else:
@@ -270,7 +271,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
-        self.mode = 1 #Howe we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
+        self.mode = 1 #How we control inverters mode 1: PV as disturbance, mode 2: PV calculated, mode 3: PV only
         self.batt_cmd = np.zeros(nphases) #battery commands are given in watts
         self.invPperc_ctrl = np.zeros(nphases) #inverter P commnads are given as a percentage of inv_s_max
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
@@ -702,7 +703,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
-        if self.mode == 2: #mode 2: PV calculated
+        if self.mode == 2: #mode 2: PV calculated (from previous timestep)
             self.P_PV = Pact - self.batt_cmd #batt_cmd from last round, still in effect
             for i, inv in zip(range(nphases), act_idxs):
                 self.batt_cmd[i] = int(round(Pcmd_VA[i] - self.P_PV[i])) #in mode 2 the battery and PV are controlled jointly
@@ -716,7 +717,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     pf_ctrl = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?Batt_ctrl={self.batt_cmd[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
-        if self.mode == 3: #mode 3: PV only
+        if self.mode == 3: #mode 3: PV only (no battery commands)
             Pcmd_VA = -Pcmd_VA #HERE for inverter control, P is postive into the network (offsets negative at the beginning of this function)
             for i, inv in zip(range(nphases), act_idxs): #HERE make sure act_idxs is working
                 Inv_Pperc_max = 97
@@ -1033,14 +1034,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             elif self.controllerType == 'LQR':
                 # if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #HERE uncomment code in phasorV_calc that makes default measurements NaN rather than previous meas and uncomment this
                 if self.currentMeasExists:
-                    # commented out version is an untested way of running LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-                    # need self.linearizeplant = 1 within LQR eqns, which is the default I think
-                    # fakeVangRef = np.zeros(self.nphases)
-                    # self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
+                        need self.linearizeplant = 1 within LQR eqns, which is the default I think
+                        fakeVangRef = np.zeros(self.nphases)
+                        self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    else:
+                        self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    # self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
+                    if self.useRelativeMeas:
+                        self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    else:
+                        self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
@@ -1062,7 +1066,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             if self.actType == 'inverter':
-                if self.currentMeasExists or self.mode == 3:
+                if self.currentMeasExists or self.mode == 3 or self.mode == 4:
                     '''
                     COMMENTED OUT FOR CIL TESTING
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
@@ -1076,7 +1080,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
-                    disp('couldnt send commands because no current measurement available')
+                    disp('couldnt send commands because no current measurement available') #HERE what?
             elif self.actType == 'load':
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
