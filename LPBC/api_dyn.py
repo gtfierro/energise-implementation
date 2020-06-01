@@ -9,7 +9,7 @@ VARtoPerc = 100/5000
 
 Pcmd_perc_phase = 1000*WtoPerc
 Qcmd_perc_phase = 100*VARtoPerc
-inv = 1
+inv_ls = [1,2,3]
 
 loop = 0
     
@@ -19,17 +19,19 @@ t0 = time.time()
 # INVERTER
 
 if loop == 0:
-
-    # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
-    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-    # command = 'http://flexgrid-s1.dhcp.lbl.gov:9090/status'
-    print(command)
-
-    r = requests.get(command)
     
-    print(f'time to execute: {time.time()-t0}')
-    print(r.status_code)
-    print('api cmd:', command, dt.datetime.now())
+    for inv in inv_ls:
+
+        # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+        command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+        # command = 'http://flexgrid-s1.dhcp.lbl.gov:9090/status'
+        print(command)
+
+        r = requests.get(command)
+        
+        print(f'time to execute: {time.time()-t0}')
+        print(r.status_code)
+        print('api cmd:', command, dt.datetime.now())
 
 # CHANGE TO PARALLEL HTTP COMMANDS    
 # if loop == 1:
