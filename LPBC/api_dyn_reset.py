@@ -50,7 +50,7 @@ t0 = time.time()
 # Quadrant 4: P inject, Q inject
 
 inv_act_idxs_registers = [101,102,103] #input inverters format: [101], [101,102,103], ... so on...
-quadrant = 1 # see above for quadrant convention
+quadrant = 2 # see above for quadrant convention
 id = 3
 
 

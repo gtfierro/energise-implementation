@@ -722,16 +722,22 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # Quadrant 2: P inject, Q consume
             # Quadrant 3: P consume, Q inject
             # Quadrant 4: P inject, Q inject
+            # old ^
+            # new (6/1/20)
+            # 4: +P, -Q (for model: P inj, Q cons)
+            # 3: -P, -Q (for model: P cons, Q cons)
+            # 2: +P, +Q (for model: P inj, Q inj)
+            # 1: -P, +Q (for model: P cons, Q inj)
 
             for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
                 if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 4
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
-                    value[j] = 3
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 1
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
                     value[j] = 2
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+                    value[j] = 1
+                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+                    value[j] = 3
+                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+                    value[j] = 4
             try:
 
                 for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
