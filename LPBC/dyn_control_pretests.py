@@ -28,7 +28,7 @@ if testID == 'manual':
 
     # inverter values:
     Pcmd_perc_phase = 500*WtoPerc
-    Qcmd_perc_phase = 500*VARtoPerc
+    Qcmd_perc_phase = 100*VARtoPerc
     inv = 1
 
     enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
