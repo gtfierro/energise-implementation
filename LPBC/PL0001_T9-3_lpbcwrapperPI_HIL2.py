@@ -259,7 +259,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.flexgrid = Flexgrid_API(inv_ids=[1, 2, 3], portNames=['COM3'], baudrate=115200, parallel=False, safety=True,
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
-        self.inv_Qmax = 7000 #check with Maxime
+        self.inv_Qmax = 5000 #check with Maxime
 
         IP = '131.243.41.14'
         PORT = 504
@@ -625,11 +625,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
                 if Pcmd_perc[i] > 50:
                     Pcmd_perc[i] = 50
-                if Pcmd_perc[i] < 0.002:
-                    Pcmd_perc[i] = 0.002
+                if Pcmd_perc[i] < 0.1:
+                    Pcmd_perc[i] = 0.1
             for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
                 if Qcmd_perc[j] > 50:
                     Qcmd_perc[j] = 50
+                if Qcmd_perc[j] < 0.1:
+                    Qcmd_perc[j] = 0.1
             print(f'Pcmd_perc: {Pcmd_perc}')
             print(f'Qcmd_perc: {Qcmd_perc}')
             # Debugging section
