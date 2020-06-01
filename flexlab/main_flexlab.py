@@ -61,18 +61,12 @@ functions from ORT_modbus_energise:
 
 # In[settings]:
 
-# settings...
-
-#should input option for choosing feeder such that the correct excel sheet is selected?
-#currently only set up for 13NF_bal
-# feeder =
-# Choose from [13NF_bal, 13NF_unbal]
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL_switch_matrix_13NF_unbal_CIL.xlsx'
+filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
 filepath = pathname+filename
 
 
-test_ID = 'T8.1' # which test case you want to run
+test_ID = 'T3.3' # which test case you want to run
 sim_length_min = 50 # amount of time to record for in minutes
 # In[run]:
 
