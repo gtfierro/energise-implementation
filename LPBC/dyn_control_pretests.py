@@ -5,7 +5,7 @@ import datetime as dt
 import sys
 
 # manual, Q_control_1, Q_floating_1, Q_floating_2, debug
-testID = 'manual' 
+testID = 'Q_floating_1' 
 
 WtoPerc = 100/7000
 VARtoPerc = 100/5000
