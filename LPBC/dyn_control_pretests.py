@@ -27,7 +27,7 @@ def enforce_limits(Pcmd,Qcmd):
 if testID == 'manual':
 
     # inverter values:
-    Pcmd_perc_phase = 500*WtoPerc
+    Pcmd_perc_phase = 50*WtoPerc
     Qcmd_perc_phase = 50*VARtoPerc
     inv = 1
 
