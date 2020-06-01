@@ -4,7 +4,10 @@ import time
 import datetime as dt
 
 # inverter values:
-Pcmd_perc_phase = 15.
+WtoPerc = 100/7000
+
+Pcmd_perc_phase = 500*WtoPerc
+Pcmd_perc_phase = 100*WtoPerc
 inv = 1
 
 loop = 0
@@ -16,7 +19,8 @@ t0 = time.time()
 
 if loop == 0:
 
-    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+    # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
     # command = 'http://flexgrid-s1.dhcp.lbl.gov:9090/status'
     print(command)
 
