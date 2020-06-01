@@ -20,7 +20,7 @@ client = ModbusClient(IP, port=PORT)
 # inverter values:
 Pcmd_perc_phase = 0.5 # set to 0.5% of inv max (set to 7000W by Maxime from Flexlab) = 35 W ; do not go to 0% unless OK
 Qcmd_perc_phase = 1 # set Q to zero
-inv = [1] #input inverters [1], [1,2,3], ... so on...
+inv = [1,2,3] #input inverters [1], [1,2,3], ... so on...
 
 t0 = time.time()
 
