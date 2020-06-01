@@ -8,7 +8,7 @@ WtoPerc = 100/7000
 VARtoPerc = 100/5000
 
 Pcmd_perc_phase = 1000*WtoPerc
-Qcmd_perc_phase = 100*VARtoPerc
+Qcmd_perc_phase = 1000*VARtoPerc
 inv_ls = [1,2,3]
 
 loop = 0
@@ -19,7 +19,7 @@ t0 = time.time()
 # INVERTER
 
 if loop == 0:
-    
+
     for inv in inv_ls:
 
         # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
