@@ -8,7 +8,7 @@ WtoPerc = 100/7000
 VARtoPerc = 100/5000
 
 Pcmd_perc_phase = 200*WtoPerc
-Qcmd_perc_phase = 200*VARtoPerc
+Qcmd_perc_phase = 150*VARtoPerc
 inv_ls = [1,2,3]
 
 loop = 0
