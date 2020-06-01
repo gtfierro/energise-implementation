@@ -776,8 +776,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
         Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
-            print('Opal Pcmd_VA[phase] : ' + str(Pcmd_VA[phase]))
-            print('Opal Qcmd_VA[phase] : ' + str(Qcmd_VA[phase]))
+            print(f'Opal Pcmd_VA[{phase}] : ' + str(Pcmd_VA[phase]))
+            print(f'Opal Qcmd_VA[{phase}] : ' + str(Qcmd_VA[phase]))
             print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
             if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
                 print('Pcmd over Opal limit')
@@ -952,6 +952,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('self.localkVbase : ' + str(self.localkVbase))
 
                 if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
+                    print('SETTING Zeffkestinit with Zbase calculated using network_kVAbase received from SPBC')
                     Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
                     Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
                     self.ZeffkestinitHasNotBeenInitialized = 0
