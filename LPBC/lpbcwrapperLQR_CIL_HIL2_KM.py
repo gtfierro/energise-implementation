@@ -1045,7 +1045,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
 
             print('Zeffkest bus ' + str(self.busId) + ' : ' + str(Zeffkest))
-            print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-ZeffkTruDict[key])))
+            print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-self.ZeffkTru)))
             print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
             #in case you want to save and plot the Zeff error:
             ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
