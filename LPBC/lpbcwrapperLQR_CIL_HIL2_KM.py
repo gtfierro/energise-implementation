@@ -86,7 +86,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
             '''
-            self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads teh non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -140,10 +140,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .999 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
-            lam = .95
-            # lam = .5
+            # lam = .95
+            lam = .5
             # GtInitScale = 1
             GtInitScale = 10
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
@@ -266,6 +266,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         #Flexlab specific commands
         self.currentMeasExists = currentMeasExists
+        self.currentMeasExists = 0 #HHHERE set to 0 in order to run Zest in CIL test
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.loadrack_manuallimit = 1500.
         self.batt_max = 3300.
@@ -1072,7 +1073,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             if self.actType == 'inverter':
-                if self.currentMeasExists or self.mode == 3 or self.mode == 4:
+                if self.currentMeasExists or self.mode == 3 or self.mode == 4 or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually 
                     '''
                     COMMENTED OUT FOR CIL TESTING
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
