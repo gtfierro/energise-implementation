@@ -177,7 +177,7 @@ class LQRcontroller:
                 Icomp = None
             else:
                 Icomp = np.asmatrix(IcompArray)
-        elif self.onesaturated == 0 and all(self.PcommandPrev > self.powerThresholdForIcompEst) and all(self.QcommandPrev > self.powerThresholdForIcompEst):
+        elif self.onesaturated == 0 and all(np.abs(self.PcommandPrev) > self.powerThresholdForIcompEst) and all(np.abs(self.QcommandPrev) > self.powerThresholdForIcompEst):
             # the actuators arent saturated (so the estimation of the current meas from the power command is legit)
             Icomp_est = self.phasorI_estFromScmd(Vcomp, self.PcommandPrev, self.QcommandPrev)
             Icomp = np.asmatrix(Icomp_est)
