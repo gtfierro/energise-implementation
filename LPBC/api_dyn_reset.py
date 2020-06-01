@@ -26,25 +26,34 @@ t0 = time.time()
 
 #~~~~~~~~~~~
 # INVERTER
-for i in inv:
+# for i in inv:
     
-    # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={i}"
-    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={i}"
-    print(command)
-    r = requests.get(command)
-    print(f'time to execute one command: {time.time()-t0}')
-    print(r.status_code)
-    print('api cmd:', command, dt.datetime.now())
+#     # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={i}"
+#     command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={i}"
+#     print(command)
+#     r = requests.get(command)
+#     print(f'time to execute one command: {time.time()-t0}')
+#     print(r.status_code)
+#     print('api cmd:', command, dt.datetime.now())
 
-print(f'time to execute API: {time.time()-t0}')
+# print(f'time to execute API: {time.time()-t0}')
 
 
 # inverter 1 (phaseA) = 101
 # inverter 2 (phaseB)= 102
 # inverter 3 (phaseC) = 103
-inv_act_idxs_registers = [101] #input inverters format: [101], [101,102,103], ... so on...
-quadrant = 3 # see above for quadrant convention
+
+# FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
+# Quadrant 1: P consume, Q consume
+# Quadrant 2: P inject, Q consume
+# Quadrant 3: P consume, Q inject
+# Quadrant 4: P inject, Q inject
+
+inv_act_idxs_registers = [101,102,103] #input inverters format: [101], [101,102,103], ... so on...
+quadrant = 4 # see above for quadrant convention
 id = 3
+
+
 
 t1 = time.time()
 try:
