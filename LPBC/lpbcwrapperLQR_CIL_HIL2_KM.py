@@ -390,7 +390,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         ref_time_index = [np.NaN]*nphases
         #HERE
         Vang_notRelative = [np.NaN]*nphases
-        self.VangRef = [np.NaN]*nphases
+        VangRef = [np.NaN]*nphases
         Vang_relative = [np.NaN]*nphases
         Vmag = [np.NaN]*nphases
         VmagRef = [np.NaN]*nphases
@@ -436,7 +436,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
                         # # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
                         # # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
-                        #HERE
+                        #uncomment above and change the return statement if you want the default to be to use the previous V measurment when V measurements are not successfully calculated for each phase
                         Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
                         Vmag[phase] = V_mag_local
                         VmagRef[phase] = V_mag_ref
