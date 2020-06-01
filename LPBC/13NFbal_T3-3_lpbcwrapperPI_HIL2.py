@@ -583,12 +583,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
-            print(f'PCMD_VA: {Pcmd_VA}')
-            print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            print(f'PCMD_VA: {Pcmd_VA}')
+            print(f'QCMD_VA: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
                 if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
                     Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
@@ -598,8 +598,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
+            Pcmd_perc = Pcmd_VA / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = Qcmd_VA / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
                 if Pcmd_perc[i] > 50:
@@ -630,7 +631,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
-                inv = inv.item()  # changes data type
+                if type(inv) != int:
+                    inv = inv.item()  # changes data type
                 urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase}, dyn_Q_ctrl={Qcmd_perc_phase}, inv_id={inv}")
 
         responses = map(session.get, urls)
