@@ -1026,7 +1026,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 self.Icomp_pu = [np.NaN]*self.nphases
                 #havent built checkSaturationWoImeas yet
-                self.sat_arrayP, self.sat_arrayQ = checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
+                self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
 
             #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
             (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
