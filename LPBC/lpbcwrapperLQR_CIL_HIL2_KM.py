@@ -965,11 +965,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
             (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            if any(np.isnan(self.Vang_relative)):
-                print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
-                return
+            # if any(np.isnan(self.Vang_relative)):
             if Vmeas_all_phases == 0:
-                print(f'~~~ Didnt receive a measurement for each phase, not running the controller this round')
+                # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
+                print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round.')
                 return
             #these are used by the LQR controller
             self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases)
