@@ -8,6 +8,7 @@ import sys
 testID = 'manual' 
 
 WtoPerc = 100/7000
+VARtoPerc = 100/5000
 t0 = time.time()
 
 def enforce_limits(Pcmd,Qcmd):
@@ -27,7 +28,7 @@ if testID == 'manual':
 
     # inverter values:
     Pcmd_perc_phase = 500*WtoPerc
-    Qcmd_perc_phase = 50*WtoPerc
+    Qcmd_perc_phase = 500*VARtoPerc
     inv = 1
 
     enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
