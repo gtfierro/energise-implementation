@@ -941,6 +941,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
                 print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
                 print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
+                print('calcualted Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
                 print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
                 self.kVbase  = np.asarray(self.kVbase)
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
@@ -953,8 +954,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('self.localkVbase : ' + str(self.localkVbase))
 
                 if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
-                    print('SETTING Zeffkestinit with Zbase calculated using network_kVAbase received from SPBC')
                     Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
+                    print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
                     Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
                     self.ZeffkestinitHasNotBeenInitialized = 0
 

@@ -179,41 +179,37 @@ SPBCfolderPath = os.getcwd() + '/SPBC/'
 os.chdir(baseDirectory) #put directory back to LPBC folder
 # print(os.getcwd())
 
-'IEEE13_UNBALANCED'
-# filepath = SPBCfolderPath + "IEEE13/"
-# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-# loadfolder = SPBCfolderPath + "IEEE13/"
-# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
-# feederID = 'IEEE13'
-# testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
-#13unb needs transphase in serup_noload.py to be 3phase
+'IEEE13_UNBALANCED' #13unb needs transphase in setup_noload.py to be 3phase
+filepath = SPBCfolderPath + "IEEE13/"
+modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+loadfolder = SPBCfolderPath + "IEEE13/"
+loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+feederID = 'IEEE13'
+testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
 
-'IEEE13_BALANCED'
+'IEEE13_BALANCED' #13bal needs transphase in setup_noload.py to be 3phase
 # filepath = SPBCfolderPath + "IEEE13_bal/"
 # modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
 # loadfolder = SPBCfolderPath + "IEEE13_bal/"
 # loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 # feederID = 'IEEE13'
 # testcase = '13bal'
-#13bal needs transphase in serup_noload.py to be 3phase
 
-'33NF'
+'33NF' #33 needs transphase in setup_noload.py to be 3phase
 # filepath = SPBCfolderPath + "33/"
 # modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
 # loadfolder = SPBCfolderPath + "33/"
 # loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 # feederID = 'UCB33'
 # testcase = '33'
-#33 needs transphase in serup_noload.py to be 3phase
 
-'PL0001'
-filepath = SPBCfolderPath + "PL0001/"
-modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
-loadfolder = SPBCfolderPath + "PL0001/"
-loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
-feederID = 'PL0001'
-testcase = 'PL0001'
-#PL0001 needs transphase in serup_noload.py to be multiphase
+'PL0001' # PL0001 needs transphase in setup_noload.py to be multiphase
+# filepath = SPBCfolderPath + "PL0001/"
+# modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
+# loadfolder = SPBCfolderPath + "PL0001/"
+# loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
+# feederID = 'PL0001'
+# testcase = 'PL0001'
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 if feederID == 'IEEE13':
@@ -226,41 +222,41 @@ if feederID == 'PL0001':
     subkVbase_phg = 12.6/np.sqrt(3)
     subkVAbase = 1500.
 
-# the SPBC (Jaspers main_run_3.py code) doesnt divide subkVAbase by 3?
+# the SPBC (Jaspers main_run_3.py code) doesnt divide subkVAbase by 3? Think it does actaully.
+subkVAbase = subkVAbase/3
 modeldata = pd.ExcelFile(modelpath)
 actpath = loadpath
 
 ################# Dummy Vars to make a Feeder ######################
 timesteps = 1
-timestepcur = 0
-
-#[HIL] - input constnats for PV forecasting
-PV_on = False # True for ON
-PVnodes = ['671','680']
-
-PVforecast = {}
-PVforecast['on_off'] = PV_on
-for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
-    PVforecast[node] = {}
-    PVforecast[node]['on_off'] = PV_on
-    PVforecast[node]['lat'] = 37.87
-    PVforecast[node]['lon'] = -122
-    PVforecast[node]['maridian'] = -120
-    PVforecast[node]['PVfrac'] = 0.3
-
-refphasor = np.ones((3,2))
-refphasor[:,0]=1
-refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
-
-Psat_nodes = []
-Qsat_nodes = []
+# timestepcur = 0
+#
+# #[HIL] - input constnats for PV forecasting
+# PV_on = False # True for ON
+# PVnodes = ['671','680']
+#
+# PVforecast = {}
+# PVforecast['on_off'] = PV_on
+# for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
+#     PVforecast[node] = {}
+#     PVforecast[node]['on_off'] = PV_on
+#     PVforecast[node]['lat'] = 37.87
+#     PVforecast[node]['lon'] = -122
+#     PVforecast[node]['maridian'] = -120
+#     PVforecast[node]['PVfrac'] = 0.3
+#
+# refphasor = np.ones((3,2))
+# refphasor[:,0]=1
+# refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
+#
+# Psat_nodes = []
+# Qsat_nodes = []
 ###############################################################
 #####################
 # Create feeder object
 myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,subkVbase_phg,subkVAbase)
-#HERE feeder doestn actually put the shunt portion of the line impedances on the network (bdict doesnt go anywhere)
+#HERE feeder doesnt actually put the shunt portion of the line impedances on the network (bdict doesnt go anywhere)
 # myfeeder = feeder(modelpath,loadfolder,loadpath,actpath,timesteps,timestepcur, subkVbase_phg,subkVAbase,refphasor,Psat_nodes,Qsat_nodes,PVforecast)
-
 
 # pprint(vars(myfeeder)) #pprint does help here
 
