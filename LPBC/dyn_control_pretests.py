@@ -5,7 +5,7 @@ import datetime as dt
 import sys
 
 # manual, Q_control_1, Q_floating_1, Q_floating_2, debug
-testID = 'manual' 
+testID = 'Q_floating_1' 
 
 WtoPerc = 100/7000
 VARtoPerc = 100/5000
@@ -68,7 +68,7 @@ if testID == 'Q_floating_1':
         enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
         for inv in inv_list:
             if itr != 0:
-                time.sleep(10)
+                time.sleep(15)
             t0 = time.time()
             # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
             command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
