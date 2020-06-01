@@ -1048,8 +1048,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-self.ZeffkTru)))
             print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
             #in case you want to save and plot the Zeff error:
-            ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
-            GtMag.append(np.linalg.norm(Gt))
+            self.ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
+            self.GtMag.append(np.linalg.norm(Gt))
 
             #HHERE debugging
             # self.Pcmd_pu[1] = 0
