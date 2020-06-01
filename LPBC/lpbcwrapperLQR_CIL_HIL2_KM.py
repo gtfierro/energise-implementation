@@ -1035,7 +1035,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #HERE uncomment code in phasorV_calc that makes default measurements NaN rather than previous meas and uncomment this
                 if self.currentMeasExists:
                     if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-                        need self.linearizeplant = 1 within LQR eqns, which is the default I think
+                        # need self.linearizeplant = 1 within LQR eqns, which is the default I think
                         fakeVangRef = np.zeros(self.nphases)
                         self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                     else:
