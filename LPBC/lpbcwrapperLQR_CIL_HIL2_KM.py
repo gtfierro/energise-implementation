@@ -943,7 +943,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
                 print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
                 print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
-                print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
+                # print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
                 print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
                 self.kVbase  = np.asarray(self.kVbase)
                 self.network_kVAbase = np.asarray(self.network_kVAbase)
