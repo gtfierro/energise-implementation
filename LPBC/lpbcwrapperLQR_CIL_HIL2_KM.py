@@ -389,12 +389,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
         #HERE
-        Vang_notRelative = [np.NaN]*nphases
-        VangRef = [np.NaN]*nphases
-        Vang_relative = [np.NaN]*nphases
-        Vmag = [np.NaN]*nphases
-        VmagRef = [np.NaN]*nphases
-        Vmag_relative = [np.NaN]*nphases
+        Vang_notRelative = np.asarray([np.NaN]*nphases)
+        VangRef = np.asarray([np.NaN]*nphases)
+        Vang_relative = np.asarray([np.NaN]*nphases)
+        Vmag = np.asarray([np.NaN]*nphases)
+        VmagRef = np.asarray([np.NaN]*nphases)
+        Vmag_relative = np.asarray([np.NaN]*nphases)
 
         # V_ang_ref_firstPhase = [np.NaN]
         V_ang_ref_firstPhase = [np.NaN]*nphases #using this for back-compatibility
