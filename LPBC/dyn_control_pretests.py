@@ -27,8 +27,8 @@ def enforce_limits(Pcmd,Qcmd):
 if testID == 'manual':
 
     # inverter values:
-    Pcmd_perc_phase = 500*WtoPerc
-    Qcmd_perc_phase = 100*VARtoPerc
+    Pcmd_perc_phase = 50*WtoPerc
+    Qcmd_perc_phase = 50*VARtoPerc
     inv = 1
 
     enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
@@ -43,7 +43,7 @@ if testID == 'manual':
 
 if testID == 'Q_control_1':
     Pcmd_perc_phase = 500*WtoPerc
-    Qcmd_perc_phase_list = np.array([50,100,250,500,750,1000])*WtoPerc
+    Qcmd_perc_phase_list = np.array([50,100,250,500,750,1000])*VARtoPerc
     inv_list = [1]
     for itr in range(len(Qcmd_perc_phase_list)):
         Qcmd_perc_phase = Qcmd_perc_phase_list[itr]
@@ -61,14 +61,14 @@ if testID == 'Q_control_1':
 
 if testID == 'Q_floating_1':
     Pcmd_perc_phase_list = np.array([50,100,250,500,750,1000])*WtoPerc
-    Qcmd_perc_phase = 50*WtoPerc
+    Qcmd_perc_phase = 50*VARtoPerc
     inv_list = [1]
     for itr in range(len(Pcmd_perc_phase_list)):
         Pcmd_perc_phase = Pcmd_perc_phase_list[itr]
         enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
         for inv in inv_list:
             if itr != 0:
-                time.sleep(15)
+                time.sleep(10)
             t0 = time.time()
             # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
             command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
@@ -79,14 +79,14 @@ if testID == 'Q_floating_1':
 
 if testID == 'Q_floating_2':
     Pcmd_perc_phase_list = np.array([50,100,250,500,750,1000])* 2 * WtoPerc
-    Qcmd_perc_phase = 50*WtoPerc
+    Qcmd_perc_phase = 50*VARtoPerc
     inv_list = [1]
     for itr in range(len(Pcmd_perc_phase_list)):
         Pcmd_perc_phase = Pcmd_perc_phase_list[itr]
         enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
         for inv in inv_list:
             if itr != 0:
-                time.sleep(5)
+                time.sleep(15)
             t0 = time.time()
             # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
             command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
