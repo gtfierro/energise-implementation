@@ -265,7 +265,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
 
         #Flexlab specific commands
-        self.currentMeasExists = currentMeasExists
+        # self.currentMeasExists = currentMeasExists
         self.currentMeasExists = 0 #HHHERE set to 0 in order to run Zest in CIL test
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.loadrack_manuallimit = 1500.
