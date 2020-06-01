@@ -265,8 +265,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
 
         #Flexlab specific commands
-        # self.currentMeasExists = currentMeasExists
-        self.currentMeasExists = 0 #HHHERE set to 0 in order to run Zest in CIL test
+        self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
         self.loadrack_manuallimit = 1500.
         self.batt_max = 3300.
@@ -1362,6 +1361,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         error('actType Error')
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
+    currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
 
 run_loop() #defined in XBOSProcess
