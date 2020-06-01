@@ -27,14 +27,14 @@ def enforce_limits(Pcmd,Qcmd):
 if testID == 'manual':
 
     # inverter values:
-    Pcmd_perc_phase = 50*WtoPerc
+    Pcmd_perc_phase = 500*WtoPerc
     Qcmd_perc_phase = 50*VARtoPerc
     inv = 1
 
     enforce_limits(Pcmd_perc_phase,Qcmd_perc_phase)
 
-    # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
-    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+    command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}"
+    # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
     # command = 'http://flexgrid-s1.dhcp.lbl.gov:9090/status'
     r = requests.get(command) 
     print(f'time to execute: {time.time()-t0}')
