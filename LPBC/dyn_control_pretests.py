@@ -50,11 +50,11 @@ if testID == 'Q_control_1':
             if itr != 0:
                 time.sleep(5)
             t0 = time.time()
-            command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # r = requests.get(command)
-            # print(f'time to execute: {time.time()-t0}')
-            # print(r.status_code)
+            # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            r = requests.get(command)
+            print(f'time to execute: {time.time()-t0}')
+            print(r.status_code)
             print('api cmd:', command, dt.datetime.now())
 
 if testID == 'Q_floating_1':
@@ -68,11 +68,11 @@ if testID == 'Q_floating_1':
             if itr != 0:
                 time.sleep(5)
             t0 = time.time()
-            command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # r = requests.get(command)
-            # print(f'time to execute: {time.time()-t0}')
-            # print(r.status_code)
+            # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            r = requests.get(command)
+            print(f'time to execute: {time.time()-t0}')
+            print(r.status_code)
             print('api cmd:', command, dt.datetime.now())
 
 if testID == 'Q_floating_2':
@@ -86,11 +86,11 @@ if testID == 'Q_floating_2':
             if itr != 0:
                 time.sleep(5)
             t0 = time.time()
-            command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
-            # r = requests.get(command)
-            # print(f'time to execute: {time.time()-t0}')
-            # print(r.status_code)
+            # command = f"control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            command = f"http://flexgrid-s1.dhcp.lbl.gov:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}"
+            r = requests.get(command)
+            print(f'time to execute: {time.time()-t0}')
+            print(r.status_code)
             print('api cmd:', command, dt.datetime.now())
 
 
