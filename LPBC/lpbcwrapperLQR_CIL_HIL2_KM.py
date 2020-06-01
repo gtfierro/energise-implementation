@@ -72,7 +72,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
-
             '''
             kV and kVA base are recieved in targetExtraction, which is called by step.
             when LPBC is created, step hasnt been called yet.
@@ -103,6 +102,18 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zeffk_df = Zeffk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zeffk_init = np.asmatrix(Zeffk_df.values)
 
+            #for logging Zeff estimation error
+            self.ZeffkError = []
+            self.GtMag = []
+            if self.usingNonpuZeff == 0:
+                self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR presumably doesnt know ZeffkTru
+            #else wait till Zbase is received
+
+            #for testing the Zeffestimator
+            # self.Zeffk_init_mult = .5
+            self.Zeffk_init_mult = 1
+            Zeffk_init = Zeffk_init*self.Zeffk_init_mult
+            # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
             ######################## LQR Controller Parameters #######################
             #General controller parameters
             linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
@@ -136,11 +147,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # GtInitScale = 1
             GtInitScale = 10
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
-
-            # #for testing the Zeffestimator
-            # Zeffk_init_mult = .5
-            # Zeffk_init = Zeffk_init*Zeffk_init_mult
-            # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
 
             if est_Zeffk:
                 Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
@@ -947,7 +953,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                 if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
                     Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
-                    self.controller.setZeffandZeffkestinitWnewZbase(Zbase)
+                    Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
                     self.ZeffkestinitHasNotBeenInitialized = 0
 
             # calculate relative voltage phasor
@@ -1029,14 +1035,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     # commented out version is an untested way of running LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
                     # need self.linearizeplant = 1 within LQR eqns, which is the default I think
                     # fakeVangRef = np.zeros(self.nphases)
-                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    # self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    # (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
+                    # self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+
+            print('Zeffkest bus ' + str(self.busId) + ' : ' + str(Zeffkest))
+            print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-ZeffkTruDict[key])))
+            print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
+            #in case you want to save and plot the Zeff error:
+            ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
+            GtMag.append(np.linalg.norm(Gt))
 
             #HHERE debugging
             # self.Pcmd_pu[1] = 0
@@ -1331,7 +1344,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         cfg['rate'] = rate
         cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
         cfg['reference_channels'] = list(refChannels[pmu0_plugs_dict[key]]) #made these back into lists in case thats how gabes code expects it
-        currentMeasExists = True
+        currentMeasExists = False
         localSratio = CILscaling
     else:
         error('actType Error')

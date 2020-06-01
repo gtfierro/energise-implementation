@@ -78,13 +78,14 @@ class LQRcontroller:
         return
 
 
-    def setZeffandZeffkestinitWnewZbase(self,Zbase):
-        self.Zeffkestinit = self.ZeffkestinitNonPu/Zbase
-        self.Zeffkest = self.ZeffkestinitNonPu/Zbase
+    def setZeffandZeffkestinitWnewZbase(self,Zbase,Zeffk_init_mult):
+        ZeffkTru = self.ZeffkestinitNonPu/Zbase #ZeffkestTru is not stored by LQR controller bc the controlelr presumably doesnt know ZeffkestTru
+        self.Zeffkestinit = ZeffkTru*Zeffk_init_mult
+        self.Zeffkest = self.Zeffkestinit
         # (self.A, self.B, self.Babbrev) = self.makeABmatrices(self.Zeffkest,self.timesteplength)
         (self.A, self.B, self.Babbrev) = self.makeABmatrices(np.asarray(self.Zeffkest),self.timesteplength) #not sure the asarray is necessary..
         self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
-        return
+        return self.Zeffkestinit, ZeffkTru
 
 
     def makeABmatrices(self,Zeffk,timesteplength):
