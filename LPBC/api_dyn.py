@@ -7,7 +7,9 @@ import datetime as dt
 WtoPerc = 100/7000
 VARtoPerc = 100/5000
 
-Pcmd_perc_phase = 1000*WtoPerc
+cons_P_offset = 1000*WtoPerc
+
+Pcmd_perc_phase = 150*WtoPerc # + cons_P_offset
 Qcmd_perc_phase = 150*VARtoPerc
 inv_ls = [1,2,3]
 
