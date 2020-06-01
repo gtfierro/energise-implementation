@@ -633,7 +633,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
                 if type(inv) != int:
                     inv = inv.item()  # changes data type
-                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase}, dyn_Q_ctrl={Qcmd_perc_phase}, inv_id={inv}")
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
@@ -1204,7 +1204,7 @@ inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 5
+rate = 20
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
