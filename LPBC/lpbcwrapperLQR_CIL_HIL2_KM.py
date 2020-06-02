@@ -880,9 +880,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         for phase in range(nphases):
             if abs(Vang[phase]) > np.radians(max_degrees):
                 if Vang[phase] > 0:
+                    print(f'Vang[phase] = {Vang[phase]}')
                     Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
                 elif Vang[phase] < 0:
+                    print(f'Vang[phase] = {Vang[phase]}')
                     Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
