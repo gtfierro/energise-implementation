@@ -180,20 +180,20 @@ os.chdir(baseDirectory) #put directory back to LPBC folder
 # print(os.getcwd())
 
 'IEEE13_UNBALANCED' #13unb needs transphase in setup_noload.py to be 3phase
-filepath = SPBCfolderPath + "IEEE13/"
-modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-loadfolder = SPBCfolderPath + "IEEE13/"
-loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
-feederID = 'IEEE13'
-testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
+# filepath = SPBCfolderPath + "IEEE13/"
+# modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+# loadfolder = SPBCfolderPath + "IEEE13/"
+# loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+# feederID = 'IEEE13'
+# testcase = '13unb' #testcase needs to match the textcase in lpbcwrapper so that the LQR controller can find the right network model
 
 'IEEE13_BALANCED' #13bal needs transphase in setup_noload.py to be 3phase
-# filepath = SPBCfolderPath + "IEEE13_bal/"
-# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-# loadfolder = SPBCfolderPath + "IEEE13_bal/"
-# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
-# feederID = 'IEEE13'
-# testcase = '13bal'
+filepath = SPBCfolderPath + "IEEE13_bal/"
+modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+loadfolder = SPBCfolderPath + "IEEE13_bal/"
+loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+feederID = 'IEEE13'
+testcase = '13bal'
 
 '33NF' #33 needs transphase in setup_noload.py to be 3phase
 # filepath = SPBCfolderPath + "33/"

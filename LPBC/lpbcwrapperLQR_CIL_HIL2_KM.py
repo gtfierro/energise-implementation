@@ -71,7 +71,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
 
         elif self.controllerType == 'LQR':
-            #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
+            #If just LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             '''
             kV and kVA base are recieved in targetExtraction, which is called by step.
             when LPBC is created, step hasnt been called yet.
@@ -110,8 +110,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #else wait till Zbase is received
 
             #for testing the Zeffestimator
-            self.Zeffk_init_mult = .5
-            # self.Zeffk_init_mult = 1
+            # self.Zeffk_init_mult = .5
+            self.Zeffk_init_mult = 1
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
             # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
             ######################## LQR Controller Parameters #######################
@@ -140,7 +140,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .999 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             # lam = .95
             lam = .5
