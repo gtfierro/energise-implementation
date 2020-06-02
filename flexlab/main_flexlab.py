@@ -14,7 +14,7 @@ Main for running simulations - used to:
     # initialize run LPBC?
     # send commands to load racks?
     # ...
-    
+
 '''
 # In[imports]:
 
@@ -27,19 +27,19 @@ from ORT_modbus_energise import *
 functions from ORT_modbus_energise:
     ~ set up to copy and paste functions into command line of python console
     ~ need to have run read_sw_mat before sim_start_stop
-    
+
     dfsw_in,dfsw_out = read_sw_mat(filepath)
         ~ read in the sw matrix excel file that has switch configs for each test case on that feeder
         ~ define relative folder in pathname and filename in filename
-    
+
     sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
         ~ sends switch values of associated test_ID [i.e. 'T1.1']
         ~ along with a simulation flag signal of 1 to begin recording data
         ~ at end of sim_time_min [minutes], sends simulation flag of 0 to stop recording data
-        ~ need interpolation 
-    
+        ~ need interpolation
+
     sim_start()
-        ~ sends simulation flag signal of 1  
+        ~ sends simulation flag signal of 1
         ~ starts simulation monitoring and load reading
     sim_stop()
         ~ sends simulation flag signal of 0
@@ -48,23 +48,23 @@ functions from ORT_modbus_energise:
         ~ sends simulation flag signal of 3
         ~ this should pause load at timestep 1
         ~ first column should be deleted or ignored
-        
-        
+
+
     (sending a 2 should pause load reading, if one is passed afterwards, it will continue from this point)
-        
-        
+
+
     datetime function to get datetime from epoch....
         import datetime as dt
         dt.datetime.fromtimestamp(1565048195.416524)
-        
+
 '''
 
 # In[settings]:
 
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
+filename = 'HIL2_switch_matrix_13NF_bal_CILdebug.xlsx'
 filepath = pathname+filename
-
+# filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
 
 test_ID = 'T3.3' # which test case you want to run
 sim_length_min = 5/60 # amount of time to record for in minutes

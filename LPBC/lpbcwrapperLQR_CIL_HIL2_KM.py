@@ -1072,7 +1072,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             if self.actType == 'inverter':
-                if self.currentMeasExists or self.mode == 3 or self.mode == 4 or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
+                if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
                     '''
                     COMMENTED OUT FOR CIL TESTING
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
@@ -1361,7 +1361,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         error('actType Error')
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
-    currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
+    # currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
 
 run_loop() #defined in XBOSProcess
