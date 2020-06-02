@@ -616,12 +616,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 try:
                     self.client.connect()
                     for i in range(len(mtx)):
-                        client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+                        self.client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
                     print(f'sent offsets: {mtx}')        
                 except Exception as e:
                     print(e)        
                 finally:
-                    client.close()
+                    self.client.close()
                 # update inverter command to account for CIL offset
                 offset_steps = self.ORT_max_VA/1000/offset_inc
                 offsetSratio = self.localSratio/offset_steps
