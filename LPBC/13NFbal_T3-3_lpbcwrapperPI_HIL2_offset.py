@@ -244,6 +244,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
+        self.offset_mode = 1 # set to True for offset functionality, False for normal
 
         IP = '131.243.41.14'
         PORT = 504
@@ -589,10 +590,49 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
-            # ADD OFFSET FUNCATIONALITAY
-            
-            
-            
+
+            # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
+            if self.offset_mode == 1 or self.offset_mode == 2:
+                offset_inc = 100
+                CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
+                Pcmd_ORT_VA = Pcmd_VA * self.localSratio
+                Qcmd_ORT_VA = Qcmd_VA * self.localSratio
+                P_offset_inc_idx = Pcmd_ORT_VA // (offset_inc*1000)
+                Q_offset_inc_idx = Qcmd_ORT_VA // (offset_inc*1000)
+                CIL_offset = offset_inc * np.concatenate([P_offset_inc_idx,Q_offset_inc_idx]) # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                mtx = [0] * nphases*2
+                # cap at max offset
+                for i in range(nphases*2):
+                    if CIL_offset[i] > CIL_offset_max:
+                        CIL_offset[i] = CIL_offset_max
+                        if i < 3:
+                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset_max}')
+                        if i >= 3:
+                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset_max}')
+                # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
+                mtx[0:5:2] = CIL_offset[0:3]
+                mtx[1:6:2] = CIL_offset[3:6]
+                mtx_register = np.arange(301,306+1).tolist()
+                try:
+                    self.client.connect()
+                    for i in range(len(mtx)):
+                        client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+                    print(f'sent offsets: {mtx}')        
+                except Exception as e:
+                    print(e)        
+                finally:
+                    client.close()
+                # update inverter command to account for CIL offset
+                offset_steps = self.ORT_max_VA/1000/offset_inc
+                offsetSratio = self.localSratio/offset_steps
+                Pcmd_ORT_VA_rem = Pcmd_ORT_VA - P_offset_inc_idx * offset_inc * 1000
+                Qcmd_ORT_VA_rem = Qcmd_ORT_VA - Q_offset_inc_idx * offset_inc * 1000
+                if self.offset_mode == 1:
+                    Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
+                    Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
+                print('OFFSET COMMANDS:')
+                print(f'Pcmd_rem: {Pcmd_VA}')
+                print(f'Qcmd_rem: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
                 if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
                     Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
@@ -602,8 +642,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            Pcmd_perc = Pcmd_VA / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = Qcmd_VA / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+            # +100 to Q is a constant offset due to hardware measurement error
+            # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
+            # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
+            Pcmd_perc = Pcmd_VA + 1000 / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = Qcmd_VA + 100 / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
 
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
