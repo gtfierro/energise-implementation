@@ -597,8 +597,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
-                P_offset_inc_idx = Pcmd_ORT_VA // (offset_inc*1000)
-                Q_offset_inc_idx = Qcmd_ORT_VA // (offset_inc*1000)
+                P_offset_inc_idx = int(Pcmd_ORT_VA // (offset_inc*1000))
+                Q_offset_inc_idx = int(Qcmd_ORT_VA // (offset_inc*1000))
                 CIL_offset = offset_inc * np.concatenate([P_offset_inc_idx,Q_offset_inc_idx]) # this is a value that gets sent as kW/kVar direct to ORT via modbus
                 mtx = [0] * nphases*2
                 # cap at max offset
@@ -616,7 +616,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 try:
                     self.client.connect()
                     for i in range(len(mtx)):
-                        self.client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
+                        self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
                     print(f'sent offsets: {mtx}')        
                 except Exception as e:
                     print(e)        
@@ -631,6 +631,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
                     Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
                 print('OFFSET COMMANDS:')
+                print(f'offsetSratio: {offsetSratio}')
+                print(f'Offsets: {CIL_offset}')
                 print(f'Pcmd_rem: {Pcmd_VA}')
                 print(f'Qcmd_rem: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
