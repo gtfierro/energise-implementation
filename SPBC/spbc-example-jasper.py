@@ -50,10 +50,11 @@ if constant_phasor == True:
         cons_kVbase = np.ones(3)*(4.16/np.sqrt(3))
         cons_kVAbase = np.ones(3)*5000/3
         if testID == 'T3.3':
-            lpbc_phases = ['a','b','c']
+            # lpbc_phases = ['a','b','c']
+            lpbc_phases = ['a','b']
             lpbc_nodeIDs = ['675']
-            cons_Vmag = [0.97,0.97,0.97]
-            cons_Vang = [0 -1, -120 -1, 120 -1]
+            cons_Vmag = [0.97,0.97]
+            cons_Vang = [0 -1, -120 -1]
             # cons_Vmag = [0.99,0.99,0.99]
             # cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T12.1':
