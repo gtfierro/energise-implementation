@@ -52,8 +52,10 @@ if constant_phasor == True:
         if testID == 'T3.3':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['675']
-            cons_Vmag = [0.99,0.99,0.99]
+            cons_Vmag = [0.96,0.96,0.96]
             cons_Vang = [0 -1, -120 -1, 120 -1]
+            # cons_Vmag = [0.99,0.99,0.99]
+            # cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T12.1':
             lpbc_phases = ['a']
             lpbc_nodeIDs = ['671']
