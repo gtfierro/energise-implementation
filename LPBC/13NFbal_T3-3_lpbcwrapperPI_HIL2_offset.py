@@ -682,19 +682,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
-                # if type(inv) != int:
-                #     inv = inv.item()  # changes data type
-                # urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
+                if type(inv) != int:
+                    inv = inv.item()  # changes data type
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
-        # responses = map(session.get, urls)
-        # results = [resp.result() for resp in responses]
-        # for i in range(nphases):
-        #     if results[i].status_code == 200:
-        #         commandReceipt[i] = 'success'
-        #     else:
-        #         commandReceipt[i] = 'failure'
-        # print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        return #commandReceipt
+        responses = map(session.get, urls)
+        results = [resp.result() for resp in responses]
+        for i in range(nphases):
+            if results[i].status_code == 200:
+                commandReceipt[i] = 'success'
+            else:
+                commandReceipt[i] = 'failure'
+        print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
