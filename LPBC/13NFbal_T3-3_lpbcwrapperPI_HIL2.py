@@ -742,21 +742,21 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #         client.close()
         # else:
         #     return
-            'END ORIGINAL IMPLEMENTATION'
+        'END ORIGINAL IMPLEMENTATION'
 
-            # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
-            # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
-            # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
-            # Quadrant 1: P consume, Q consume
-            # Quadrant 2: P inject, Q consume
-            # Quadrant 3: P consume, Q inject
-            # Quadrant 4: P inject, Q inject
-            # old ^
-            # new (6/1/20)
-            # 4: +P, -Q (for model: P inj, Q cons)
-            # 3: -P, -Q (for model: P cons, Q cons)
-            # 2: +P, +Q (for model: P inj, Q inj)
-            # 1: -P, +Q (for model: P cons, Q inj)
+        # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
+        # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
+        # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
+        # Quadrant 1: P consume, Q consume
+        # Quadrant 2: P inject, Q consume
+        # Quadrant 3: P consume, Q inject
+        # Quadrant 4: P inject, Q inject
+        # old ^
+        # new (6/1/20)
+        # 4: +P, -Q (for model: P inj, Q cons)
+        # 3: -P, -Q (for model: P cons, Q cons)
+        # 2: +P, +Q (for model: P inj, Q inj)
+        # 1: -P, +Q (for model: P cons, Q inj)
 
         inv_act_idxs_registers = [inv_1,inv_2,inv_3]
         value = [0] * len(act_idxs)
