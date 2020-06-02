@@ -598,8 +598,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            Pcmd_perc = Pcmd_VA + 1000 / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = Qcmd_VA + 100 / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+            Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = (Qcmd_VA + 100) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
 
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
