@@ -611,8 +611,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if i >= 3:
                             print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset_max}')
                 # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
-                mtx[0:5:2] = CIL_offset[0:3]
-                mtx[1:6:2] = CIL_offset[3:6]
+                mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
+                mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
                 mtx_register = np.arange(301,306+1).tolist()
                 try:
                     self.client.connect()
