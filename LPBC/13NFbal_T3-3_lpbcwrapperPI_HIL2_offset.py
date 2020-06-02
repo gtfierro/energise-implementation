@@ -593,6 +593,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1 or self.offset_mode == 2:
+                id = 3
                 offset_inc = 100
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
@@ -617,7 +618,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.client.connect()
                     for i in range(len(mtx)):
                         print(f'modbus commands: {int(mtx_register[i])}, {int(mtx[i])}')
-                        self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=int(id))
+                        self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
                     print(f'sent offsets: {mtx}')        
                 except Exception as e:
                     print(e)        
