@@ -642,7 +642,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            # +100 to Q is a constant offset due to hardware measurement error
+            # +50 to Q is a constant offset due to hardware measurement error
             # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
             # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
             Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
@@ -678,19 +678,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
-                if type(inv) != int:
-                    inv = inv.item()  # changes data type
-                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
+                # if type(inv) != int:
+                #     inv = inv.item()  # changes data type
+                # urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
-        responses = map(session.get, urls)
-        results = [resp.result() for resp in responses]
-        for i in range(nphases):
-            if results[i].status_code == 200:
-                commandReceipt[i] = 'success'
-            else:
-                commandReceipt[i] = 'failure'
-        print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        return commandReceipt
+        # responses = map(session.get, urls)
+        # results = [resp.result() for resp in responses]
+        # for i in range(nphases):
+        #     if results[i].status_code == 200:
+        #         commandReceipt[i] = 'success'
+        #     else:
+        #         commandReceipt[i] = 'failure'
+        # print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        return #commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
@@ -745,62 +745,43 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         inv_1 = 101
         inv_2 = 102
         inv_3 = 103
-        act_idxs_registers = []
-        pq_changed = []
-        for i, j in zip(range(len(act_idxs)), act_idxs):  # checks to see if any sign changes occured from last command
-            if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
-                act_idxs_registers.append(j)
-                pq_changed.append(i)
-        if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
+    
+        # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
+        # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
+        # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
+        # Quadrant 1: P consume, Q consume
+        # Quadrant 2: P inject, Q consume
+        # Quadrant 3: P consume, Q inject
+        # Quadrant 4: P inject, Q inject
+        # old ^
+        # new (6/1/20)
+        # 4: +P, -Q (for model: P inj, Q cons)
+        # 3: -P, -Q (for model: P cons, Q cons)
+        # 2: +P, +Q (for model: P inj, Q inj)
+        # 1: -P, +Q (for model: P cons, Q inj)
+
+        inv_act_idxs_registers = [inv_1,inv_2,inv_3]
+        value = [0] * len(act_idxs)
+        for i in range(len(act_idxs)):
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
+                value[i] = 2
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+                value[i] = 1
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+                value[i] = 3
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+                value[i] = 4
+        print(f'registers 2: {inv_act_idxs_registers}')
+        print(f'values 2: {value}')
+        try:
             client.connect()
-            value = [0] * len(act_idxs_registers)
-            inv_act_idxs_registers = act_idxs_registers.copy()
-
-            for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
-                if inv_act_idxs_registers[i] == 1:
-                    inv_act_idxs_registers[i] = inv_1
-                elif inv_act_idxs_registers[i] == 2:
-                    inv_act_idxs_registers[i] = inv_2
-                elif inv_act_idxs_registers[i] == 3:
-                    inv_act_idxs_registers[i] = inv_3
-
-            # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
-            # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
-            # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
-            # Quadrant 1: P consume, Q consume
-            # Quadrant 2: P inject, Q consume
-            # Quadrant 3: P consume, Q inject
-            # Quadrant 4: P inject, Q inject
-            # old ^
-            # new (6/1/20)
-            # 4: +P, -Q (for model: P inj, Q cons)
-            # 3: -P, -Q (for model: P cons, Q cons)
-            # 2: +P, +Q (for model: P inj, Q inj)
-            # 1: -P, +Q (for model: P cons, Q inj)
-
-            for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 2
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
-                    value[j] = 1
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 3
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
-                    value[j] = 4
-            try:
-
-                for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
-                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                    print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-
-            except Exception as e:
-                print(e)
-
-            finally:
-                client.close()
-
-        else:
-            return
+            for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+        except Exception as e:
+            print(e)
+        finally:
+            client.close()
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
