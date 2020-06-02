@@ -617,7 +617,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 try:
                     self.client.connect()
                     for i in range(len(mtx)):
-                        print(f'modbus commands: {int(mtx_register[i])}, {int(mtx[i])}')
                         self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
                     print(f'sent offsets: {mtx}')        
                 except Exception as e:
@@ -633,8 +632,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
                     Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
                 print('OFFSET COMMANDS:')
-                print(f'offsetSratio: {offsetSratio}')
-                print(f'Offsets: {CIL_offset}')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_rem: {Pcmd_ORT_VA_rem}')
                 print(f'mtx: {mtx}')
                 print(f'Pcmd_rem: {Pcmd_VA}')
                 print(f'Qcmd_rem: {Qcmd_VA}')
