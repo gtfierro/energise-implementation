@@ -9,7 +9,7 @@ VARtoPerc = 100/5000
 
 cons_P_offset = 1000*WtoPerc
 
-Pcmd_perc_phase = 150*WtoPerc # + cons_P_offset
+Pcmd_perc_phase = 150*WtoPerc + cons_P_offset
 Qcmd_perc_phase = 150*VARtoPerc
 inv_ls = [1,2,3]
 
