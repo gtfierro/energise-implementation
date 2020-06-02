@@ -700,25 +700,49 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         inv_3 = 103
         act_idxs_registers = []
         pq_changed = []
-        for i, j in zip(range(len(act_idxs)), act_idxs):  # checks to see if any sign changes occured from last command
-            if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
-                act_idxs_registers.append(j)
-                pq_changed.append(i)
-        if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
-            client.connect()
-            value = [0] * len(act_idxs_registers)
-            inv_act_idxs_registers = act_idxs_registers.copy()   ## DEBUG? - writing over registers below?
-            print('QUADRANT DEBUGGING:')
-            print(f'registers 1: {inv_act_idxs_registers}')
-            print(f'values 1: {value}')
+        'ORIGINAL IMPLEMENTATION BY LEO BELOW - checking previous values is causing some issues, so rewriting without this'
+        # for i, j in zip(range(len(act_idxs)), act_idxs):  # checks to see if any sign changes occured from last command
+        #     if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
+        #         act_idxs_registers.append(j)
+        #         pq_changed.append(i)
+        # if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
+        #     client.connect()
+        #     value = [0] * len(act_idxs_registers)
+        #     inv_act_idxs_registers = act_idxs_registers.copy()   ## DEBUG? - writing over registers below?
+        #     print('QUADRANT DEBUGGING:')
+        #     print(f'registers 1: {inv_act_idxs_registers}')
+        #     print(f'values 1: {value}')
 
-            for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
-                if inv_act_idxs_registers[i] == 1:
-                    inv_act_idxs_registers[i] = inv_1
-                elif inv_act_idxs_registers[i] == 2:
-                    inv_act_idxs_registers[i] = inv_2
-                elif inv_act_idxs_registers[i] == 3:
-                    inv_act_idxs_registers[i] = inv_3
+        #     for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
+        #         if inv_act_idxs_registers[i] == 1:
+        #             inv_act_idxs_registers[i] = inv_1
+        #         elif inv_act_idxs_registers[i] == 2:
+        #             inv_act_idxs_registers[i] = inv_2
+        #         elif inv_act_idxs_registers[i] == 3:
+        #             inv_act_idxs_registers[i] = inv_3
+
+        #     for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
+        #         if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
+        #             value[j] = 2
+        #         if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+        #             value[j] = 1
+        #         if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+        #             value[j] = 3
+        #         if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+        #             value[j] = 4
+        #     print(f'registers 2: {inv_act_idxs_registers}')
+        #     print(f'values 2: {value}')
+        #     try:
+        #         for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
+        #             client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+        #             print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+        #     except Exception as e:
+        #         print(e)
+        #     finally:
+        #         client.close()
+        # else:
+        #     return
+            'END ORIGINAL IMPLEMENTATION'
 
             # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
             # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
@@ -734,28 +758,28 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # 2: +P, +Q (for model: P inj, Q inj)
             # 1: -P, +Q (for model: P cons, Q inj)
 
-            for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 2
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
-                    value[j] = 1
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 3
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
-                    value[j] = 4
-            print(f'registers 2: {inv_act_idxs_registers}')
-            print(f'values 2: {value}')
-            try:
-                for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
-                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                    print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-            except Exception as e:
-                print(e)
-            finally:
-                client.close()
-
-        else:
-            return
+        inv_act_idxs_registers = [inv_1,inv_2,inv_3]
+        value = [0] * len(act_idxs)
+        for i in range(len(act_idxs)):
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
+                value[i] = 2
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+                value[i] = 1
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+                value[i] = 3
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+                value[i] = 4
+        print(f'registers 2: {inv_act_idxs_registers}')
+        print(f'values 2: {value}')
+        try:
+            client.connect()
+            for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+        except Exception as e:
+            print(e)
+        finally:
+            client.close()
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
