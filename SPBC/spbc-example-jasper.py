@@ -53,7 +53,7 @@ if constant_phasor == True:
             # lpbc_phases = ['a','b','c']
             lpbc_phases = ['a','b']
             lpbc_nodeIDs = ['675']
-            cons_Vmag = [0.97,0.97,0.97]
+            cons_Vmag = [0.975,0.975,0.975]
             cons_Vang = [0 -1, -120 -1, 120 - 1]
             # cons_Vmag = [0.99,0.99,0.99]
             # cons_Vang = [0 -1, -120 -1, 120 -1]
