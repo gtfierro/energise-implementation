@@ -875,10 +875,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
     def PhasorV_ang_wraparound(self, Vang, nphases):
         # brings angles to less than +/- max_degrees
-        max_degrees = 300.
+        # max_degrees = 300.
+        max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
         for phase in range(nphases):
-            if abs(Vang[phase]) > np.radians(max_degrees):
+            # if abs(Vang[phase]) > np.radians(max_degrees):
+            while abs(Vang[phase]) > np.radians(max_degrees):
                 if Vang[phase] > 0:
                     print(f'Vang[phase] = {Vang[phase]}')
                     Vang_wrap[phase] = Vang[phase] - np.radians(360.)
