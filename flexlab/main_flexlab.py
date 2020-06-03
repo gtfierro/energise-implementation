@@ -62,7 +62,7 @@ functions from ORT_modbus_energise:
 # In[settings]:
 
 pathname = 'sw_mat_HIL2/'
-filename = 'HIL2_switch_matrix_13NF_bal_lowact_2.xlsx'
+filename = 'HIL2_switch_matrix_13NF_bal_lowact.xlsx'
 filepath = pathname+filename
 # filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
 
