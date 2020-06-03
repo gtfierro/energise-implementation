@@ -614,15 +614,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
                 mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
                 mtx_register = np.arange(301,306+1).tolist()
-                try:
-                    self.client.connect()
-                    for i in range(len(mtx)):
-                        self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-                    print(f'sent offsets: {mtx}')        
-                except Exception as e:
-                    print(e)        
-                finally:
-                    self.client.close()
                 # update inverter command to account for CIL offset
                 offset_steps = self.ORT_max_VA/1000/offset_inc
                 offsetSratio = self.localSratio/offset_steps
@@ -694,6 +685,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 commandReceipt[i] = 'failure'
         print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        try:
+            self.client.connect()
+            for i in range(len(mtx)):
+                self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+            print(f'sent offsets: {mtx}')        
+        except Exception as e:
+            print(e)        
+        finally:
+            self.client.close()
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
