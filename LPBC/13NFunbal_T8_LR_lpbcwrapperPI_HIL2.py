@@ -238,7 +238,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #Flexlab specific commands
         self.currentMeasExists = currentMeasExists
         self.loadrackPlimit = 2000. #size of a load rack in VA
-        self.loadrack_manuallimit = 1500.
+        self.loadrack_manuallimit = 2000.
         self.batt_max = 3300.
         self.inv_s_max = 7600. * 0.90  # 0.97 comes from the fact that we are limiting our inverter max to 97% of its true max to prevent issues with running inverter at full power
         self.inv_s_max_commands = 8350.
