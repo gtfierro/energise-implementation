@@ -73,40 +73,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            #3.1
-# =============================================================================
-#             kp_ang = [0.0034]
-#             ki_ang = [0.0677]
-#             kp_mag = [0.5670]
-#             ki_mag = [3.4497]
-# =============================================================================
-            
-            #3.2
-            # alph = 0.4
-            # beta = 0.75
-            # kp_ang = [0.00108*alph,0.0342*alph]
-            # ki_ang = [0.0618*alph,0.0677*alph]
-            # kp_mag = [0.6901*beta,1.6522*beta]
-            # ki_mag = [3.46*beta,3.5004*beta]
-            
-            #3.3
-# =============================================================================
-#             alph = 0.45
-#             beta = 0.75
-#             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-#             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-#             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-#             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
-# =============================================================================
-
-            #5.1
-# =============================================================================
-#             alph = 0.75
-#             kp_ang = [0.004*alph]*3
-#             ki_ang = [0.0798*alph]*3
-#             kp_mag = [0,0,0]
-#             ki_mag = [0,0,0]
-# =============================================================================
 
             # 13 unbal T8
             alph = 0.45
@@ -252,7 +218,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.offset_mode == 1
+        self.offset_mode = 1
 
         IP = '131.243.41.14'
         PORT = 504
