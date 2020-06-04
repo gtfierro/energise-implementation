@@ -64,7 +64,7 @@ if loop == 0:
 
 inv_act_idxs_registers = [101,102,103] #input inverters format: [101], [101,102,103], ... so on...
 CIL_offset_registers = [301,302,303,304,305,306]
-quadrant = 4 # see above for quadrant convention
+quadrant = 2 # see above for quadrant convention
 CIL_offset = 0
 id = 3
 t1 = time.time()
