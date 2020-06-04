@@ -251,7 +251,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.ORT_max_kVA_T12 = 50
+        self.ORT_max_kVA_T12 = 50   # this is to define a different act cap for the 'phase A (671)' actuator in T12.
+                                    # Other caps are still set by ORT_max_kVA as an argument in init.
+        self.offset_mode = 1 # set to True for offset functionality, False for normal
 
         IP = '131.243.41.14'
         PORT = 504
@@ -622,28 +624,62 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
-                Pcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
+                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             Qcmd_VA = abs(
-                Qcmd_kVA * 1000)  # abs values. Will use modbus to determine quadrant
+                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+
+            # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
+            if self.offset_mode == 1 or self.offset_mode == 2:
+                id = 3
+                offset_inc = 100
+                CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
+                Pcmd_ORT_VA = Pcmd_VA * self.localSratio
+                Qcmd_ORT_VA = Qcmd_VA * self.localSratio
+                P_offset_inc_idx = Pcmd_ORT_VA // (offset_inc*1000)
+                Q_offset_inc_idx = Qcmd_ORT_VA // (offset_inc*1000)
+                CIL_offset = offset_inc * np.concatenate([P_offset_inc_idx,Q_offset_inc_idx]) # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                mtx = [0] * nphases*2
+                # cap at max offset
+                for i in range(nphases*2):
+                    if CIL_offset[i] > CIL_offset_max:
+                        CIL_offset[i] = CIL_offset_max
+                        if i < 3:
+                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset_max}')
+                        if i >= 3:
+                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset_max}')
+                # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
+                mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
+                mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
+                mtx_register = np.arange(301,306+1).tolist()
+                # update inverter command to account for CIL offset
+                offset_steps = self.ORT_max_VA/1000/offset_inc
+                offsetSratio = self.localSratio/offset_steps
+                Pcmd_ORT_VA_rem = Pcmd_ORT_VA - P_offset_inc_idx * offset_inc * 1000
+                Qcmd_ORT_VA_rem = Qcmd_ORT_VA - Q_offset_inc_idx * offset_inc * 1000
+                if self.offset_mode == 1:
+                    Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
+                    Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
+                print('OFFSET COMMANDS:')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_rem: {Pcmd_ORT_VA_rem}')
+                print(f'mtx: {mtx}')
+                print(f'Pcmd_rem: {Pcmd_VA}')
+                print(f'Qcmd_rem: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
-                if i == 0:
-                    if Pcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
-                        Pcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
-                    if Qcmd_VA[i] > (self.ORT_max_kVA_T12 *1000)/self.localSratio:
-                        Qcmd_VA[i] = (self.ORT_max_kVA_T12 * 1000) / self.localSratio
-                else:
-                    if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                        Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                        print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+            print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-                    if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                        Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                        print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+            # +50 to Q is a constant offset due to hardware measurement error
+            # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
+            # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
+            Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = (Qcmd_VA + 50) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
 
-            print(f'absolute value of P/Q to inverters:{Pcmd_VA},{Qcmd_VA}')
-
-            Pcmd_perc = Pcmd_VA / inv_Pmax  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = Qcmd_VA / inv_Qmax  # Qcmd to inverters must be a percentage of Qmax
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
                 if Pcmd_perc[i] > 50:
@@ -674,8 +710,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
-                inv = inv.item()  # changes data type
-                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase}, dyn_Q_ctrl={Qcmd_perc_phase}, inv_id={inv}")
+                if type(inv) != int:
+                    inv = inv.item()  # changes data type
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
@@ -685,6 +722,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 commandReceipt[i] = 'failure'
         print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        try:
+            self.client.connect()
+            for i in range(len(mtx)):
+                self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+            print(f'sent offsets: {mtx}')        
+        except Exception as e:
+            print(e)        
+        finally:
+            self.client.close()
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
@@ -740,56 +786,44 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         inv_1 = 101
         inv_2 = 102
         inv_3 = 103
-        act_idxs_registers = []
-        pq_changed = []
-        for i, j in zip(range(len(act_idxs)), act_idxs):  # checks to see if any sign changes occured from last command
-            if np.sign(Pcmd_kVA[i]) != np.sign(Pact[i]) or np.sign(Qcmd_kVA[i]) != np.sign(Qact[i]):
-                act_idxs_registers.append(j)
-                pq_changed.append(i)
-        if len(act_idxs_registers) > 0:  # if any quadrant changes, execute modbus, else return.
+    
+        # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
+        # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
+        # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
+        # Quadrant 1: P consume, Q consume
+        # Quadrant 2: P inject, Q consume
+        # Quadrant 3: P consume, Q inject
+        # Quadrant 4: P inject, Q inject
+        # old ^
+        # new (6/1/20)
+        # 4: +P, -Q (for model: P inj, Q cons)
+        # 3: -P, -Q (for model: P cons, Q cons)
+        # 2: +P, +Q (for model: P inj, Q inj)
+        # 1: -P, +Q (for model: P cons, Q inj)
+
+        inv_act_idxs_registers = [inv_1,inv_2,inv_3]
+        value = [0] * len(act_idxs)
+        for i in range(len(act_idxs)):
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
+                value[i] = 2
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
+                value[i] = 1
+            if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
+                value[i] = 3
+            if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
+                value[i] = 4
+        print(f'registers 2: {inv_act_idxs_registers}')
+        print(f'values 2: {value}')
+        try:
             client.connect()
-            value = [0] * len(act_idxs_registers)
-            inv_act_idxs_registers = act_idxs_registers.copy()
-
-            for i in range(len(act_idxs_registers)):  # determines which inverters have quadrant change
-                if inv_act_idxs_registers[i] == 1:
-                    inv_act_idxs_registers[i] = inv_1
-                elif inv_act_idxs_registers[i] == 2:
-                    inv_act_idxs_registers[i] = inv_2
-                elif inv_act_idxs_registers[i] == 3:
-                    inv_act_idxs_registers[i] = inv_3
-
-            # value mapping - 1: [-1, -1], 2: [1, -1], 3: [-1, 1], 4: [1, 1]
-            # multipliers to inverter values [P, Q] - positive inverter values corresponds to injecting P and Q (value 4)
-            # FLEXLAB'S QUADRANT CONVENTION 5/22/20 Flexlab set up quadrant convention and will take care of rest into ephasorsim
-            # Quadrant 1: P consume, Q consume
-            # Quadrant 2: P inject, Q consume
-            # Quadrant 3: P consume, Q inject
-            # Quadrant 4: P inject, Q inject
-
-            for i, j in zip(pq_changed, range(len(act_idxs_registers))):  # determines exact quadrant for inverter
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] >= 0:  # quadrant 1
-                    value[j] = 4
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] >= 0:  # quadrant 2
-                    value[j] = 3
-                if Pcmd_kVA[i] < 0 and Qcmd_kVA[i] < 0:  # quadrant 3
-                    value[j] = 1
-                if Pcmd_kVA[i] >= 0 and Qcmd_kVA[i] < 0:  # quadrant 4
-                    value[j] = 2
-            try:
-
-                for i in range(len(act_idxs_registers)):  # write quadrant changes to modbus registers
-                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                    print('Quadrant change for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-
-            except Exception as e:
-                print(e)
-
-            finally:
-                client.close()
-
-        else:
-            return
+            for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+        except Exception as e:
+            print(e)
+        finally:
+            client.close()
+        return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus

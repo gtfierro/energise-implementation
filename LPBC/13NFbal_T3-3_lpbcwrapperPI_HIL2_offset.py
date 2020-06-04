@@ -786,6 +786,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(e)
         finally:
             client.close()
+        return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
         Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
