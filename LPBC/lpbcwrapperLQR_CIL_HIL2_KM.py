@@ -4,6 +4,8 @@ from pyxbos.process import run_loop, config_from_file #https://github.com/gtfier
 from pyxbos.drivers import pbc  #https://github.com/gtfierro/xboswave/tree/master/python/pyxbos/pyxbos/drivers
 # above imports LPBCProcess, SPBCProcess, EnergiseMessage, LPBCStatus, LPBCCommand, SPBC, EnergiseError
 import sys
+import os #HERE for saving plots
+#from pathlib import Path # https://medium.com/@ageitgey/python-3-quick-tip-the-easy-way-to-deal-with-file-paths-on-windows-mac-and-linux-11a072b58d5f
 import numpy as np
 import pandas as pd
 import time as pytime
@@ -106,9 +108,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.ZeffkError = []
             self.GtMag = []
             if self.usingNonpuZeff == 0:
-                self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR presumably doesnt know ZeffkTru
-            #else wait till Zbase is received
+                self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
+            #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
+            #HHHERE
             #for testing the Zeffestimator
             # self.Zeffk_init_mult = .5
             self.Zeffk_init_mult = 1
@@ -281,7 +284,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
-
+        #vars for plots
+        self.testcase = cfg['testcase']
+        self.saveVmagandangPlot = 1
+        self.saveZesterrorPlot = 1
+        # self.HistLength = 100
+        self.HistLength = 10
+        self.VmagHist = np.zeros((self.nphases,self.HistLength))
+        self.VangHist = np.zeros((self.nphases,self.HistLength))
+        self.ZeffkErrorHist = np.zeros(self.HistLength)
+        self.GtMagHist = np.zeros(self.HistLength)
 
     def targetExtraction(self,phasor_target):
         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
@@ -1119,6 +1131,71 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('WARNING: LOOP LENGTH LARGER THAN RATE - INCREASE SIZE OF RATE')
                 print('')
 
+            #trying to mimic lpbcwrapper env for last lpbc in lpbcdict
+            Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
+            iter = self.iteration_counter - 1
+
+            if iter < self.HistLength:
+                self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
+                self.GtMagHist[iter] = np.linalg.norm(Gt)
+                self.VmagHist[:,iter] = self.Vmag_pu
+                self.VangHist[:,iter] = self.Vang_relative
+                # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
+                # self.GtMagHist.append(np.linalg.norm(Gt))
+            elif iter == self.HistLength:
+                current_directory = os.getcwd()
+                resultsPATH = os.path.join(current_directory, 'simulationPlots')
+                resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}')
+                if not os.path.exists(resultsPATH):
+                    os.makedirs(resultsPATH)
+
+                if self.saveVmagandangPlot:
+                    #magnitude
+                    for phase in np.arange(controller.nphases):
+                        plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
+                    plt.plot(self.VmagTarg[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
+                    # plt.title('Network: 13 node feeder with constant load')
+                    plt.ylabel('p.u. Vmag')
+                    plt.xlabel('Timestep')
+                    plt.legend()
+                    plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
+
+                    #angle
+                    for phase in np.arange(controller.nphases):
+                        Vangs = VangHist[phase,:]*np.pi/180
+                        if phase == 1:
+                            Vangs += 2*np.pi/3
+                        elif phase == 2:
+                            Vangs += -2*np.pi/3
+                        plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
+                    plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
+                    # plt.title('Network: 13 node feeder with constant load')
+                    plt.ylabel('Vang [rad]')
+                    plt.xlabel('Timestep')
+                    plt.legend()
+                    plt.savefig(os.path.join(resultsPATH, 'Vang')); plt.clf(); plt.cla(); plt.close()
+                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                    print('SAVED Vmag and Vang plots ')
+
+                if self.saveZesterrorPlot:
+                    print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
+                    print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
+                    print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkest)
+                    plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
+                    # plt.title('Zeff Estimation Error')
+                    plt.ylabel('Frobenius Norm Zeff Estimation Error')
+                    plt.xlabel('Timestep')
+                    plt.legend()
+                    plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
+
+                    plt.plot(GtMagHist,'-', label='node: ' + key)
+                    plt.ylabel('Frobenius Norm of Gt')
+                    plt.xlabel('Timestep')
+                    plt.legend()
+                    plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
+                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                    print('SAVED Zest plots ')
+
             return status
 
 
@@ -1209,7 +1286,7 @@ elif testcase == '13unb':
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #phase on the network (in simulation)
     actType_dict[key] = 'inverter'
     key = '680'
-    acts_to_phase_dict[key] = np.asarray(['','','C']) #the nonzero entries correspond to the actuator indices
+    acts_to_phase_dict[key] = np.asarray(['','','C']) #HERE Single phase actuation might cause problems #the nonzero entries correspond to the actuator indices
     actType_dict[key] = 'load'
 elif testcase == '13bal':
     # subkVAbase = 5000
@@ -1367,6 +1444,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         error('actType Error')
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
+    cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
     # currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
 
