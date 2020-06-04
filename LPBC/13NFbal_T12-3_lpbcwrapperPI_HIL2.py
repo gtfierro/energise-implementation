@@ -253,7 +253,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.inv_Qmax = 5000 #check with Maxime
         self.ORT_max_kVA_T12 = 50   # this is to define a different act cap for the 'phase A (671)' actuator in T12.
                                     # Other caps are still set by ORT_max_kVA as an argument in init.
-        self.offset_mode = 1 # set to True for offset functionality, False for normal
+        self.offset_mode = 0 # set to True for offset functionality, False for normal
 
         IP = '131.243.41.14'
         PORT = 504

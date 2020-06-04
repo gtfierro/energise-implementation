@@ -259,8 +259,8 @@ class myspbc(pbc.SPBCProcess):
         
          #~~ initialize values ~~#
         self.iteration = -1
-        # self.P_flag = []
-        # self.Q_flag = []
+        self.P_flag = []
+        self.Q_flag = []
         if TV_load == True:
             self.timestepcur = start_hour*60-1
         else:
