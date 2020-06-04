@@ -320,6 +320,7 @@ class myspbc(pbc.SPBCProcess):
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
+                    print('SPBC SEES SATURATION STATUS')
                     #Psat_nodes.append(lpbc[5:]+'_'+chanph)
                     Psat_nodes.append(lpbc + '_' + chanph)
                 if status['qSaturated'] == True:
