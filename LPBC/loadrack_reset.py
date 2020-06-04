@@ -5,7 +5,7 @@ import datetime as dt
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 
 groups = [0,1,2]
-P_init = 500
+P_init = 1000
 
 for group in groups:
     command = f"http://131.243.41.59:9090/control?group_id={group},P_ctrl={P_init}"
