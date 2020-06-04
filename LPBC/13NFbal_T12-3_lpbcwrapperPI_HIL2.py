@@ -1270,7 +1270,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-inverterScaling = 500/1
+inverterScaling = 100/1
 loadScaling = 350
 CILscaling = 500/3.3
 
