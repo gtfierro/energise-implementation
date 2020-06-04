@@ -68,7 +68,7 @@ filename = 'HIL_switch_matrix_13NF_unbal_offset.xlsx'
 filepath = pathname+filename
 
 
-test_ID = 'T8.3' # which test case you want to run
+test_ID = 'T8.1' # which test case you want to run
 sim_length_min = 5/60 # amount of time to record for in minutes
 # sim_length_min = 60/60
 # In[run]:
