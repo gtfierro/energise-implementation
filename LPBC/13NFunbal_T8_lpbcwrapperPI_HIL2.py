@@ -75,8 +75,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('made a PI controller')
 
             # 13 unbal T8
-            alph = 0.45
-            beta = 0.35
+            alph = 0.5     #0.45
+            beta = 0.5     #0.35
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
