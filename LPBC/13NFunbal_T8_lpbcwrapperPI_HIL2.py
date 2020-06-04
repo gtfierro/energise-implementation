@@ -231,7 +231,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
         self.act_idxs = np.asarray(act_idxs)
- #'inverter' or 'load'
+        #'inverter' or 'load'
         if self.actType == 'inverter':
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
 
