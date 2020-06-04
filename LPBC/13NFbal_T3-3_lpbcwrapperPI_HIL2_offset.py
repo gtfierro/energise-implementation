@@ -777,15 +777,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 value[i] = 4
         print(f'registers 2: {inv_act_idxs_registers}')
         print(f'values 2: {value}')
-        try:
-            client.connect()
-            for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
-                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-        except Exception as e:
-            print(e)
-        finally:
-            client.close()
+        if self.offset_mode == 1 or self.offset_mode == 2:
+            try:
+                client.connect()
+                for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
+                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                    print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+            except Exception as e:
+                print(e)
+            finally:
+                client.close()
         return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
