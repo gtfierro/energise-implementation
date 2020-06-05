@@ -289,7 +289,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.controlStepsTaken_counter = 0
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
-        self.saveZesterrorPlot = 1
+        self.saveZesterrorPlot = 0
         # self.HistLength = 100
         self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
@@ -1171,7 +1171,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                     #angle
                     for phase in np.arange(self.controller.nphases):
-                        Vangs = self.VangHist[phase,:]*np.pi/180
+                        Vangs = self.VangHist[phase,:]
                         if phase == 1:
                             Vangs += 2*np.pi/3
                         elif phase == 2:
