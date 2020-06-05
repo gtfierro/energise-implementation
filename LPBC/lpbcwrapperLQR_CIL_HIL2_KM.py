@@ -4,6 +4,7 @@ from pyxbos.process import run_loop, config_from_file #https://github.com/gtfier
 from pyxbos.drivers import pbc  #https://github.com/gtfierro/xboswave/tree/master/python/pyxbos/pyxbos/drivers
 # above imports LPBCProcess, SPBCProcess, EnergiseMessage, LPBCStatus, LPBCCommand, SPBC, EnergiseError
 import sys
+import matplotlib.pyplot as plt
 import os #HERE for saving plots
 #from pathlib import Path # https://medium.com/@ageitgey/python-3-quick-tip-the-easy-way-to-deal-with-file-paths-on-windows-mac-and-linux-11a072b58d5f
 import numpy as np
