@@ -801,10 +801,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'Opal Qcmd_VA[{phase}] : ' + str(Qcmd_VA[phase]))
             print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
             if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Pcmd over Opal limit')
+                print('WARNING Pcmd over Opal limit, using +/- max: ', np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio)
                 Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
             if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Qcmd over Opal limit')
+                print('WARNING Qcmd over Opal limit, using +/- max: ', np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio)
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
@@ -1005,6 +1005,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
             print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
             print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
+            print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
             print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
             print('Vang_relative bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
             print('VangRef bus ' + str(self.busId) + ' : ' + str(self.VangRef))
@@ -1091,6 +1092,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
+            #HHHERE hack to work with switch matrix scaling
+            self.Pcmd_kVA = self.Pcmd_kVA/10
+            self.Qcmd_kVA = self.Qcmd_kVA/10
+
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
                     '''
@@ -1121,10 +1126,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
-            print(log_actuation)
+            # print(log_actuation)
 
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print(status)
+            # print(status)
             iterend = pytime.time()
 
             print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
