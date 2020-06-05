@@ -4,6 +4,7 @@ from pyxbos.process import run_loop, config_from_file #https://github.com/gtfier
 from pyxbos.drivers import pbc  #https://github.com/gtfierro/xboswave/tree/master/python/pyxbos/pyxbos/drivers
 # above imports LPBCProcess, SPBCProcess, EnergiseMessage, LPBCStatus, LPBCCommand, SPBC, EnergiseError
 import sys
+import matplotlib.pyplot as plt
 import os #HERE for saving plots
 #from pathlib import Path # https://medium.com/@ageitgey/python-3-quick-tip-the-easy-way-to-deal-with-file-paths-on-windows-mac-and-linux-11a072b58d5f
 import numpy as np
@@ -88,7 +89,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
             '''
-            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+            self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -198,7 +199,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #Targets received from SPBC, right now VmagTarg as relative not abosolute
         self.VangTarg_relative = 'initialize' #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
         #VangTarg_relative subtracts the reference nodes angle for each phase from each phase, so the realtive angles are all around 0 (rather than [0, -120, 120])
-        self.VmagTarg = 'initialize' #all angles should be in radians
+        self.VmagTarg_pu = 'initialize' #all angles should be in radians
         # self.VmagTarg_pu = np.zeros(nphases) #rn SPBC sends targets in relative_pu, so these aren't needed
         # self.VmagTarg_relative = np.zeros(nphases)
         self.VmagTarg_relative_pu = np.zeros(nphases)
@@ -285,11 +286,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.client = ModbusClient(IP, port=PORT)
 
         #vars for plots
+        self.controlStepsTaken_counter = 0
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
-        self.saveZesterrorPlot = 1
+        self.saveZesterrorPlot = 0
         # self.HistLength = 100
-        self.HistLength = 10
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -799,10 +801,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'Opal Qcmd_VA[{phase}] : ' + str(Qcmd_VA[phase]))
             print('ORT_max_VA/localSratio : ' + str(ORT_max_VA/localSratio))
             if abs(Pcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Pcmd over Opal limit')
+                print('WARNING Pcmd over Opal limit, using +/- max: ', np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio)
                 Pcmd_VA[phase] = np.sign(Pcmd_VA[phase]) * ORT_max_VA/localSratio
             if abs(Qcmd_VA[phase]) > ORT_max_VA/localSratio:
-                print('Qcmd over Opal limit')
+                print('WARNING Qcmd over Opal limit, using +/- max: ', np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio)
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
@@ -1003,6 +1005,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
             print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
             print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
+            print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
             print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
             print('Vang_relative bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
             print('VangRef bus ' + str(self.busId) + ' : ' + str(self.VangRef))
@@ -1089,6 +1092,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
+            #HHHERE hack to work with switch matrix scaling
+            print('DIVIDING P AND Q COMMANDS BY 10')
+            self.Pcmd_kVA = self.Pcmd_kVA/10
+            self.Qcmd_kVA = self.Qcmd_kVA/10
+
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
                     '''
@@ -1119,10 +1127,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
-            print(log_actuation)
+            # print(log_actuation)
 
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-            print(status)
+            # print(status)
             iterend = pytime.time()
 
             print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
@@ -1133,8 +1141,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #trying to mimic lpbcwrapper env for last lpbc in lpbcdict
             Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
-            iter = self.iteration_counter - 1
-
+            # iter = self.iteration_counter - 1
+            iter = self.controlStepsTaken_counter
+            self.controlStepsTaken_counter += 1
+            print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
             if iter < self.HistLength:
                 self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
                 self.GtMagHist[iter] = np.linalg.norm(Gt)
@@ -1142,18 +1152,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.VangHist[:,iter] = self.Vang_relative
                 # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
                 # self.GtMagHist.append(np.linalg.norm(Gt))
+                print('SAVING measurements for plotting')
             elif iter == self.HistLength:
-                current_directory = os.getcwd()
-                resultsPATH = os.path.join(current_directory, 'simulationPlots')
-                resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}')
-                if not os.path.exists(resultsPATH):
-                    os.makedirs(resultsPATH)
+                print('SAVING plots')
+                if self.saveVmagandangPlot or self.saveZesterrorPlot:
+                    current_directory = os.getcwd()
+                    resultsPATH = os.path.join(current_directory, 'simulationPlots')
+                    resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}') #if you want to write over previous run
+                    # resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}') #if you want to save each run
+                    if not os.path.exists(resultsPATH):
+                        os.makedirs(resultsPATH)
 
                 if self.saveVmagandangPlot:
                     #magnitude
-                    for phase in np.arange(controller.nphases):
+                    for phase in np.arange(self.controller.nphases):
                         plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
-                    plt.plot(self.VmagTarg[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
+                    print('phase ', phase)
+                    print('self.VmagTarg_pu[phase] ', self.VmagTarg_pu[phase])
+                    plt.plot(self.VmagTarg_pu[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
                     # plt.title('Network: 13 node feeder with constant load')
                     plt.ylabel('p.u. Vmag')
                     plt.xlabel('Timestep')
@@ -1161,12 +1177,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
 
                     #angle
-                    for phase in np.arange(controller.nphases):
-                        Vangs = VangHist[phase,:]*np.pi/180
-                        if phase == 1:
-                            Vangs += 2*np.pi/3
-                        elif phase == 2:
-                            Vangs += -2*np.pi/3
+                    print('self.VangHist ', self.VangHist)
+                    for phase in np.arange(self.controller.nphases):
+                        Vangs = self.VangHist[phase,:]
                         plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
                     plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
                     # plt.title('Network: 13 node feeder with constant load')
@@ -1188,7 +1201,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     plt.legend()
                     plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
 
-                    plt.plot(GtMagHist,'-', label='node: ' + key)
+                    plt.plot(self.GtMagHist,'-', label='node: ' + key)
                     plt.ylabel('Frobenius Norm of Gt')
                     plt.xlabel('Timestep')
                     plt.legend()

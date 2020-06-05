@@ -203,7 +203,7 @@ testcase = '13bal'
 # feederID = 'UCB33'
 # testcase = '33'
 
-'PL0001' # PL0001 needs transphase in setup_noload.py to be multiphase
+'PL0001' # PL0001 needs transtype in setup_noload.py to be multiphase
 # filepath = SPBCfolderPath + "PL0001/"
 # modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
 # loadfolder = SPBCfolderPath + "PL0001/"

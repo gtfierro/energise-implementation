@@ -4,8 +4,8 @@ from scipy.linalg import solve_discrete_are as dare
 from numpy.linalg import inv
 
 printZeffterms = 0
-printDOBCterms = 0
-printControlterms = 0
+printDOBCterms = 1
+printControlterms = 1
 
 class LQRcontroller:
     def __init__(self,lpbcbus,nphases,timesteplength,Qcost,Rcost,Zeffkinit,est_Zeffk=0,cancelDists=1,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1,ZeffkinitInPU=1):
@@ -33,9 +33,9 @@ class LQRcontroller:
         #Z estimator parameters
         self.est_Zeffk = est_Zeffk #boolean
         self.lam = lam # 0 < lam < 1, smaller lam changes Zeffkest faster
-        self.dtItThreshold = 1e-3 #could pass these thresholds in when you make the controller
-        self.dtVtThreshold = 1e-3
-        self.powerThresholdForIcompEst = 1e-3 #this is different than self.dtItThreshold. Idea is to prevent noisy Icom estiamtes when there isnt an S command. Downside is that you lose a useful measurement when S command goes to zero from a nonzero value. Could fix that case with an if statement, though.
+        self.dtItThreshold = 1e-4 # 1e-3 #could pass these thresholds in when you make the controller
+        self.dtVtThreshold = 1e-4 # 1e-3
+        self.powerThresholdForIcompEst = 1e-4 # 1e-3 #this is different than self.dtItThreshold. Idea is to prevent noisy Icom estiamtes when there isnt an S command. Downside is that you lose a useful measurement when S command goes to zero from a nonzero value. Could fix that case with an if statement, though.
         if ZeffkinitInPU:
             self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
             self.Zeffkest = np.asmatrix(Zeffkinit)
