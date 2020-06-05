@@ -118,7 +118,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #9.3
             alph = 3.5
-            beta = 5.5
+            beta = 7
             kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
             ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
             kp_mag = [2*beta, 2*beta, 2*beta]
@@ -265,7 +265,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
-        self.scalingPGE = (12.6/np.sqrt(3))/2.4
+        self.scalingPGE = (12.6/np.sqrt(3))/2.401
 
     def targetExtraction(self,phasor_target):
         #this implies A,B,C order to measurements from SPBC
