@@ -199,7 +199,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #Targets received from SPBC, right now VmagTarg as relative not abosolute
         self.VangTarg_relative = 'initialize' #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
         #VangTarg_relative subtracts the reference nodes angle for each phase from each phase, so the realtive angles are all around 0 (rather than [0, -120, 120])
-        self.VmagTarg = 'initialize' #all angles should be in radians
+        self.VmagTarg_pu = 'initialize' #all angles should be in radians
         # self.VmagTarg_pu = np.zeros(nphases) #rn SPBC sends targets in relative_pu, so these aren't needed
         # self.VmagTarg_relative = np.zeros(nphases)
         self.VmagTarg_relative_pu = np.zeros(nphases)
@@ -1160,11 +1160,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #magnitude
                     for phase in np.arange(self.controller.nphases):
                         plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
-                    print('self.HistLength ', self.HistLength)
-                    print('np.ones(self.HistLength) ', np.ones(self.HistLength))
                     print('phase ', phase)
-                    print('self.VmagTarg[phase] ', self.VmagTarg[phase])
-                    plt.plot(self.VmagTarg[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
+                    print('self.VmagTarg_pu[phase] ', self.VmagTarg_pu[phase])
+                    plt.plot(self.VmagTarg_pu[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
                     # plt.title('Network: 13 node feeder with constant load')
                     plt.ylabel('p.u. Vmag')
                     plt.xlabel('Timestep')
