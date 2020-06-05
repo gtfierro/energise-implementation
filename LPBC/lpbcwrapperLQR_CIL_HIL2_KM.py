@@ -1157,7 +1157,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                 if self.saveVmagandangPlot:
                     #magnitude
-                    for phase in np.arange(controller.nphases):
+                    for phase in np.arange(self.controller.nphases):
                         plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
                     plt.plot(self.VmagTarg[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
                     # plt.title('Network: 13 node feeder with constant load')
@@ -1167,7 +1167,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
 
                     #angle
-                    for phase in np.arange(controller.nphases):
+                    for phase in np.arange(self.controller.nphases):
                         Vangs = VangHist[phase,:]*np.pi/180
                         if phase == 1:
                             Vangs += 2*np.pi/3
