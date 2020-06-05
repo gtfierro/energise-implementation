@@ -1197,7 +1197,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     plt.legend()
                     plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
 
-                    plt.plot(GtMagHist,'-', label='node: ' + key)
+                    plt.plot(self.GtMagHist,'-', label='node: ' + key)
                     plt.ylabel('Frobenius Norm of Gt')
                     plt.xlabel('Timestep')
                     plt.legend()
