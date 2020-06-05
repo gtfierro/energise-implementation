@@ -614,7 +614,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1 or self.offset_mode == 2:
                 id = 3
-                offset_inc = 100
+                offset_inc = 200
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
