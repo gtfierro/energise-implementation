@@ -1143,11 +1143,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
                 # self.GtMagHist.append(np.linalg.norm(Gt))
             elif iter == self.HistLength:
-                current_directory = os.getcwd()
-                resultsPATH = os.path.join(current_directory, 'simulationPlots')
-                resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}')
-                if not os.path.exists(resultsPATH):
-                    os.makedirs(resultsPATH)
+                if saveVmagandangPlot or saveZesterrorPlot:
+                    current_directory = os.getcwd()
+                    resultsPATH = os.path.join(current_directory, 'simulationPlots')
+                    resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}')
+                    if not os.path.exists(resultsPATH):
+                        os.makedirs(resultsPATH)
 
                 if self.saveVmagandangPlot:
                     #magnitude
