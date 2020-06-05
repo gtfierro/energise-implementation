@@ -4,8 +4,8 @@ from scipy.linalg import solve_discrete_are as dare
 from numpy.linalg import inv
 
 printZeffterms = 0
-printDOBCterms = 0
-printControlterms = 0
+printDOBCterms = 1
+printControlterms = 1
 
 class LQRcontroller:
     def __init__(self,lpbcbus,nphases,timesteplength,Qcost,Rcost,Zeffkinit,est_Zeffk=0,cancelDists=1,currentMeasExists=1,lpAlpha=.1,lam=.99,Gt=None,controllerUpdateCadence=1,linearizeplant=1,ZeffkinitInPU=1):
