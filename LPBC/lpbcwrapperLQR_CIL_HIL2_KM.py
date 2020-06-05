@@ -1093,6 +1093,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             #HHHERE hack to work with switch matrix scaling
+            print('DIVIDING P AND Q COMMANDS BY 10')
             self.Pcmd_kVA = self.Pcmd_kVA/10
             self.Qcmd_kVA = self.Qcmd_kVA/10
 
@@ -1140,9 +1141,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #trying to mimic lpbcwrapper env for last lpbc in lpbcdict
             Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
-            self.controlStepsTaken_counter += 1
             # iter = self.iteration_counter - 1
             iter = self.controlStepsTaken_counter
+            self.controlStepsTaken_counter += 1
             print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
             if iter < self.HistLength:
                 self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
@@ -1176,12 +1177,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
 
                     #angle
+                    print('self.VangHist ', self.VangHist)
                     for phase in np.arange(self.controller.nphases):
                         Vangs = self.VangHist[phase,:]
-                        # if phase == 1:
-                        #     Vangs += 2*np.pi/3
-                        # elif phase == 2:
-                        #     Vangs += -2*np.pi/3
+                        if phase == 1:
+                            Vangs += 2*np.pi/3
+                        elif phase == 2:
+                            Vangs += -2*np.pi/3
                         plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
                     plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
                     # plt.title('Network: 13 node feeder with constant load')

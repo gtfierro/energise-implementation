@@ -37,7 +37,6 @@ if constant_phasor == True:
     #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
     cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
-    cons_Vmag = [0.98,0.98,0.98] #HERE CHANGE BACK (KEITH CHANGED THIS)
     #cons_Vang = [-1.61526,-121.75103,118.20174]
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     cons_Vang = [0 - 3, -120 - 3, 120 - 3]
@@ -67,7 +66,7 @@ if constant_phasor == True:
             if varying_targ_toggle:
                 cons_Vmag_2 = [0.92]
                 cons_Vang_2 = [0 -4]
-                vary_iter = 29
+                vary_iter = 29  
             if ICDI_toggle:
                 cons_Vmag_ICDI = [0.95]
                 cons_Vang_ICDI = [0 -2.5]
@@ -81,7 +80,7 @@ if constant_phasor == True:
             if varying_targ_toggle:
                 cons_Vmag_2 = [0.92,0.92,0.92]
                 cons_Vang_2 = [0 -4, 0 -4, 0 -4] # all on phase A
-                vary_iter = 29
+                vary_iter = 29     
             if ICDI_toggle:
                 cons_Vmag_ICDI = [0.95,0.95,0.95]
                 cons_Vang_ICDI = [0 -2.5, 0 -2.5, 0 - 2.5] # all on phase A
@@ -134,7 +133,7 @@ if constant_phasor == True:
             lpbc_nodeIDs = ['N_300063911']
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 - 3, -120 - 3, 120 - 3]
-
+    
     print('WARNING: constant_phasor ON')
 
 
@@ -247,17 +246,17 @@ class myspbc(pbc.SPBCProcess):
 
         # Create whatever instance variables + initialization you want here.
         # Pass options in using the 'cfg' dictionary
-
+        
         # define system phase size to define size of phasor reference
         #phase_size, feeder_init = feeder_init() ## doesnt work inside of __init__
 
-
+        
         # This particular implementation calls the self.compute_and_announce function
         # every 3 seconds; the self.compute_and_announce contains the optimization function
         # that produces the phasor target for each LPBC
         schedule(self.call_periodic(60, self.compute_and_announce))
         ### set some refphasor variable == true/false to determine length of schedule
-
+        
          #~~ initialize values ~~#
         self.iteration = -1
         self.P_flag = []
@@ -266,10 +265,10 @@ class myspbc(pbc.SPBCProcess):
             self.timestepcur = start_hour*60-1
         else:
             self.timestepcur = start_hour*60
-
+        
         ''' # add initializtion of LPBC nodes here, and then add update in loop
         for lpbc, channels in self.lpbcs.items():
-            for channel, status in channels.items():
+            for channel, status in channels.items():    
                 for key, ibus in feeder_init.busdict.items():
                             #if lpbc == 'lpbc_' + key:
                             if lpbc == key:
@@ -281,26 +280,26 @@ class myspbc(pbc.SPBCProcess):
     async def compute_and_announce(self):
         print('')
         print('~~~ New compute_and_announce instance ~~~')
-
+        
         #~~ initialize values ~~#
-
+            
         self.iteration += 1
         if TV_load == True:
             self.timestepcur += 1
-
+            
         print(f'iteration: {self.iteration}, timestep: {self.timestepcur-start_hour*60}')
-
+        
         # ~~ LPBC ~~ #
         Psat_nodes = []
         Qsat_nodes = []
         lpbc_nodes = []
-
+        
         # TODO: do lpbc's live at perf nodes not at all act nodes...
             # write method to send out voltage targets for perf nodes
-            # for method below to work need lpbc to announce even if no targets to report
+            # for method below to work need lpbc to announce even if no targets to report 
                 # (i.e. before SPBC sends any targets)
                 # could also input perf nodes manually
-
+                
         # how to loop through all LPBC statuses
         for lpbc, channels in self.lpbcs.items():
             for channel, status in channels.items():
@@ -318,7 +317,7 @@ class myspbc(pbc.SPBCProcess):
                     #if lpbc == 'lpbc_' + key:
                     if lpbc == key:
                         lpbc_nodes.append(key)
-
+        
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
                     print('SPBC SEES SATURATION STATUS')
@@ -327,7 +326,7 @@ class myspbc(pbc.SPBCProcess):
                 if status['qSaturated'] == True:
                     #Qsat_nodes.append(lpbc[5:]+'_'+chanph)
                     Qsat_nodes.append(lpbc + '_' + chanph)
-
+                    
 # =============================================================================
 # =============================================================================
 #                      if status['pSaturated'] == True:
@@ -336,17 +335,17 @@ class myspbc(pbc.SPBCProcess):
 #                         Qsat_nodes.append(lpbc[5:])
 # =============================================================================
 # =============================================================================
-
+                    
         # hardcode lpbc_nodes in
         lpbc_nodes = lpbc_nodeIDs
-
+        
         print('Psat',Psat_nodes)
         print('Qsat',Qsat_nodes)
-
+        
         # ~~~~~~~~~~~~~~~~~~~~~~ #
         # ~~ REFERENCE PHASOR ~~ #
         # ~~~~~~~~~~~~~~~~~~~~~~ #
-
+        
         # num of ref channels must match num of phases for slack bus on impedance model
          # otherwise read ref phasor error is returned
         phase_size = 3
@@ -360,14 +359,14 @@ class myspbc(pbc.SPBCProcess):
                 #store most recent uPMU ref phasor values
                 if 'L1' in channel:
                     refphasor[0,0] = data[-1]['magnitude']
-                    refphasor[0,1] = data[-1]['angle']
+                    refphasor[0,1] = data[-1]['angle']             
                 if 'L2' in channel:
                     refphasor[1,0] = data[-1]['magnitude']
                     refphasor[1,1] = data[-1]['angle']
                 if 'L3' in channel:
                     refphasor[2,0] = data[-1]['magnitude']
                     refphasor[2,1] = data[-1]['angle']
-
+                
 # =============================================================================
 #                 try:
 #                     pmutime = int(data[-1]['time'])
@@ -377,8 +376,8 @@ class myspbc(pbc.SPBCProcess):
 #                 except Exception as e:
 #                     print(e)
 # =============================================================================
-
-
+        
+            
         #convert Vmag to p.u. (subKVbase_phg defined in main)
         #commented below for debugging
         #refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
@@ -388,7 +387,7 @@ class myspbc(pbc.SPBCProcess):
         #[1.00899569 6.2332654 ]
         #[1.01064548 4.13935041]]
         #refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
-
+        
         if dummy_ref == False:
             print('phasor reference [pu-rad]:')
             print(refphasor)
@@ -399,8 +398,8 @@ class myspbc(pbc.SPBCProcess):
             refphasor[:,0]=1
             refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
             print('using nominal reference values')
-
-
+                         
+        
         if np.inf in refphasor:
             ### WAIT TILL NEXT ###
             #dummy values
@@ -408,13 +407,13 @@ class myspbc(pbc.SPBCProcess):
             #refphasor[:,0]=1
             #refphasor[:,1]=[0,4*np.pi/3,2*np.pi/3]
             print('Reference uPMU read error')
-
+            
         else:
             # you could do expensive compute to get new targets here.
             # This could produce some intermediate structure like so:
             print('here') #pass here because excel file is incomplete
             #Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur)
-
+            
             # TODO: how do we communicate phase information?
             # None-padded? dicts keyed by the channel name?
             # should set computed targets to have lpbc_nodeID so they dont have to be ordered specifically
@@ -532,7 +531,7 @@ class myspbc(pbc.SPBCProcess):
                     computed_targets[lpbcID]['delta'] = []
                     computed_targets[lpbcID]['kvbase'] = []
                     computed_targets[lpbcID]['kvabase'] = []
-
+                    
                     # TODO: shiff from line to phase channel tags
                     #for ph in ibus.phases:
                     for ph in lpbc_phases:
@@ -547,7 +546,7 @@ class myspbc(pbc.SPBCProcess):
                                 computed_targets[lpbcID]['delta'].append(Vtargdict[key]['Vang'][phidx])
                             computed_targets[lpbcID]['kvbase'].append(Vtargdict[key]['KVbase'][phidx])
                             computed_targets[lpbcID]['kvabase'].append(Vtargdict[key]['KVAbase'][phidx])
-
+                            
                             #Vmag_prev[key] = np.ones((3,feeder_init.timesteps))*np.inf
 
                         if ph == 'b':
@@ -579,7 +578,7 @@ class myspbc(pbc.SPBCProcess):
             for node, key in Vtargdict.items():
                 for key2, targ in key.items():
                     print(f'{node}_{key2}: {np.round(targ,5)} (pu, deg)')
-
+                
             # loop through the computed targets and send them to all LPBCs:
             for lpbc_name, targets in computed_targets.items():
                 print(f'announcing to lpbc: {lpbc_name}')
