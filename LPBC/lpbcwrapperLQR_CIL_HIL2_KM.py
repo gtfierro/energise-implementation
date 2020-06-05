@@ -887,7 +887,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         status['q_max'] = list(Qmax_pu.ravel())
         return(status)
 
-    def PhasorV_ang_wraparound(self, Vang, nphases):
+    def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
         # brings angles to less than +/- max_degrees
         # max_degrees = 300.
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
@@ -896,13 +896,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # if abs(Vang[phase]) > np.radians(max_degrees):
             while abs(Vang[phase]) > np.radians(max_degrees):
                 if Vang[phase] > 0:
-                    print(f'Vang[phase] = {Vang[phase]}')
+                    print(f'Vang[{phase}] = {Vang[phase]}')
                     Vang_wrap[phase] = Vang[phase] - np.radians(360.)
-                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                    # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
                 elif Vang[phase] < 0:
-                    print(f'Vang[phase] = {Vang[phase]}')
+                    print(f'Vang[{phase}] = {Vang[phase]}')
                     Vang_wrap[phase] = Vang[phase] + np.radians(360.)
-                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                    # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
@@ -995,9 +997,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round. ~~~')
                 return
             #these are used by the LQR controller
-            self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases)
-            self.Vang_relative = self.PhasorV_ang_wraparound(self.Vang_relative, self.nphases)
-            self.VangRef = self.PhasorV_ang_wraparound(self.VangRef, self.nphases)
+            self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases, nameVang='self.Vang_notRelative')
+            self.Vang_relative = self.PhasorV_ang_wraparound(self.Vang_relative, self.nphases, nameVang='self.Vang_relative')
+            self.VangRef = self.PhasorV_ang_wraparound(self.VangRef, self.nphases, nameVang='self.VangRef')
             self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
             self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
             self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
@@ -1083,19 +1085,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
             self.GtMag.append(np.linalg.norm(Gt))
 
-            #HHERE debugging
-            # self.Pcmd_pu[1] = 0
-            # self.Pcmd_pu[2] = 0
-            # self.Qcmd_pu = np.zeros(nphases)
+            # The controller is entirely in PU. So if the pu P and Q commands are ultimately enacted on the network
+            #according to the network-wide kVAbase (that was used to calculate the Zbase that was used to build the controller), then there shouldn’t be any problems.
+            # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
+            #(Zest should use self.network_kVAbase not self.localkVAbase)
 
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
-            #HHHERE hack to work with switch matrix scaling
-            print('DIVIDING P AND Q COMMANDS BY 10')
-            self.Pcmd_kVA = self.Pcmd_kVA/10
-            self.Qcmd_kVA = self.Qcmd_kVA/10
+            #HERE delete, this is redundant to Sratio
+            # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
+            # self.Pcmd_kVA = self.Pcmd_kVA/10
+            # self.Qcmd_kVA = self.Qcmd_kVA/10
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
@@ -1411,8 +1413,15 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA
+#CILscaling = Sratio (below):
+# command given will get multiplied by [150] in switch matrix
+# then divided by 15,000 to give a value in kW internally in Flexlab OpalRT (I think)
+# Thus a VA command will be multiplied by 10 (10 = 150/15 = 150/(15000/1000))
+# Sratio divides the network kVA
+# Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
 rate = 5
+# rate = 1 #HERE changed this for CIL testing
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
