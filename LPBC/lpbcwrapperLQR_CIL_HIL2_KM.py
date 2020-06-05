@@ -285,6 +285,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.client = ModbusClient(IP, port=PORT)
 
         #vars for plots
+        self.controlStepsTaken_counter = 0
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
@@ -1133,8 +1134,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #trying to mimic lpbcwrapper env for last lpbc in lpbcdict
             Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
-            iter = self.iteration_counter - 1
-
+            self.controlStepsTaken_counter += 1
+            # iter = self.iteration_counter - 1
+            iter = self.controlStepsTaken_counter
             if iter < self.HistLength:
                 self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
                 self.GtMagHist[iter] = np.linalg.norm(Gt)
