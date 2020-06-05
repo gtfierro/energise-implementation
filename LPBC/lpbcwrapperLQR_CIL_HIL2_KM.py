@@ -1142,7 +1142,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.VangHist[:,iter] = self.Vang_relative
                 # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
                 # self.GtMagHist.append(np.linalg.norm(Gt))
+                print('SAVING measurements for plotting')
             elif iter == self.HistLength:
+                print('SAVING plots')
                 if saveVmagandangPlot or saveZesterrorPlot:
                     current_directory = os.getcwd()
                     resultsPATH = os.path.join(current_directory, 'simulationPlots')
