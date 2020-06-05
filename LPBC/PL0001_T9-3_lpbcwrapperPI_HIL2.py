@@ -643,8 +643,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
                     Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
                 print('OFFSET COMMANDS:')
-                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
-                print(f'Pcmd_ORT_VA_rem: {Pcmd_ORT_VA_rem}')
+                print(f'P_ORT_VA: {Pcmd_ORT_VA}, Q_ORT_VA: {Qcmd_ORT_VA}')
+                print(f'P_ORT_VA_rem: {Pcmd_ORT_VA_rem}, Q_ORT_VA_rem: {Qcmd_ORT_VA_rem}')
                 print(f'mtx: {mtx}')
                 print(f'Pcmd_rem: {Pcmd_VA}')
                 print(f'Qcmd_rem: {Qcmd_VA}')
