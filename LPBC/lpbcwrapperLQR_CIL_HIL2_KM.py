@@ -1152,7 +1152,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.saveVmagandangPlot or self.saveZesterrorPlot:
                     current_directory = os.getcwd()
                     resultsPATH = os.path.join(current_directory, 'simulationPlots')
-                    resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}')
+                    resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}') #if you want to write over previous run
+                    # resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}') #if you want to save each run
                     if not os.path.exists(resultsPATH):
                         os.makedirs(resultsPATH)
 
