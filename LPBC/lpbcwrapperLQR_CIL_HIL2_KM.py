@@ -1160,6 +1160,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #magnitude
                     for phase in np.arange(self.controller.nphases):
                         plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
+                    print('self.HistLength ', self.HistLength)
+                    print('np.ones(self.HistLength) ', np.ones(self.HistLength))
+                    print('phase ', phase)
+                    print('self.VmagTarg[phase] ', self.VmagTarg[phase])
                     plt.plot(self.VmagTarg[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
                     # plt.title('Network: 13 node feeder with constant load')
                     plt.ylabel('p.u. Vmag')
