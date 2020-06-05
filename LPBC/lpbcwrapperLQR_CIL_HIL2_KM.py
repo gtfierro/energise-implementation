@@ -1180,10 +1180,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('self.VangHist ', self.VangHist)
                     for phase in np.arange(self.controller.nphases):
                         Vangs = self.VangHist[phase,:]
-                        if phase == 1:
-                            Vangs += 2*np.pi/3
-                        elif phase == 2:
-                            Vangs += -2*np.pi/3
                         plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
                     plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
                     # plt.title('Network: 13 node feeder with constant load')
