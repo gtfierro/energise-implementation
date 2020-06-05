@@ -1137,6 +1137,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controlStepsTaken_counter += 1
             # iter = self.iteration_counter - 1
             iter = self.controlStepsTaken_counter
+            print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
             if iter < self.HistLength:
                 self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
                 self.GtMagHist[iter] = np.linalg.norm(Gt)
