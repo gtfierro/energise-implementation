@@ -1171,7 +1171,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                     #angle
                     for phase in np.arange(self.controller.nphases):
-                        Vangs = VangHist[phase,:]*np.pi/180
+                        Vangs = self.VangHist[phase,:]*np.pi/180
                         if phase == 1:
                             Vangs += 2*np.pi/3
                         elif phase == 2:
