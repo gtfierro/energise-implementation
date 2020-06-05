@@ -27,8 +27,8 @@ start_hour = 11             # [INPUT HERE]
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  'UCB33'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T8.2'
+feederID =  'PL0001'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T9.3'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
@@ -119,7 +119,7 @@ if constant_phasor == True:
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
             cons_Vmag = [0.97,0.97,0.97]
-            cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
+            cons_Vang = [0 + 0.5, -120 + 0.5, 120 + 0.5]
     if feederID == 'PL0001':
         cons_kVbase = np.ones(3)*(12.6/np.sqrt(3))
         cons_kVAbase = np.ones(3)*1500/3
