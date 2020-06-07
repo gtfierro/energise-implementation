@@ -23,7 +23,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 angle_unit = 'radians'      # - 'degrees' or 'radians' - settled on radians
 
 TV_load = False             # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
-start_hour = 11             # [INPUT HERE]
+start_hour = 11             # [INPUT HERE] #I think the load start time is determined by which file is loaded, so this has to match the load file (or if the target is constant then it doesnt matter)
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
