@@ -1400,7 +1400,9 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+#HHHERE want one of the two lines below depending on the CIL test
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #this one for T3.3
+# pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
@@ -1421,7 +1423,7 @@ CILscaling = 10 #in VA
 # Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
 rate = 5
-# rate = 1 #HERE changed this for CIL testing
+# rate = 1 #dont think this will work for CIL testing
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
