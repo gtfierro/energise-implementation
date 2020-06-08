@@ -117,8 +117,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # ki_mag = [1*beta]
 
             #9.3
-            alph = 3
-            beta = 4
+            alph = 2
+            beta = 2
             lam_i = 1.2
             kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
             ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
@@ -261,7 +261,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.offset_mode = 1
+        self.offset_mode = 0
 
         IP = '131.243.41.14'
         PORT = 504
@@ -1246,7 +1246,7 @@ inverterScaling = 1000/1 #@JASPER TODO (and possibly ORT_max_kVA) --> 1000/1 for
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 15
+rate = 30
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
