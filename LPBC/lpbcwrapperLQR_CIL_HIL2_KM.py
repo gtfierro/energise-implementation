@@ -141,7 +141,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
             cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
-            lpAlpha = .5
+            # lpAlpha = .5
 
             #REIE parameters
             est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
@@ -290,7 +290,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 0
-        self.HistLength = 50
+        self.HistLength = 100
         # self.HistLength = 10
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
