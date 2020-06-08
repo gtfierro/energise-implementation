@@ -794,10 +794,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
-        # Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
-        # Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
-        Pcmd_VA = 1 * (Pcmd_kVA * 1000) #trying this to debug HHHERE #HHERE
-        Qcmd_VA = 1 * (Qcmd_kVA * 1000)
+        Pcmd_VA = -1 * (Pcmd_kVA * 1000) #sign negation is convention of modbus
+        Qcmd_VA = -1 * (Qcmd_kVA * 1000) #sign negation is convention of modbus
         for phase in range(nphases):
             print(f'Opal Pcmd_VA[{phase}] : ' + str(Pcmd_VA[phase]))
             print(f'Opal Qcmd_VA[{phase}] : ' + str(Qcmd_VA[phase]))
