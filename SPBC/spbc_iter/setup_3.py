@@ -100,6 +100,7 @@ class bus:
         self.Vang_linopt = cp.Variable((3,timesteps), self.name + '_Vang')
         
         self.Vmag_NL = np.ones((3,timesteps))
+        self.Vmag_NLpu = np.ones((3,timesteps))
         self.Vang_NL = np.array([[0.],[240.],[120.]])
         for idx in range(timesteps-1): #[HIL] - delete -1? or set timesteps=2 and just use first value
             self.Vang_NL = np.concatenate((self.Vang_NL,np.array([[0.],[240.],[120.]])), axis=1)
@@ -112,6 +113,11 @@ class connector:
         self.Iang_NL = np.array([[0.],[0.],[0.]])
         for idx in range(timesteps-1):
             self.Iang_NL = np.concatenate((self.Iang_NL,np.array([[0.],[0.],[0.]])), axis=1)
+
+        # JP- This might need to be for lines only
+        self.Lpu_real = np.zeros((3,timesteps))
+        self.Lpu_imag = np.zeros((3,timesteps))
+        self.Hvec = np.zeros((3,1))
         
 class Vsrc:
 # These are defined and populated, but as of 7/31/2018 they are not used.
@@ -590,7 +596,6 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
         print(f'*** WARNING - load scale = {ld_scale} ***')
     loaddf = loaddf * ld_scale
     
-    
 
     # Populate the load dictionary's P and Q schedules with a Gridbright load file
     
@@ -648,7 +653,7 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
                     iload.Xsched[2,ts] = np.imag(Z)
                 
 #JPEDIT END - replaced edited out code, see old backup versions if this needs to be restored
-
+    
     for key, iload in loaddict.items():
         for idx in range(len(iload.phases)):
             if iload.phases[idx] == 'a':
@@ -657,7 +662,8 @@ def loadbuilderPQ(modeldata, busdict, loadpath, timesteps, timestepcur):
                 iload.phasevec = iload.phasevec + np.array([[0],[1],[0]])
             elif iload.phases[idx] == 'c':
                 iload.phasevec = iload.phasevec + np.array([[0],[0],[1]])
-            
+
+                
     return loaddict
 
 
@@ -673,7 +679,6 @@ def actbuilder(modeldata, busdict, actpath, timesteps, timestepcur, act_init):
     #[HIL] - parse current timestep
     actdf = actdf[timestepcur:timestepcur+timesteps]
     actdf.index -= timestepcur
-    
     #initiate actuators where present
     for key,ibus in busdict.items():
         for ph in ibus.phases:
@@ -746,6 +751,48 @@ def actbuilder(modeldata, busdict, actpath, timesteps, timestepcur, act_init):
                 iact.phasevec = iact.phasevec + np.array([[0],[0],[1]])
     
     return actdict
+
+
+    
+    # actdict = dict()
+    # actfile = pd.ExcelFile(actpath)
+    # actdf = actfile.parse('Time_Series_data')
+
+    # for key,ibus in busdict.items():
+    #     for ph in ibus.phases:
+    #         if 'PV_KW_' + key + '_' + ph in list(actdf.columns.values):
+    #             if not (key in actdict):
+    #                 actdict[key] = actuator(key, timesteps)
+    #                 actdict[key].node = busdict[key]
+    #                 ibus.actuators.append(actdict[key])
+    #             actdict[key].phases.append(ph)
+    
+    # for key, iact in actdict.items():
+    #     for ph in iact.phases:
+    #         for ts in range(0,timesteps):
+    #             actname_PV = 'PV_KW_' + key + '_' + ph
+    #             PV = actdf[actname_PV][ts]
+
+    #             if ph == 'a':
+    #                 iact.Psched[0,ts] = PV
+    #                 iact.Ssched[0,ts] = PV
+    #             if ph == 'b':
+    #                 iact.Psched[1,ts] = PV
+    #                 iact.Ssched[1,ts] = PV
+    #             if ph == 'c':
+    #                 iact.Psched[2,ts] = PV
+    #                 iact.Ssched[2,ts] = PV
+        
+    # for key, iact in actdict.items():
+    #     for idx in range(len(iact.phases)):
+    #         if iact.phases[idx] == 'a':
+    #             iact.phasevec = iact.phasevec + np.array([[1],[0],[0]])
+    #         elif iact.phases[idx] == 'b':
+    #             iact.phasevec = iact.phasevec + np.array([[0],[1],[0]])
+    #         elif iact.phases[idx] == 'c':
+    #             iact.phasevec = iact.phasevec + np.array([[0],[0],[1]])
+    
+    # return actdict
 
 
 
@@ -919,8 +966,8 @@ def transbuilder(modeldata,busdict,subkVAbase,timesteps):
     # Multiple formats due to impedance model building process -> 3phase and Multiphase formats
     # Turn on/off the transformer mode as necessary according to the impedance model
     
-    #transtype = 'multiphase' # [multiphase OR 3phase]
-    transtype = '3phase' 
+    transtype = '3phase' # [multiphase OR 3phase]
+    #transtype = '3phase' 
     
     'Transformer 3-PHASE'
     if transtype == '3phase':
@@ -1241,11 +1288,15 @@ def remove_transformer(feeder, from_bus, to_bus):
     feeder.network = network_mapper(feeder.modeldata,feeder.busdict,feeder.linedict,feeder.transdict,feeder.switchdict)
 
 def remove_component(base_feeder, comp_id):
+    # WHEN REMOVING LINE ALSO ATTEMPT TO REMOVE TRANSFORMER AND VICE VERSA
     mod_feeder = deepcopy(base_feeder)
     if comp_id.startswith("line"):
         from_bus = comp_id[4:].split("to")[0]
         to_bus = comp_id[4:].split("to")[1]
+        indkey = from_bus + "to" + to_bus
         remove_line(mod_feeder, from_bus, to_bus)
+        if indkey in base_feeder.transdict:
+            remove_transformer(mod_feeder, from_bus, to_bus)
     elif comp_id.startswith("shunt"):
         bus = comp_id[5:]
         remove_shunt(mod_feeder, bus)
@@ -1256,7 +1307,10 @@ def remove_component(base_feeder, comp_id):
     elif comp_id.startswith("trans"):
         from_bus = comp_id[5:].split("to")[0]
         to_bus = comp_id[5:].split("to")[1]
+        indkey = from_bus + "to" + to_bus
         remove_transformer(mod_feeder, from_bus, to_bus)
+        if indkey in base_feeder.linedict:
+            remove_line(mod_feeder, from_bus, to_bus)
     else:
         print("Unrecognized component ID")
     return mod_feeder
@@ -1267,10 +1321,6 @@ def remove_component(base_feeder, comp_id):
 def set_per_unit(linedict):
     # Set the values of Zpu and Ypu matrices for lines
     for key, iconn in linedict.items():
-        if iconn.from_node.kVbase_phg != iconn.to_node.kVbase_phg:
-            print('kVbase mismatch ', key, iconn.from_node.kVbase_phg, iconn.to_node.kVbase_phg)
-        if iconn.from_node.kVAbase != iconn.to_node.kVAbase:
-            print('kVbase mismatch ', key, iconn.from_node.kVbase_phg, iconn.to_node.kVbase_phg)
         assert (iconn.from_node.kVbase_phg == iconn.to_node.kVbase_phg and iconn.from_node.kVAbase == iconn.to_node.kVAbase), "Base mismatch " + iconn.name
         iconn.kVbase_phg = iconn.from_node.kVbase_phg
         iconn.kVAbase = iconn.from_node.kVAbase
