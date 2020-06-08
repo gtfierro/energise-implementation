@@ -1093,8 +1093,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
-            self.Pcmd_kVA = 0
-            self.Qcmd_kVA = 0 #HHHERE HHHHERE debug 
+            self.Pcmd_kVA = np.zeros(3)
+            self.Qcmd_kVA = np.zeros(3) #HHHERE HHHHERE debug 
 
             #HERE delete, this is redundant to Sratio
             # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
