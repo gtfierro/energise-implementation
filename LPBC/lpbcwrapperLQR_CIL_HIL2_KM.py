@@ -291,7 +291,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 0
         # self.HistLength = 100
-        self.HistLength = 3
+        self.HistLength = 10
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1156,7 +1156,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # self.GtMagHist.append(np.linalg.norm(Gt))
                 print('SAVING measurements for plotting')
             elif iter == self.HistLength:
-                print('SAVING plots')
+                print('$$$$$$$$$$$$$$$$$$$$$$ SAVING plots $$$$$$$$$$$$$$$$$$$$$$')
                 if self.saveVmagandangPlot or self.saveZesterrorPlot:
                     current_directory = os.getcwd()
                     resultsPATH = os.path.join(current_directory, 'simulationPlots')
