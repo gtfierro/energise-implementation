@@ -21,7 +21,7 @@ print('phases on network:',phase_size)
 
 # SETTINGS
 lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['18'] # [INPUT HERE]
+lpbc_nodeIDs = ['675'] # [INPUT HERE]
 angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
 
 '''
@@ -34,14 +34,14 @@ aren't at capacity in the form of altered phasor targets.
 '''
 
 # {actuation node: performance node}
-lpbcdict = { '18': '18'
+lpbcdict = { '675': '675'
     # '671': '671',
     # '652': '652',
     # '692': '692'
 }
 
 TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
-start_hour = 0 # [INPUT HERE]
+start_hour = 11 # [INPUT HERE]
 
 dummy_ref = True # [INPUT HERE]
 constant_phasor = False # [INPUT HERE]

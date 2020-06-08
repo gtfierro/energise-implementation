@@ -29,18 +29,18 @@ print(datetime.datetime.fromtimestamp(ts))
 # =============================================================================
 
 'IEEE13_BALANCED'
-# filepath = "IEEE13_bal/"
-# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-# loadfolder = "IEEE13_bal/"
-# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+filepath = "IEEE13_bal/"
+modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+loadfolder = "IEEE13_bal/"
+loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 
 
 'UCB33'
 # =============================================================================
-filepath = "UCB33/"
-modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
-loadfolder = "UCB33/"
-loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+# filepath = "UCB33/"
+# modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
+# loadfolder = "UCB33/"
+# loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 # =============================================================================
 
 
@@ -68,15 +68,15 @@ loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 'IEEE13'
-# subkVbase_phg = 4.16/np.sqrt(3)
-# subkVAbase = 5000.
-# timesteps = 3 #int((16-8)*60)
+subkVbase_phg = 4.16/np.sqrt(3)
+subkVAbase = 5000.
+timesteps = 2 #int((16-8)*60)
 
 'UCB33'
 # =============================================================================
-subkVbase_phg = 12.47/np.sqrt(3)
-subkVAbase = 3000.
-timesteps = 2 #int((16-8)*60)
+# subkVbase_phg = 12.47/np.sqrt(3)
+# subkVAbase = 3000.
+# timesteps = 2 #int((16-8)*60)
 # =============================================================================
 
 'PL0001'
@@ -95,7 +95,7 @@ month, day, hour, minute = date.month, date.day, date.hour, date.minute
 timestepcur = 0 #int(11*60) # [INPUT HERE] Manual input of start time
 
 # Input atcuator nodes and capacities ('nodeID': phases, kVA capacity)
-act_init = { '18': {'a': 500, 'b': 500, 'c':500}
+act_init = { '675': {'a': 707, 'b': 707, 'c':707}
         # '652': {'a': 200, 'b': 0, 'c':0},
         # '671': {'a': 100, 'b': 0, 'c':0},
         # '692': {'a': 200, 'b': 0, 'c':0}
@@ -179,9 +179,9 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     
 # phasor target settings:
     if lam1 > 0:
-        target_key = '18'
-        Vmag_match = [.97]*3
-        Vang_match = [0 - np.radians(-.1), 4/3*np.pi - np.radians(-.1), 2/3*np.pi - np.radians(-.1)] 
+        target_key = '675'
+        Vmag_match = [.975]*3
+        Vang_match = [0 - np.radians(-1), 4/3*np.pi - np.radians(-1), 2/3*np.pi - np.radians(-1)] 
     
 # phase balancing settings:
     # no settings to change for this objective
