@@ -106,8 +106,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zeffk_init = np.asmatrix(Zeffk_df.values)
 
             #for logging Zeff estimation error
-            self.ZeffkError = []
-            self.GtMag = []
+            # self.ZeffkError = []
+            # self.GtMag = []
             if self.usingNonpuZeff == 0:
                 self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
             #else wait till Zbase is  #HERE will assigning a self. later create an error?
@@ -1028,87 +1028,92 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
-            # if self.iteration_counter > self.initialHoldZeroStepCount:
-            if self.controlStepsTaken_counter > self.initialHoldZeroStepCount: #HHHERE for debugging issue with timestep 1 command
-                #get current measurements, determine saturation if current measurements exist
-                if self.currentMeasExists:
-                    if len(local_phasors) >= self.nphases*2:
-                        if self.controllerType == 'LQR':
-                            #check if V_ang_ref_firstPhase and time_indexes exist
-                            if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
-                                print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
-                                self.Icomp_pu = [np.NaN]*self.nphases
-                            else:
-                                self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
-                                self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
-                                #HERE havent checked that the current measurements are legit yet
-                                self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
-                                #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
-                                self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
-                        # calculate P/Q from actuators
-                        (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
-                        self.Pact_pu = self.Pact / self.localkVAbase
-                        self.Qact_pu = self.Qact / self.localkVAbase
+            # # if self.iteration_counter > self.initialHoldZeroStepCount:
+            # if self.controlStepsTaken_counter >= self.initialHoldZeroStepCount: #HHHERE for debugging issue with timestep 1 command
 
-                        self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-                    else:
-                        print('WARNING: self.currentMeasExists set to 1, but no/not enough current measurements given')
-                        self.Icomp_pu = [np.NaN]*self.nphases
-                else:
-                    self.Icomp_pu = [np.NaN]*self.nphases
-                    #havent built checkSaturationWoImeas yet
-                    self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
-
-                #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-                (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
-
-                #run control loop
-                #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-                #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                print('self.sat_arrayP ' + str(self.sat_arrayP))
-                print('self.sat_arrayQ ' + str(self.sat_arrayQ))
-                if self.controllerType == 'PI':
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-                elif self.controllerType == 'LQR':
-                    if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
-                        print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-                    elif any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)):
-                        print('GOT A NAN TARG, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-                    else:
-                        if self.currentMeasExists:
-                            if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-                                # need self.linearizeplant = 1 within LQR eqns, which is the default I think
-                                fakeVangRef = np.zeros(self.nphases)
-                                self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                            else:
-                                self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+            #get current measurements, determine saturation if current measurements exist
+            if self.currentMeasExists:
+                if len(local_phasors) >= self.nphases*2:
+                    if self.controllerType == 'LQR':
+                        #check if V_ang_ref_firstPhase and time_indexes exist
+                        if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
+                            print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
+                            self.Icomp_pu = [np.NaN]*self.nphases
                         else:
-                            if self.useRelativeMeas:
-                                self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                            else:
-                                self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
-                print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
-                print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+                            self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                            self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
+                            #HERE havent checked that the current measurements are legit yet
+                            self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
+                            #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
+                            self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
+                    # calculate P/Q from actuators
+                    (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
+                    self.Pact_pu = self.Pact / self.localkVAbase
+                    self.Qact_pu = self.Qact / self.localkVAbase
 
-                print('Zeffkest bus ' + str(self.busId) + ' : ' + str(Zeffkest))
-                print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-self.ZeffkTru)))
-                print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
-                #in case you want to save and plot the Zeff error:
-                self.ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
-                self.GtMag.append(np.linalg.norm(Gt))
+                    self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+                else:
+                    print('WARNING: self.currentMeasExists set to 1, but no/not enough current measurements given')
+                    self.Icomp_pu = [np.NaN]*self.nphases
+            else:
+                self.Icomp_pu = [np.NaN]*self.nphases
+                #havent built checkSaturationWoImeas yet
+                self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
 
-                # The controller is entirely in PU. So if the pu P and Q commands are ultimately enacted on the network
-                #according to the network-wide kVAbase (that was used to calculate the Zbase that was used to build the controller), then there shouldn’t be any problems.
-                # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
-                #(Zest should use self.network_kVAbase not self.localkVAbase)
-            else: #HHHERE for debugging issue with timestep 1 command
-                print('++++++++++++++++++++++++ Zeror power command given ++++++++++++++++++++++++')
-                print('self.controlStepsTaken_counter < self.initialHoldZeroStepCount')
-                self.Pcmd_pu = np.zeros(3)
-                self.Qcmd_pu = np.zeros(3) #HHHERE
-                # self.Pcmd_pu = np.ones(3)*.2
-                # self.Qcmd_pu = np.ones(3)*.2
+            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
+            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
+
+            #run control loop
+            #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+            #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+            print('self.sat_arrayP ' + str(self.sat_arrayP))
+            print('self.sat_arrayQ ' + str(self.sat_arrayQ))
+            if self.controllerType == 'PI':
+                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+            elif self.controllerType == 'LQR':
+                if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
+                    print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                    controlStepTaken = 0
+                elif any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)):
+                    print('GOT A NAN TARG, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                    controlStepTaken = 0
+                else:
+                    controlStepTaken = 1
+                    if self.currentMeasExists:
+                        if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
+                            # need self.linearizeplant = 1 within LQR eqns, which is the default I think
+                            fakeVangRef = np.zeros(self.nphases)
+                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                        else:
+                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    else:
+                        if self.useRelativeMeas:
+                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                        else:
+                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+            print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
+            print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+
+            print('Zeffkest bus ' + str(self.busId) + ' : ' + str(Zeffkest))
+            print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-self.ZeffkTru)))
+            print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
+            #in case you want to save and plot the Zeff error:
+            # self.ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
+            # self.GtMag.append(np.linalg.norm(Gt))
+
+            # The controller is entirely in PU. So if the pu P and Q commands are ultimately enacted on the network
+            #according to the network-wide kVAbase (that was used to calculate the Zbase that was used to build the controller), then there shouldn’t be any problems.
+            # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
+            #(Zest should use self.network_kVAbase not self.localkVAbase)
+
+            # else: #HHHERE for debugging issue with timestep 1 command
+            #     print('++++++++++++++++++++++++ Zeror power command given ++++++++++++++++++++++++')
+            #     print('self.controlStepsTaken_counter < self.initialHoldZeroStepCount')
+            #     self.Pcmd_pu = np.zeros(3)
+            #     self.Qcmd_pu = np.zeros(3) #HHHERE
+            #     # self.Pcmd_pu = np.ones(3)*.2
+            #     # self.Qcmd_pu = np.ones(3)*.2
 
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3) #HHHERE for debugging
@@ -1185,71 +1190,73 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
             # iter = self.iteration_counter - 1
             iter = self.controlStepsTaken_counter
-            self.controlStepsTaken_counter += 1
-            print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
-            if iter < self.HistLength:
-                self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
-                self.GtMagHist[iter] = np.linalg.norm(Gt)
-                self.VmagHist[:,iter] = self.Vmag_pu
-                self.VangHist[:,iter] = self.Vang_relative
-                # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
-                # self.GtMagHist.append(np.linalg.norm(Gt))
-                print('SAVING measurements for plotting')
-            elif iter == self.HistLength:
-                print('$$$$$$$$$$$$$$$$$$$$$$ SAVING plots $$$$$$$$$$$$$$$$$$$$$$')
-                if self.saveVmagandangPlot or self.saveZesterrorPlot:
-                    current_directory = os.getcwd()
-                    resultsPATH = os.path.join(current_directory, 'simulationPlots')
-                    resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}') #if you want to write over previous run
-                    # resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}') #if you want to save each run
-                    if not os.path.exists(resultsPATH):
-                        os.makedirs(resultsPATH)
+            if controlStepTaken == 1:
+                self.controlStepsTaken_counter += 1
+                print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
+                if iter < self.HistLength:
+                    if self.controllerType == 'LQR':
+                        self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
+                        self.GtMagHist[iter] = np.linalg.norm(Gt)
+                    self.VmagHist[:,iter] = self.Vmag_pu
+                    self.VangHist[:,iter] = self.Vang_relative
+                    # self.ZeffkErrorHist.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
+                    # self.GtMagHist.append(np.linalg.norm(Gt))
+                    print('SAVING measurements for plotting')
+                elif iter == self.HistLength:
+                    print('$$$$$$$$$$$$$$$$$$$$$$ SAVING plots $$$$$$$$$$$$$$$$$$$$$$')
+                    if self.saveVmagandangPlot or self.saveZesterrorPlot:
+                        current_directory = os.getcwd()
+                        resultsPATH = os.path.join(current_directory, 'simulationPlots')
+                        resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}') #if you want to write over previous run
+                        # resultsPATH = os.path.join(resultsPATH, f'feeder:{self.testcase}_bus:{self.busId}_time:{pytime.time()}') #if you want to save each run
+                        if not os.path.exists(resultsPATH):
+                            os.makedirs(resultsPATH)
 
-                if self.saveVmagandangPlot:
-                    #magnitude
-                    for phase in np.arange(self.controller.nphases):
-                        plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
-                    print('phase ', phase)
-                    print('self.VmagTarg_pu[phase] ', self.VmagTarg_pu[phase])
-                    plt.plot(self.VmagTarg_pu[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
-                    # plt.title('Network: 13 node feeder with constant load')
-                    plt.ylabel('p.u. Vmag')
-                    plt.xlabel('Timestep')
-                    plt.legend()
-                    plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
+                    if self.saveVmagandangPlot:
+                        #magnitude
+                        for phase in np.arange(self.controller.nphases):
+                            plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
+                        print('phase ', phase)
+                        print('self.VmagTarg_pu[phase] ', self.VmagTarg_pu[phase])
+                        plt.plot(self.VmagTarg_pu[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
+                        # plt.title('Network: 13 node feeder with constant load')
+                        plt.ylabel('p.u. Vmag')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
 
-                    #angle
-                    print('self.VangHist ', self.VangHist)
-                    for phase in np.arange(self.controller.nphases):
-                        Vangs = self.VangHist[phase,:]
-                        plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
-                    plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
-                    # plt.title('Network: 13 node feeder with constant load')
-                    plt.ylabel('Vang [rad]')
-                    plt.xlabel('Timestep')
-                    plt.legend()
-                    plt.savefig(os.path.join(resultsPATH, 'Vang')); plt.clf(); plt.cla(); plt.close()
-                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-                    print('SAVED Vmag and Vang plots ')
+                        #angle
+                        print('self.VangHist ', self.VangHist)
+                        for phase in np.arange(self.controller.nphases):
+                            Vangs = self.VangHist[phase,:]
+                            plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
+                        plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
+                        # plt.title('Network: 13 node feeder with constant load')
+                        plt.ylabel('Vang [rad]')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'Vang')); plt.clf(); plt.cla(); plt.close()
+                        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                        print('SAVED Vmag and Vang plots ')
 
-                if self.saveZesterrorPlot:
-                    print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
-                    print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
-                    print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
-                    plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
-                    # plt.title('Zeff Estimation Error')
-                    plt.ylabel('Frobenius Norm Zeff Estimation Error')
-                    plt.xlabel('Timestep')
-                    plt.legend()
-                    plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
+                    if self.saveZesterrorPlot and self.controllerType == 'LQR':
+                        print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
+                        print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
+                        print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
+                        plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
+                        # plt.title('Zeff Estimation Error')
+                        plt.ylabel('Frobenius Norm Zeff Estimation Error')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
 
-                    plt.plot(self.GtMagHist,'-', label='node: ' + key)
-                    plt.ylabel('Frobenius Norm of Gt')
-                    plt.xlabel('Timestep')
-                    plt.legend()
-                    plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
-                    print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-                    print('SAVED Zest plots ')
+                        plt.plot(self.GtMagHist,'-', label='node: ' + key)
+                        plt.ylabel('Frobenius Norm of Gt')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
+                        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                        print('SAVED Zest plots ')
 
             return status
 
@@ -1462,8 +1469,8 @@ CILscaling = 10 #in VA
 # Sratio divides the network kVA
 # Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
-rate = 5
-# rate = 10 #HHHERE for debugging issue with timestep 1 command
+# rate = 5
+rate = 10 #HHHERE for debugging issue with timestep 1 command
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
