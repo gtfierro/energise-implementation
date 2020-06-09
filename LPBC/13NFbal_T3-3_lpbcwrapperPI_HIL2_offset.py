@@ -244,7 +244,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.offset_mode = 1 # set to True for offset functionality, False for normal
+        self.offset_mode = 2 # set to 1 for remainder offset, 2 for percentage offset, 0 for no offset
 
         IP = '131.243.41.14'
         PORT = 504
