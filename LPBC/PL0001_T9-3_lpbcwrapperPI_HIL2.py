@@ -605,7 +605,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
 
 
-        print(f'PCMD_VA: {Pcmd_VA}')
+        if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
+            print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
                 Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
@@ -615,7 +616,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1:
                 id = 3
-                offset_inc = 100
+                offset_inc = 200
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
