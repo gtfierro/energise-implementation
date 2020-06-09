@@ -28,7 +28,7 @@ start_hour = 11             # [INPUT HERE]
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
 feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T3.4'
+testID = 'T3.3'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
@@ -53,7 +53,7 @@ if constant_phasor == True:
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['675']
             cons_Vmag = [0.975,0.975,0.975]
-            cons_Vang = [0 -1, -120 -1, 120 - 1]
+            cons_Vang = [0 - 1, -120 - 1, 120 - 1]
             # cons_Vmag = [0.99,0.99,0.99]
             # cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T3.4':

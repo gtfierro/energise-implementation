@@ -346,7 +346,7 @@ def spbc_iter_run(timestepcur):
     phase_size, myfeeder = feeder_init(modelpath, loadfolder, loadpath, timesteps, timestepcur, subkVbase_phg, subkVAbase, PVforecast, act_init)
 
 
-    num_iterations = 5
+    num_iterations = 4
     enable_actuators = True
     bus_map = {}
     act_map = {}
