@@ -248,7 +248,7 @@ class LQRcontroller:
         LQR uses matrix computations internally, but gets ndarrays in and passes ndarrays out
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        if P_implemented is not None:
+        if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
             self.u[0,:self.nphases] = P_implemented #HERE need to check this
             self.PcommandPrev = P_implemented
         if Q_implemented is not None:
