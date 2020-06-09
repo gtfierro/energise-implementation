@@ -448,32 +448,34 @@ def DSS_alltimesteps(feeder,alarm):
             Htemp = np.asarray(np.matmul(iline.Z,Itemp))/(iline.kVbase_phg*1000)
             iline.Hvec = np.multiply(Htemp,np.conj(Htemp))
                     
-        for key,iline in feeder.transdict.items():
-            # Reset NL line currents
-            iline.Imag_NL[:,ts:ts+1] = np.zeros((3,1))
-            iline.Iang_NL[:,ts:ts+1] = np.zeros((3,1))
-            
-            # Pull bus voltages out of the DSS solution
-            name = iline.name
-            
-            for ph in iline.w0_phases:
-                if ph == 'a':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'A')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    iline.Imag_NL[0,ts] = lineIs[0]
-                    iline.Iang_NL[0,ts] = lineIs[1]
-
-                if ph == 'b':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'B')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    iline.Imag_NL[1,ts] = lineIs[0]
-                    iline.Iang_NL[1,ts] = lineIs[1]
-
-                if ph == 'c':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'C')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    iline.Imag_NL[2,ts] = lineIs[0]
-                    iline.Iang_NL[2,ts] = lineIs[1]
+# =============================================================================
+#         for key,iline in feeder.transdict.items():
+#             # Reset NL line currents
+#             iline.Imag_NL[:,ts:ts+1] = np.zeros((3,1))
+#             iline.Iang_NL[:,ts:ts+1] = np.zeros((3,1))
+#             
+#             # Pull bus voltages out of the DSS solution
+#             name = iline.name
+#             
+#             for ph in iline.w0_phases:
+#                 if ph == 'a':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'A')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[0,ts] = lineIs[0]
+#                     iline.Iang_NL[0,ts] = lineIs[1]
+# 
+#                 if ph == 'b':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'B')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[1,ts] = lineIs[0]
+#                     iline.Iang_NL[1,ts] = lineIs[1]
+# 
+#                 if ph == 'c':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'C')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[2,ts] = lineIs[0]
+#                     iline.Iang_NL[2,ts] = lineIs[1]
+# =============================================================================
 
             # JP - added Hvec calc from Kyle's code
             # TODO transformers only have Z, not Zpu

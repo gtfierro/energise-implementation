@@ -35,7 +35,7 @@ def feeder_init(modelpath, loadfolder, loadpath, timesteps, timestepcur, subkVba
     return phase_size, myfeeder
 
 
-def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel=1e-3,eps_abs=1e-10, max_iter = 50000): #write 'none' if doesnt exist    
+def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel=1e-5,eps_abs=1e-10, max_iter = 50000): #write 'none' if doesnt exist    
     # set tuning parameters of objectives: 0 = off
     # lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
     # lamcost - const function, lamdistpf - transmission/distribution power flow
@@ -54,12 +54,12 @@ def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel
     
     #  phasor target settings:
     if lam1 > 0:
-        target_key = '675'
+        target_key = '18'
         # Vmag_match = [.985]*3
         # Vang_match = [0 - np.radians(1),
         #  4/3*np.pi - np.radians(1), 2/3*np.pi - np.radians(1)] 
 
-        Vmag_match = [0.975]*3
+        Vmag_match = [0.99]*3
         Vang_match = [0 + np.radians(-1), 4/3*np.pi + np.radians(-1), 2/3*np.pi + np.radians(-1)] 
     
     # phase balancing settings:
@@ -252,7 +252,7 @@ def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel
     constraints = cvx_set_constraints(myfeeder,enable_actuators) # Second argument turns actuators on/off
     prob = cp.Problem(objective, constraints)
     #result = prob.solve()  
-    result = prob.solve(verbose=verbose)
+    result = prob.solve(verbose=verbose,eps_rel=eps_rel,eps_abs=eps_abs, max_iter = 50000)
 
     Vtargdict, act_keys = get_targets(myfeeder)
 
@@ -269,16 +269,16 @@ def spbc_iter_run(timestepcur):
     # loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 
     'IEEE13_BALANCED'
-    filepath = "IEEE13_bal/"
-    modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-    loadfolder = "IEEE13_bal/"
-    loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+    # filepath = "IEEE13_bal/"
+    # modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+    # loadfolder = "IEEE13_bal/"
+    # loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 
     'UCB33'
-    # filepath = "UCB33/"
-    # modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
-    # loadfolder = "UCB33/"
-    # loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+    filepath = "UCB33/"
+    modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
+    loadfolder = "UCB33/"
+    loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 
     'PL0001_v2'
     # filepath = "PL0001_v2/"
@@ -299,14 +299,14 @@ def spbc_iter_run(timestepcur):
      
     # Specify substation kV, kVA bases, and the number of timesteps in the load data
     'IEEE13'
-    subkVbase_phg = 4.16/np.sqrt(3)
-    subkVAbase = 5000.
-    timesteps = 1
+    # subkVbase_phg = 4.16/np.sqrt(3)
+    # subkVAbase = 5000.
+    # timesteps = 1
 
     'UCB33'
-    # subkVbase_phg = 12.47/np.sqrt(3)
-    # subkVAbase = 3000.
-    # timesteps = 1
+    subkVbase_phg = 12.47/np.sqrt(3)
+    subkVAbase = 3000.
+    timesteps = 1
 
     'PL0001'
     # subkVbase_phg = 12.6/np.sqrt(3)
@@ -337,8 +337,7 @@ def spbc_iter_run(timestepcur):
         PVforecast[node]['maridian'] = -120
         PVforecast[node]['PVfrac'] = 0.3
 
-    act_init = {'675': {'a': 20000, 'b': 20000, 'c': 20000},
-                '632': {'a': 20000, 'b': 20000, 'c': 20000}
+    act_init = {'18': {'a': 707, 'b': 707, 'c': 707},
         # '652': {'a': 200, 'b': 0, 'c':0},
         # '671': {'a': 100, 'b': 0, 'c':0},
         # '692': {'a': 200, 'b': 0, 'c':0}
@@ -448,7 +447,7 @@ def spbc_iter_run(timestepcur):
     # plt.savefig("plots/" + plot_subject+"_"+plot_objective+"_obj.png")
     # plt.show()
 
-    return Vtargdict, act_keys, subkVAbase, myfeeder
+    return subkVAbase, myfeeder, Vtargdict, act_keys
 
-Vtargdict, act_keys, subkVAbase, myfeeder = spbc_iter_run(0)
+subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(0)
     
