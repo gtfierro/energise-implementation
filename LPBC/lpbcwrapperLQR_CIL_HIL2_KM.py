@@ -1099,16 +1099,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
             #(Zest should use self.network_kVAbase not self.localkVAbase)
 
+            # self.Pcmd_pu = np.zeros(3)
+            # self.Qcmd_pu = np.zeros(3) #HHHERE debug
+            self.Pcmd_pu = np.ones(3)*.1
+            self.Qcmd_pu = np.ones(3)*.1
+
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
             #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
             #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
-
-            # self.Pcmd_kVA = np.zeros(3)
-            # self.Qcmd_kVA = np.zeros(3) #HHHERE debug
-            self.Pcmd_kVA = np.ones(3)*.1
-            self.Qcmd_kVA = np.ones(3)*.1
 
             #HERE delete, this is redundant to Sratio
             # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
