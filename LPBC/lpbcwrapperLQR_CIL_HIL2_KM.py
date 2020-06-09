@@ -1104,8 +1104,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
             #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
             #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
-            # self.Pcmd_kVA = np.zeros(3)
-            # self.Qcmd_kVA = np.zeros(3) #debug
+            self.Pcmd_kVA = np.zeros(3)
+            self.Qcmd_kVA = np.zeros(3) #HHHERE debug
 
             #HERE delete, this is redundant to Sratio
             # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
@@ -1146,7 +1146,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 error('actType error')
 
             print('self.P_implemented_PU ', self.P_implemented_PU)
-            print('self.Q_implemented_PU ', self.Q_implemented_PU)    
+            print('self.Q_implemented_PU ', self.Q_implemented_PU)
             #HERE self.P_implemented_PU should be self.Pact_PU, but self.Pact_PU requires a PMU current meas, so have to use an if statement to set self.P_implemented_PU with P_act
             #(could get rid of self.P_implemented_PU and just keep self.Pact_PU)
 
