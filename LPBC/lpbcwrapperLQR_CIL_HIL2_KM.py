@@ -1104,8 +1104,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
             #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
             #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
-            # self.Pcmd_kVA = np.zeros(3)
-            # self.Qcmd_kVA = np.zeros(3) #HHHERE debug
+            self.Pcmd_kVA = np.zeros(3)
+            self.Qcmd_kVA = np.zeros(3) #HHHERE debug
 
             #HERE delete, this is redundant to Sratio
             # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
@@ -1221,7 +1221,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.saveZesterrorPlot:
                     print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                     print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
-                    print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkest)
+                    print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
                     plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
                     # plt.title('Zeff Estimation Error')
                     plt.ylabel('Frobenius Norm Zeff Estimation Error')
