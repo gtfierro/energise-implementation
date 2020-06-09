@@ -1101,8 +1101,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3) #HHHERE debug
-            self.Pcmd_pu = np.ones(3)*.1
-            self.Qcmd_pu = np.ones(3)*.1
+            self.Pcmd_pu = np.ones(3)*.2
+            self.Qcmd_pu = np.ones(3)*.2
 
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
