@@ -639,7 +639,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
-                CIL_offset = CIL_offset_perc * np.concatenate([Pcmd_ORT_VA,Qcmd_ORT_VA]) # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                CIL_offset = CIL_offset_perc * np.concatenate([Pcmd_ORT_VA,Qcmd_ORT_VA]) / 1000 # this is a value that gets sent as kW/kVar direct to ORT via modbus
                 mtx = [0] * nphases*2
                 # cap at max offset
                 for i in range(nphases*2):
