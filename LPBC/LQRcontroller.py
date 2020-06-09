@@ -3,7 +3,7 @@ import numpy as np
 from scipy.linalg import solve_discrete_are as dare
 from numpy.linalg import inv
 
-printZeffterms = 0
+printZeffterms = 1
 printDOBCterms = 1
 printControlterms = 1
 
