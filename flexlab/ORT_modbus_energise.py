@@ -138,6 +138,7 @@ def sim_start_pause_stop(sim_length_min):
         print('simulation start time:',sim_start)
         
         # start recording data (sim flag on)
+        client.write_registers(int(1), int(1), unit=id)
         client.write_registers(int(1), int(3), unit=id) #sets simulation flag to 1 (ON)
             
         w = 1
