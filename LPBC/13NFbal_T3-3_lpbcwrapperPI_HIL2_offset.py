@@ -712,12 +712,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         # responses = map(session.get, urls)
         # results = [resp.result() for resp in responses]
-        for i in range(nphases):
-            if results[i].status_code == 200:
-                commandReceipt[i] = 'success'
-            else:
-                commandReceipt[i] = 'failure'
-        print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        # for i in range(nphases):
+        #     if results[i].status_code == 200:
+        #         commandReceipt[i] = 'success'
+        #     else:
+        #         commandReceipt[i] = 'failure'
+        # print(f'INV COMMAND RECEIPT: {commandReceipt}')
         if self.offset_mode == 1 or self.offset_mode == 2:
             try:
                 self.client.connect()
@@ -728,7 +728,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(e)        
             finally:
                 self.client.close()
-        return commandReceipt
+        return #commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
