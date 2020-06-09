@@ -89,7 +89,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
             '''
-            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+            self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -296,6 +296,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
         self.GtMagHist = np.zeros(self.HistLength)
+
+        self.P_implemented_PU = None
+        self.Q_implemented_PU = None
 
     def targetExtraction(self,phasor_target):
         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
@@ -808,6 +811,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
+        P_implemented_PU = Pcmd_VA/(self.network_kVAbase*1000)
+        Q_implemented_PU = Qcmd_VA/(self.network_kVAbase*1000)
 
         if nphases == 3:
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
@@ -857,7 +862,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             result = ('exceptions', e)
         finally:
             client.close()
-        return result
+        return result, P_implemented_PU, Q_implemented_PU
 
 
     def initializeActuators(self, mode):
@@ -1070,14 +1075,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
                             # need self.linearizeplant = 1 within LQR eqns, which is the default I think
                             fakeVangRef = np.zeros(self.nphases)
-                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
-                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                            self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                     else:
                         if self.useRelativeMeas:
-                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
-                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
+                            self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
@@ -1097,8 +1102,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
+            #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
+            #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
             # self.Pcmd_kVA = np.zeros(3)
-            # self.Qcmd_kVA = np.zeros(3) #HHHERE HHHHERE debug
+            # self.Qcmd_kVA = np.zeros(3) #debug
 
             #HERE delete, this is redundant to Sratio
             # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
@@ -1109,7 +1116,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
                     '''
                     COMMENTED OUT FOR CIL TESTING
+                    # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
                     self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
+                    self.P_implemented_PU = self.Pcmd_pu #HERE change these if inverter commands are not always realized
+                    self.Q_implemented_PU = self.Qcmd_pu
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
                     '''
                     print('********')
@@ -1117,15 +1127,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
                     disp('couldnt send commands because no current measurement available') #HERE what?
             elif self.actType == 'load':
+                # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                self.P_implemented_PU = self.Pcmd_pu #HERE change these if load commands are not always realized
+                self.Q_implemented_PU = self.Qcmd_pu
                 print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
             elif self.actType == 'modbus':
-                result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
@@ -1133,10 +1148,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Pact_kVA = self.Pact
             self.Qact_kVA = self.Qact
 
+            #HHERE need to adjust these so that they self.P_implemented_PU and self.Q_implemented_PU too
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
             # print(log_actuation)
-
             status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
             # print(status)
             iterend = pytime.time()

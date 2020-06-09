@@ -53,7 +53,7 @@ class LQRcontroller:
             (self.A, self.B, self.Babbrev) = self.makeABmatrices(Zeffkinit,timesteplength)
             self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
         self.state = np.asmatrix(np.zeros(4*nphases))
-        self.u = np.asmatrix(np.zeros(2*nphases))
+        self.u = np.asmatrix(np.zeros(2*nphases)) #this makes a row matrix
 
         #disturbance initialization
         self.d_est = np.asmatrix(np.zeros(2*nphases))
@@ -241,12 +241,20 @@ class LQRcontroller:
     so if V and Vtarg are relative, and V0 is ~[0,0,0] (instead of ~[0,-120,120]), and Vcomp is set seperately to be ~[0,-120,120] for the Zest calc,
     then it should work to pass LQR relative targets and V0 =~ [0,0,0]
     '''
-    def LQRupdate(self,VmagArray,VangArray,VmagTargArray,VangTargArray,V0magArray,V0angArray,sat_arrayP=None,sat_arrayQ=None,VcompArray=None,IcompArray=None):
+    # def LQRupdate(self,VmagArray,VangArray,VmagTargArray,VangTargArray,V0magArray,V0angArray,sat_arrayP=None,sat_arrayQ=None,VcompArray=None,IcompArray=None):
+    def LQRupdate(self,VmagArray,VangArray,VmagTargArray,VangTargArray,V0magArray,V0angArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,VcompArray=None,IcompArray=None):
         '''
         Internal Controller Accounting, feedback calculation, and Z estimation (if self.est_Zeffk was set to 1)
         LQR uses matrix computations internally, but gets ndarrays in and passes ndarrays out
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
+        if P_implemented is not None:
+            self.u[0,:self.nphases] = P_implemented #HERE need to check this
+            self.PcommandPrev = P_implemented
+        if Q_implemented is not None:
+            self.u[0,self.nphases:] = Q_implemented
+            self.QcommandPrev = Q_implemented
+
         self.iteration_counter += 1
         if sat_arrayP is None:
             sat_arrayP = np.ones(self.nphases)

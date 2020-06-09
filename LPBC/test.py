@@ -5,7 +5,14 @@ import numpy as np
 import sys
 
 
+nphases = 3
+print(np.zeros(2*nphases))
+u = np.asmatrix(np.zeros(2*nphases))
 
+print(u)
+print(np.shape(u))
+
+sys.exit()
 
 e = np.asarray([1,np.NaN,3])
 if any(np.isnan(e)):
