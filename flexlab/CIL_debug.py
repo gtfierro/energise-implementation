@@ -43,8 +43,8 @@ finally:
   # scaling ratio
 P1, P2, P3 = 0,0,0
 Q1, Q2, Q3 = 0,0,0
-# P1, P2, P3 = 0, 0, 0
-# Q1, Q2, Q3 = 0, 0, 0
+# P1, P2, P3 = 16666, 16666, 16666  #VA command corresponding to .1 PU for 13bal (with Sratio division included)
+# Q1, Q2, Q3 = 16666, 16666, 16666
 
 
 # set signs of commands through sign_vec
@@ -66,16 +66,13 @@ try:
     for i in range(len(mtx)):
         client.write_registers(int(mtx_register[i]), mtx[i], unit=id)
     print('sent')
-    
+
     #client.write_registers(mtx_register, mtx, unit=id)
     #print('sent')
-        
-    
+
+
 except Exception as e:
     print(e)
-    
+
 finally:
     client.close()
-
-    
-    
