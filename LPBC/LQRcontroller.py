@@ -297,6 +297,8 @@ class LQRcontroller:
                 self.VcompPrev = Vcomp.copy()
                 self.IcompPrevExists = 1
             else:
+                print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+                print('Icomp is None')
                 self.IcompPrevExists = 0
 
         #update controller feedback matrix
