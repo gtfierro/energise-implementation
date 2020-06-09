@@ -261,7 +261,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.offset_mode = 1
+        self.offset_mode = 2
 
         IP = '131.243.41.14'
         PORT = 504
