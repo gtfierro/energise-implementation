@@ -325,7 +325,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 phase = 'C'
                 status_phases.append('ph_C')
             else:
-                disp('no phase found for target ' + str(i) + 'using phase A')
+                print('no phase found for target ' + str(i) + 'using phase A')
                 phaseA = True
                 phase = 'A'
                 status_phases.append('ph_A')
@@ -1113,7 +1113,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Qcmd_kVA = self.Qcmd_kVA/10
 
             if self.actType == 'inverter':
-                if self.currentMeasExists or self.mode == 3 or self.mode == 4: # or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
+                if self.currentMeasExists or self.mode == 3 or self.mode == 4 or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
                     '''
                     COMMENTED OUT FOR CIL TESTING
                     # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact) #calculating Pact requires an active current measurement
@@ -1131,7 +1131,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
-                    disp('couldnt send commands because no current measurement available') #HERE what?
+                    print('couldnt send commands because no current measurement available') #HERE what?
             elif self.actType == 'load':
                 # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
