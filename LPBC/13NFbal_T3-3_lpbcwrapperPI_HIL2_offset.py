@@ -710,8 +710,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv = inv.item()  # changes data type
                 urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
-        responses = map(session.get, urls)
-        results = [resp.result() for resp in responses]
+        # responses = map(session.get, urls)
+        # results = [resp.result() for resp in responses]
         for i in range(nphases):
             if results[i].status_code == 200:
                 commandReceipt[i] = 'success'
