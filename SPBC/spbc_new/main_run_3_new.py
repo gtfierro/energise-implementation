@@ -181,7 +181,7 @@ def spbc_run(refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur): #write 'no
     if lam1 > 0:
         target_key = '675'
         Vmag_match = [.975]*3
-        Vang_match = [0 - np.radians(-1), 4/3*np.pi - np.radians(-1), 2/3*np.pi - np.radians(-1)] 
+        Vang_match = [0 + np.radians(-1), 4/3*np.pi + np.radians(-1), 2/3*np.pi + np.radians(-1)] 
     
 # phase balancing settings:
     # no settings to change for this objective

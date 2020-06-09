@@ -27,8 +27,8 @@ start_hour = 11             # [INPUT HERE]
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  'PL0001'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T9.3'
+feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T3.4'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
@@ -64,8 +64,8 @@ if constant_phasor == True:
             varying_targ_toggle = True
             if varying_targ_toggle:
                 cons_Vmag_2 = [0.96,0.96,0.96]
-                cons_Vang_2 = [0 -4, 0 -4, 0 -4] # all on phase A
-                vary_iter = 29
+                cons_Vang_2 = [0 -4, -120 -4, 120 -4]
+                vary_iter = 1
         if testID == 'T12.1':
             lpbc_phases = ['a']
             lpbc_nodeIDs = ['671']
@@ -520,6 +520,12 @@ class myspbc(pbc.SPBCProcess):
                             if len(self.Q_flag) > 0:
                                 if self.Q_flag[0] == 1:
                                     Vtargdict[key]['Vmag'] = [cons_Vmag_ICDI[0]-refphasor[0, 0], cons_Vmag_ICDI[0]-refphasor[0, 0], cons_Vmag_ICDI[0]-refphasor[0, 0]]
+                    else:
+                        if varying_targ_toggle:
+                            if self.iteration >= vary_iter: #Change here if we want to set varying targets
+                                Vtargdict[key]['Vmag'] = [cons_Vmag_2[0] - refphasor[0, 0], cons_Vmag_2[1] - refphasor[1, 0], cons_Vmag_2[1] - refphasor[2, 0]]
+                                Vtargdict[key]['Vang'] = [cons_Vang_2[0] - refphasor[0, 1], cons_Vang_2[1] - refphasor[1, 1], cons_Vang_2[2] - refphasor[2, 1]]
+
 
                     Vtargdict[key]['KVbase'] = [cons_kVbase[0],cons_kVbase[1],cons_kVbase[2]]
                     Vtargdict[key]['KVAbase'] = [cons_kVAbase[0],cons_kVAbase[1],cons_kVAbase[2]] #assumes 3ph sub
