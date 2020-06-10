@@ -300,7 +300,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 0
+        self.perturbPowerCommand = 1
         self.perturbScale = .1
 
 
