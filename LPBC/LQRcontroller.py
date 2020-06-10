@@ -255,9 +255,13 @@ class LQRcontroller:
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
+        print(ubefore)
+        print(ubefore[0])
+        print(self.u)
+        print(self.u[0])
         if any(ubefore[0] != self.u[0]):
-            print('&&&&&&&&&&&& HERE u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
-            print('&&&&&&&&&&&& HERE u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
+            print('&&&&&&&&&&&& u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
+            print('&&&&&&&&&&&& u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
 
         self.iteration_counter += 1
         if sat_arrayP is None:
