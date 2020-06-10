@@ -253,7 +253,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.inv_Qmax = 5000 #check with Maxime
         self.ORT_max_kVA_T12 = 50   # this is to define a different act cap for the 'phase A (671)' actuator in T12.
                                     # Other caps are still set by ORT_max_kVA as an argument in init.
-        self.offset_mode = 0 # set to True for offset functionality, False for normal
+        self.offset_mode = 2 # set to True for offset functionality, False for normal
 
         IP = '131.243.41.14'
         PORT = 504
@@ -629,7 +629,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
 
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
-            if self.offset_mode == 1 or self.offset_mode == 2:
+            if self.offset_mode == 1:
                 id = 3
                 offset_inc = 100
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
@@ -665,17 +665,69 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'mtx: {mtx}')
                 print(f'Pcmd_rem: {Pcmd_VA}')
                 print(f'Qcmd_rem: {Qcmd_VA}')
+            if self.offset_mode == 2:
+                id = 3
+                offset_inc = 16
+                offset_steps = self.ORT_max_VA/1000/offset_inc
+                offsetSratio = self.localSratio/offset_steps
+                CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
+
+                offset_inc_2 = 10
+                # dont need these two because both are set to be 20% for inverter
+                # offset_steps_2 = self.ORT_max_kVA_T12/1000/offset_inc_2
+                # offsetSratio_2 = self.localSratio/offset_steps_2
+                CIL_offset_max_2 = self.ORT_max_VA_T12/1000 - offset_inc_2
+                
+                inv_offset_perc = offset_inc/(self.ORT_max_VA/1000) #20% for both
+                CIL_offset_perc = 1 - inv_offset_perc               #80% for both
+
+                Pcmd_ORT_VA = Pcmd_VA * self.localSratio
+                Qcmd_ORT_VA = Qcmd_VA * self.localSratio
+                CIL_offset = CIL_offset_perc * np.concatenate([Pcmd_ORT_VA,Qcmd_ORT_VA]) / 1000 # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                mtx = [0] * nphases*2
+                # cap at max offset
+                for i in range(nphases*2):
+                    if CIL_offset[i] > CIL_offset_max:
+                        if i == 0 or i == 3:
+                            CIL_offset[i] = CIL_offset_max_2 # because phase A corresponds to inv with different capacity for T12
+                        else:
+                            CIL_offset[i] = CIL_offset_max
+                        if i < 3:
+                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset[i]}')
+                        if i >= 3:
+                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset[i]}')
+                # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
+                mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
+                mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
+                mtx_register = np.arange(301,306+1).tolist()
+
+                Pcmd_VA = Pcmd_ORT_VA * inv_offset_perc / offsetSratio
+                Qcmd_VA = Qcmd_ORT_VA * inv_offset_perc / offsetSratio
+                print('OFFSET COMMANDS:')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_inv: {Pcmd_ORT_VA * inv_offset_perc}')
+                print(f'mtx: {mtx}')
+                print(f'Pcmd_inv: {Pcmd_VA}')
+                print(f'Qcmd_inv: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
-                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
-                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
-                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
-                    print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+                if i == 0 or i == 3:
+                    if Pcmd_VA[i] > self.ORT_max_VA_T12/self.localSratio:
+                        Pcmd_VA[i] = self.ORT_max_VA_T12/self.localSratio
+                        print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                    if Qcmd_VA[i] > self.ORT_max_VA_T12/self.localSratio:
+                        Qcmd_VA[i] = self.ORT_max_VA_T12/self.localSratio
+                        print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+                else:
+                    if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                        Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                        print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                    if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                        Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                        print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            # +50 to Q is a constant offset due to hardware measurement error
             # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
+            # same for +100 to Q
             # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
             Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
             Qcmd_perc = (Qcmd_VA + 100) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
@@ -706,7 +758,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #         print('inv != 1')
             #         return
 
-
             for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
                 Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
                 Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
@@ -714,25 +765,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv = inv.item()  # changes data type
                 urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
-        responses = map(session.get, urls)
-        results = [resp.result() for resp in responses]
-        for i in range(nphases):
-            if results[i].status_code == 200:
-                commandReceipt[i] = 'success'
-            else:
-                commandReceipt[i] = 'failure'
-        print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        if self.offset_mode == 1 or self.offset_mode == 2:
-            try:
-                self.client.connect()
-                for i in range(len(mtx)):
-                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-                print(f'sent offsets: {mtx}')        
-            except Exception as e:
-                print(e)        
-            finally:
-                self.client.close()
-        return commandReceipt
+        # responses = map(session.get, urls)
+        # results = [resp.result() for resp in responses]
+        # for i in range(nphases):
+        #     if results[i].status_code == 200:
+        #         commandReceipt[i] = 'success'
+        #     else:
+        #         commandReceipt[i] = 'failure'
+        # print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        # if self.offset_mode == 1 or self.offset_mode == 2:
+        #     try:
+        #         self.client.connect()
+        #         for i in range(len(mtx)):
+        #             self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+        #         print(f'sent offsets: {mtx}')        
+        #     except Exception as e:
+        #         print(e)        
+        #     finally:
+        #         self.client.close()
+        return #commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
