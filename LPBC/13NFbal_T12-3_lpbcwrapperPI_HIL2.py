@@ -674,9 +674,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                 offset_inc_2 = 10
                 # dont need these two because both are set to be 20% for inverter
-                # offset_steps_2 = self.ORT_max_kVA_T12/1000/offset_inc_2
+                # offset_steps_2 = self.ORT_max_kVA_T12/offset_inc_2
                 # offsetSratio_2 = self.localSratio/offset_steps_2
-                CIL_offset_max_2 = self.ORT_max_VA_T12/1000 - offset_inc_2
+                CIL_offset_max_2 = self.ORT_max_kVA_T12 - offset_inc_2
                 
                 inv_offset_perc = offset_inc/(self.ORT_max_VA/1000) #20% for both
                 CIL_offset_perc = 1 - inv_offset_perc               #80% for both
@@ -711,11 +711,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'Qcmd_inv: {Qcmd_VA}')
             for i in range(len(Pcmd_VA)):
                 if i == 0 or i == 3:
-                    if Pcmd_VA[i] > self.ORT_max_VA_T12/self.localSratio:
-                        Pcmd_VA[i] = self.ORT_max_VA_T12/self.localSratio
+                    if Pcmd_VA[i] > self.ORT_max_kVA_T12*1000/self.localSratio:
+                        Pcmd_VA[i] = self.ORT_max_kVA_T12*1000/self.localSratio
                         print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
-                    if Qcmd_VA[i] > self.ORT_max_VA_T12/self.localSratio:
-                        Qcmd_VA[i] = self.ORT_max_VA_T12/self.localSratio
+                    if Qcmd_VA[i] > self.ORT_max_kVA_T12*1000/self.localSratio:
+                        Qcmd_VA[i] = self.ORT_max_kVA_T12*1000/self.localSratio
                         print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
                 else:
                     if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
