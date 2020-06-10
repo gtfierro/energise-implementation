@@ -171,12 +171,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
-            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
+            cancelDists = 0 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             lam = .95
             # lam = .5
@@ -848,25 +848,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     inv = inv.item()  # changes data type
                 urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
 
-        # responses = map(session.get, urls)
-        # results = [resp.result() for resp in responses]
-        # for i in range(nphases):
-        #     if results[i].status_code == 200:
-        #         commandReceipt[i] = 'success'
-        #     else:
-        #         commandReceipt[i] = 'failure'
-        # print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        # if self.offset_mode == 1 or self.offset_mode == 2:
-        #     try:
-        #         self.client.connect()
-        #         for i in range(len(mtx)):
-        #             self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-        #         print(f'sent offsets: {mtx}')
-        #     except Exception as e:
-        #         print(e)
-        #     finally:
-        #         self.client.close()
-        return # commandReceipt
+        responses = map(session.get, urls)
+        results = [resp.result() for resp in responses]
+        for i in range(nphases):
+            if results[i].status_code == 200:
+                commandReceipt[i] = 'success'
+            else:
+                commandReceipt[i] = 'failure'
+        print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        if self.offset_mode == 1 or self.offset_mode == 2:
+            try:
+                self.client.connect()
+                for i in range(len(mtx)):
+                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+                print(f'sent offsets: {mtx}')
+            except Exception as e:
+                print(e)
+            finally:
+                self.client.close()
+        return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
         Pcmd_VA = abs(Pcmd_kVA*1000) #abs values for working only in quadrant 1. Will use modbus to determine quadrant
@@ -1314,8 +1314,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     used_Qcmd_pu[i] = -max_PU_power[i]
                 # else:
                 #     used_Qcmd_pu = self.Qcmd_pu
-            print('DEBUGGGGGGGGG used_Pcmd_pu ', used_Pcmd_pu)
-            print('DEBUGGGGGGGGG self.Pcmd_pu ', self.Pcmd_pu)
+            # print('DEBUGGGGGGGGG used_Pcmd_pu ', used_Pcmd_pu)
+            # print('DEBUGGGGGGGGG self.Pcmd_pu ', self.Pcmd_pu)
             self.P_implemented_PU = used_Pcmd_pu
             self.Q_implemented_PU = used_Qcmd_pu
             print('self.P_implemented_PU ', self.P_implemented_PU)
