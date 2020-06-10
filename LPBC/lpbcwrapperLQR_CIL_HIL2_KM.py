@@ -139,7 +139,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
-            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
+            cancelDists = 0 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
             # lpAlpha = .5
 
@@ -290,7 +290,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
-        self.HistLength = 100
+        # self.HistLength = 100
         self.HistLength = 20
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
@@ -303,7 +303,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.perturbPowerCommand = 0
         self.perturbScale = .1
 
-        # self.initialHoldZeroStepCount = 0 #HHHERE for debugging issue with timestep 1 command
 
     def targetExtraction(self,phasor_target):
         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
@@ -1031,9 +1030,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
-            # # if self.iteration_counter > self.initialHoldZeroStepCount:
-            # if self.controlStepsTaken_counter >= self.initialHoldZeroStepCount: #HHHERE for debugging issue with timestep 1 command
-
             #get current measurements, determine saturation if current measurements exist
             if self.currentMeasExists:
                 if len(local_phasors) >= self.nphases*2:
@@ -1114,16 +1110,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
             #(Zest should use self.network_kVAbase not self.localkVAbase)
 
-            # else: #HHHERE for debugging issue with timestep 1 command
-            #     print('++++++++++++++++++++++++ Zeror power command given ++++++++++++++++++++++++')
-            #     print('self.controlStepsTaken_counter < self.initialHoldZeroStepCount')
-            #     self.Pcmd_pu = np.zeros(3)
-            #     self.Qcmd_pu = np.zeros(3) #HHHERE
-            #     # self.Pcmd_pu = np.ones(3)*.2
-            #     # self.Qcmd_pu = np.ones(3)*.2
-
+            #HHHERE for debugging
             # self.Pcmd_pu = np.zeros(3)
-            # self.Qcmd_pu = np.zeros(3) #HHHERE for debugging
+            # self.Qcmd_pu = np.zeros(3)
             # self.Pcmd_pu = np.ones(3)*.2
             # self.Qcmd_pu = np.ones(3)*.2
 
@@ -1132,11 +1121,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
             #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
             #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
-
-            #HERE delete, this is redundant to Sratio
-            # print('DIVIDING P AND Q COMMANDS BY 10 TO OFFSET SWITCH MATRIX SCALING')
-            # self.Pcmd_kVA = self.Pcmd_kVA/10
-            # self.Qcmd_kVA = self.Qcmd_kVA/10
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4 or True: #HHHERE put in the or True when I set the self.currentMeasExists to 0 manually
