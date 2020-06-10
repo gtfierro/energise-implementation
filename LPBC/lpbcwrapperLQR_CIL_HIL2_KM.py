@@ -1471,7 +1471,7 @@ CILscaling = 10 #in VA
 
 # rate = 5
 # rate = 10 #HHHERE for debugging issue with timestep 1 command
-rate = 7
+rate = 8
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
