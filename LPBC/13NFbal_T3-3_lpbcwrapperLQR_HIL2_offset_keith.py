@@ -1297,6 +1297,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
             used_Pcmd_pu = self.Pcmd_pu.copy()
             used_Qcmd_pu = self.Qcmd_pu.copy()
+            print('HHHERE np.shape(used_Qcmd_pu)', np.shape(used_Qcmd_pu))
+            print('self.Pcmd_pu[i] ', self.Pcmd_pu[i])
             for i in np.arange(len(used_Pcmd_pu)):
                 if self.Pcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
                     used_Pcmd_pu[i] = max_PU_power
