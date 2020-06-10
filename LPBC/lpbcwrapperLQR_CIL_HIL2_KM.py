@@ -114,8 +114,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #HHHERE
             #for testing the Zeffestimator
-            # self.Zeffk_init_mult = .5
-            self.Zeffk_init_mult = 1
+            self.Zeffk_init_mult = .5
+            # self.Zeffk_init_mult = 1
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
             # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
             ######################## LQR Controller Parameters #######################
@@ -145,8 +145,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #REIE parameters
             est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
-            lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
-            # lam = .95
+            # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
+            lam = .95
             # lam = .5
             GtInitScale = 1
             # GtInitScale = 10
@@ -302,7 +302,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.perturbPowerCommand = 1
         # self.perturbScale = .1
-        self.perturbScale = .5
+        self.perturbScale = .2
 
 
     def targetExtraction(self,phasor_target):
