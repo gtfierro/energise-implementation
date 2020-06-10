@@ -30,7 +30,7 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 from PIcontroller import *
 from LQRcontroller import *
- 
+ 2
 #HHERE check measurements and commands align with below
 '''
 Flexlab comands and measurements:
