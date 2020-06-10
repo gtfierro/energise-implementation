@@ -709,8 +709,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Pcmd_VA = Pcmd_ORT_VA * inv_offset_perc / offsetSratio
                 Qcmd_VA = Qcmd_ORT_VA * inv_offset_perc / offsetSratio
                 print('OFFSET COMMANDS:')
-                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
-                print(f'Pcmd_ORT_VA_inv: {Pcmd_ORT_VA * inv_offset_perc}')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}, Qcmd_ORT_VA: {Qcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_inv: {Pcmd_ORT_VA * inv_offset_perc}, Qcmd_ORT_VA_inv: {Qcmd_ORT_VA * inv_offset_perc}')
                 print(f'mtx: {mtx}')
                 print(f'Pcmd_inv: {Pcmd_VA}')
                 print(f'Qcmd_inv: {Qcmd_VA}')
