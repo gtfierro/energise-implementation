@@ -224,8 +224,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 100
-        self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms
+        self.nPhasorReadings = 150
+        self.pmuTimeWindow = 3000000 #in ns, 2000000 is 2 ms
 
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
