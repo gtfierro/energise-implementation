@@ -148,8 +148,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # lam = .999 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             lam = .95
             # lam = .5
-            # GtInitScale = 1
-            GtInitScale = 10
+            GtInitScale = 1
+            # GtInitScale = 10
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
 
             if est_Zeffk:
@@ -291,7 +291,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         # self.HistLength = 100
-        self.HistLength = 20
+        self.HistLength = 10
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1115,7 +1115,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Qcmd_pu = np.zeros(3)
             self.Pcmd_pu = np.ones(3)*.1
             self.Qcmd_pu = np.ones(3)*.1
-            
+
             if self.perturbPowerCommand:
                 self.Pcmd_pu = self.Pcmd_pu + np.random.randn(3) * self.perturbScale
                 self.Qcmd_pu = self.Qcmd_pu + np.random.randn(3) * self.perturbScale
