@@ -300,6 +300,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
+        self.perturbPowerCommand = 0
+        self.perturbScale = .1
+
         # self.initialHoldZeroStepCount = 0 #HHHERE for debugging issue with timestep 1 command
 
     def targetExtraction(self,phasor_target):
@@ -1091,6 +1094,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                if self.perturbPowerCommand:
+                    self.Pcmd_pu = self.Pcmd_pu + np.random.randn(3) * self.perturbScale
+                    self.Qcmd_pu = self.Qcmd_pu + np.random.randn(3) * self.perturbScale
+
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
             print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
