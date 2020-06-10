@@ -301,8 +301,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Q_implemented_PU = None
 
         self.perturbPowerCommand = 1
-        # self.perturbScale = .1
-        self.perturbScale = .2
+        self.perturbScale = .1
 
 
     def targetExtraction(self,phasor_target):
