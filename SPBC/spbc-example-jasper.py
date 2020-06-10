@@ -495,7 +495,6 @@ class myspbc(pbc.SPBCProcess):
                             Vtargdict[key]['Vmag'] = [0.95 - refphasor[0, 0], 0.95 - refphasor[0, 0],0.95 - refphasor[0, 0]]
                     '''
 
-                    # @LEO T12 and ICDI update
                     if testID=='T12.1' or testID=='T12.2' or testID=='T12.3': # for T12.1-3, all actuators track the same phase a target
                         Vtargdict[key]['Vmag'] = [cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0],cons_Vmag[0]-refphasor[0,0]]
                         Vtargdict[key]['Vang'] = [cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1],cons_Vang[0]-refphasor[0,1]]
