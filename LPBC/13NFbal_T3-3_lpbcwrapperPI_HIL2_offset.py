@@ -594,7 +594,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1:
                 id = 3
-                offset_inc = 100
+                offset_inc = 100 #kVA in opal from inverter
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
@@ -630,7 +630,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'Qcmd_rem: {Qcmd_VA}')
             if self.offset_mode == 2:
                 id = 3
-                offset_inc = 100
+                offset_inc = 100 
                 offset_steps = self.ORT_max_VA/1000/offset_inc
                 offsetSratio = self.localSratio/offset_steps
 
@@ -671,11 +671,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            # +50 to Q is a constant offset due to hardware measurement error
+            # +100 to Q is a constant offset that gets subtracted out to try to get Q closer to 0
             # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
             # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
             Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = (Qcmd_VA + 50) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+            Qcmd_perc = (Qcmd_VA + 100) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
 
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
