@@ -1295,18 +1295,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
             max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
-            if self.Pcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                used_Pcmd_pu = max_PU_power
-            elif self.Pcmd_pu < -max_PU_power:
-                used_Pcmd_pu = -max_PU_power
-            else:
-                used_Pcmd_pu = self.Pcmd_pu
-            if self.Qcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                used_Qcmd_pu = max_PU_power
-            elif self.Qcmd_pu < -max_PU_power:
-                used_Qcmd_pu = -max_PU_power
-            else:
-                used_Qcmd_pu = self.Qcmd_pu
+            used_Pcmd_pu = self.Pcmd_pu.copy()
+            used_Qcmd_pu = self.Qcmd_pu.copy()
+            for i in np.arange(len(used_Pcmd_pu)):
+                if self.Pcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+                    used_Pcmd_pu[i] = max_PU_power
+                elif self.Pcmd_pu[i] < -max_PU_power:
+                    used_Pcmd_pu[i] = -max_PU_power
+                # else:
+                #     used_Pcmd_pu[i] = self.Pcmd_pu
+                if self.Qcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+                    used_Qcmd_pu[i] = max_PU_power
+                elif self.Qcmd_pu[i] < -max_PU_power:
+                    used_Qcmd_pu[i] = -max_PU_power
+                # else:
+                #     used_Qcmd_pu = self.Qcmd_pu
+            print('DEBUGGGGGGGGG used_Pcmd_pu ', used_Pcmd_pu)
+            print('DEBUGGGGGGGGG self.Pcmd_pu ', self.Pcmd_pu)
             self.P_implemented_PU = used_Pcmd_pu
             self.Q_implemented_PU = used_Qcmd_pu
             print('self.P_implemented_PU ', self.P_implemented_PU)
