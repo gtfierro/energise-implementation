@@ -687,15 +687,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 mtx = [0] * nphases*2
                 # cap at max offset
                 for i in range(nphases*2):
-                    if CIL_offset[i] > CIL_offset_max:
-                        if i == 0 or i == 3:
+                    if i == 0 or i == 3:
+                        if CIL_offset[i] > CIL_offset_max_2:
                             CIL_offset[i] = CIL_offset_max_2 # because phase A corresponds to inv with different capacity for T12
-                        else:
+                            if i < 3:
+                                print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset[i]}')
+                            if i >= 3:
+                                print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset[i]}')
+                    else:
+                        if CIL_offset[i] > CIL_offset_max:
                             CIL_offset[i] = CIL_offset_max
-                        if i < 3:
-                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset[i]}')
-                        if i >= 3:
-                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset[i]}')
+                            if i < 3:
+                                print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset[i]}')
+                            if i >= 3:
+                                print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset[i]}')
                 # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
                 mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
                 mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
