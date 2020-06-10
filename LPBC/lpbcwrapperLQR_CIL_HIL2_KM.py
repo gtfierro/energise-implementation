@@ -74,7 +74,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
 
         elif self.controllerType == 'LQR':
-            #If just LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
             '''
             kV and kVA base are recieved in targetExtraction, which is called by step.
             when LPBC is created, step hasnt been called yet.
@@ -88,6 +87,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zestimation:
             current that is measured is based on localSbase, not networkSbase
             so the current measurement used to estimate Z should use localSbase
+            (current meas has not accounted for inverter offset hack to reduce oscillations)
             '''
             self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
@@ -112,11 +112,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
             #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
-            #HHHERE
             #for testing the Zeffestimator
             # self.Zeffk_init_mult = .5
-            self.Zeffk_init_mult = 2
-            # self.Zeffk_init_mult = 1
+            # self.Zeffk_init_mult = 2
+            self.Zeffk_init_mult = 1
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
             # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
             ######################## LQR Controller Parameters #######################
@@ -161,7 +160,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
             self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
             self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
-            # self.controller = LQRcontroller(nphases,timesteplength,Qcost,Rcost,Zskinit,use_Zsk_est,currentMeasExists,lpAlpha,lam) old version
         else:
             error('error in controller type')
 
@@ -259,8 +257,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 100
-        self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms
+        self.nPhasorReadings = 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
@@ -282,6 +280,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.load_cmd = np.zeros(nphases) #load commands are given in watts
         self.P_PV = np.zeros(nphases)
         self.pf_ctrl = np.ones(nphases)
+        # self.flexgrid = Flexgrid_API(inv_ids=[1, 2, 3], portNames=['COM3'], baudrate=115200, parallel=False, safety=True,
+        #                         debug=False, ComClient=ModbusRTUClient)
+        self.inv_Pmax = 7000 #check with Maxime
+        self.inv_Qmax = 5000 #check with Maxime
+        self.offset_mode = 2 # set to 1 for remainder offset, 2 for percentage offset, 0 for no offset
+
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
@@ -584,7 +588,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return Iang_notRelative, Imag
 
 
-
     #just uses the most recent current and voltage measurements, doesnt need a match w reference
     def PQ_solver(self, local_phasors, nphases, plug_to_V_idx):
         # Initialize
@@ -711,8 +714,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #  Sends P and Q command to actuator
         #needs an up-to-date Pact, which requires a current measurement
         #HERE Pact is defined as positive out of the network into the inverter (Pact, Pbatt and P_PV are all positive out of the network in flexlab). This convention should be swithced in later implemetations, but shouldnt require changing (too many) signs
-        Pcmd_VA = -Pcmd_kVA*1000
-        Qcmd_VA = -Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
+        Pcmd_VA = Pcmd_kVA*1000 # *** SIGNS CHANGED 5/21/20!!! ***
+        Qcmd_VA = Qcmd_kVA*1000 #HERE Power factor as positive for Q into the network, which is backwards of the rest of the conventions
         #initialize parallel API command:
         session = FuturesSession()
         urls = []
@@ -816,8 +819,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Qcmd_VA[phase] = np.sign(Qcmd_VA[phase]) * ORT_max_VA/localSratio
         id = 3
         # P,Q commands in W and VAR (not kilo)
-        P_implemented_PU = Pcmd_VA/(self.network_kVAbase*1000)
-        Q_implemented_PU = Qcmd_VA/(self.network_kVAbase*1000)
+        P_implemented_PU = Pcmd_VA/(self.localkVAbase*1000) #HERE bc Pcmd_VA = Pcmd_PU * self.localkVAbase * 1000
+        Q_implemented_PU = Qcmd_VA/(self.localkVAbase*1000)
 
         if nphases == 3:
             P1, P2, P3 = abs(Pcmd_VA[0]), abs(Pcmd_VA[1]), abs(Pcmd_VA[2])
@@ -960,6 +963,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         if self.iteration_counter == 1:
             pass
             #HHERE commented out for debugging
+            #could call CIL_debug.py (or a function that does what CIL_debug.py does) here to reset the Opal registers
             # (responseInverters, responseLoads) = self.initializeActuators(self.mode) #throws an error if initialization fails
 
         if phasor_target is None and self.VangTarg_relative == 'initialize':
@@ -1069,8 +1073,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('self.sat_arrayP ' + str(self.sat_arrayP))
             print('self.sat_arrayQ ' + str(self.sat_arrayQ))
             if self.controllerType == 'PI':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+                if any(np.isnan(self.phasor_error_mag_pu)) or any(np.isnan(self.phasor_error_ang)):
+                    print('GOT A NAN ERROR, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                    controlStepTaken = 0
+                else:
+                    controlStepTaken = 1
+                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
             elif self.controllerType == 'LQR':
+                #below lines could use self.Vang_relative and self.VangTarg_relative instead, if controller is being run with relative measurements
                 if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
                     print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
                     controlStepTaken = 0
@@ -1091,9 +1101,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                # if self.perturbPowerCommand:
-                #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
-                #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
 
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
@@ -1160,6 +1167,22 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 error('actType error')
 
+            # #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
+            # max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
+            # if self.Pcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+            #     used_Pcmd_pu = max_PU_power
+            # elif self.Pcmd_pu < -max_PU_power:
+            #     used_Pcmd_pu = -max_PU_power
+            # else:
+            #     used_Pcmd_pu = self.Pcmd_pu
+            # if self.Qcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+            #     used_Qcmd_pu = max_PU_power
+            # elif self.Qcmd_pu < -max_PU_power:
+            #     used_Qcmd_pu = -max_PU_power
+            # else:
+            #     used_Qcmd_pu = self.Qcmd_pu
+            # self.P_implemented_PU = used_Pcmd_pu
+            # self.Q_implemented_PU = used_Qcmd_pu
             print('self.P_implemented_PU ', self.P_implemented_PU)
             print('self.Q_implemented_PU ', self.Q_implemented_PU)
             #HERE self.P_implemented_PU should be self.Pact_PU, but self.Pact_PU requires a PMU current meas, so have to use an if statement to set self.P_implemented_PU with P_act
@@ -1168,7 +1191,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Pact_kVA = self.Pact
             self.Qact_kVA = self.Qact
 
-            #HHERE need to adjust these so that they self.P_implemented_PU and self.Q_implemented_PU too
+            #HHERE need to adjust these so that they log self.P_implemented_PU and self.Q_implemented_PU too
             log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
             self.log_actuation(log_actuation)
             # print(log_actuation)
@@ -1183,7 +1206,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('')
 
             #trying to mimic lpbcwrapper env for last lpbc in lpbcdict
-            Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
             # iter = self.iteration_counter - 1
             iter = self.controlStepsTaken_counter
             if controlStepTaken == 1:
@@ -1236,6 +1258,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('SAVED Vmag and Vang plots ')
 
                     if self.saveZesterrorPlot and self.controllerType == 'LQR':
+                        Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
