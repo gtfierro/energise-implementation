@@ -139,12 +139,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
-            cancelDists = 0 #setting this to 0 turns the disturbance cancelation off
+            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .999 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             lam = .95
             # lam = .5
@@ -300,7 +300,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 0
+        self.perturbPowerCommand = 1
         self.perturbScale = .1
 
 
@@ -1090,9 +1090,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                if self.perturbPowerCommand:
-                    self.Pcmd_pu = self.Pcmd_pu + np.random.randn(3) * self.perturbScale
-                    self.Qcmd_pu = self.Qcmd_pu + np.random.randn(3) * self.perturbScale
+                # if self.perturbPowerCommand:
+                #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(3) * self.perturbScale
+                #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(3) * self.perturbScale
 
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
@@ -1113,8 +1113,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #HHHERE for debugging
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3)
-            # self.Pcmd_pu = np.ones(3)*.2
-            # self.Qcmd_pu = np.ones(3)*.2
+            self.Pcmd_pu = np.ones(3)*.1
+            self.Qcmd_pu = np.ones(3)*.1
+            
+            if self.perturbPowerCommand:
+                self.Pcmd_pu = self.Pcmd_pu + np.random.randn(3) * self.perturbScale
+                self.Qcmd_pu = self.Qcmd_pu + np.random.randn(3) * self.perturbScale
 
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
