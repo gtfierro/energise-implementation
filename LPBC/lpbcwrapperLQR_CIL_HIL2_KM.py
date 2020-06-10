@@ -290,8 +290,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.testcase = cfg['testcase']
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
-        # self.HistLength = 100
-        self.HistLength = 10
+        self.HistLength = 100
+        # self.HistLength = 10
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -300,7 +300,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.initialHoldZeroStepCount = 0 #HHHERE for debugging issue with timestep 1 command
+        # self.initialHoldZeroStepCount = 0 #HHHERE for debugging issue with timestep 1 command
 
     def targetExtraction(self,phasor_target):
         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
