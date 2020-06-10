@@ -255,7 +255,7 @@ class LQRcontroller:
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
-        if any(ubefore != self.u):
+        if any(ubefore[0] != self.u[0]):
             print('&&&&&&&&&&&& HERE u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
             print('&&&&&&&&&&&& HERE u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
 
