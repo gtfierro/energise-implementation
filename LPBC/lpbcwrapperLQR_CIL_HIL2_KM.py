@@ -114,7 +114,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #HHHERE
             #for testing the Zeffestimator
-            self.Zeffk_init_mult = .5
+            # self.Zeffk_init_mult = .5
+            self.Zeffk_init_mult = 2
             # self.Zeffk_init_mult = 1
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
             # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)

@@ -255,7 +255,7 @@ class LQRcontroller:
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
-        if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]):
+        if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HERE not sure this if statement is working as intended
             print('&&&&&&&&&&&& u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
             print('&&&&&&&&&&&& u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
 
