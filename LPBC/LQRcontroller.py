@@ -248,14 +248,14 @@ class LQRcontroller:
         LQR uses matrix computations internally, but gets ndarrays in and passes ndarrays out
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        print('~~~~~~~~~~ HERE u before ~~~~~~~~~~~~~~ ', self.u)
+        # print('~~~~~~~~~~ HERE u before ~~~~~~~~~~~~~~ ', self.u)
         if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
-            self.u[0,:self.nphases] = P_implemented #HERE need to check this
+            self.u[0,:self.nphases] = P_implemented
             self.PcommandPrev = P_implemented
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
-        print('````````` HERE u after `````````````` ', self.u)
+        # print('````````` HERE u after `````````````` ', self.u)
 
         self.iteration_counter += 1
         if sat_arrayP is None:

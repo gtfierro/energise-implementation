@@ -300,7 +300,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 1
+        self.perturbPowerCommand = 0
         self.perturbScale = .1
 
 
@@ -1113,8 +1113,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #HHHERE for debugging
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3)
-            self.Pcmd_pu = np.ones(3)*.2
-            self.Qcmd_pu = np.ones(3)*.2
+            # self.Pcmd_pu = np.ones(3)*.2
+            # self.Qcmd_pu = np.ones(3)*.2
 
             if self.perturbPowerCommand:
                 self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
