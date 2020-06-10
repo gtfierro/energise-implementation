@@ -90,7 +90,7 @@ if constant_phasor == True:
             if varying_targ_toggle:
                 cons_Vmag_2 = [0.92,0.92,0.92]
                 cons_Vang_2 = [0 -4, 0 -4, 0 -4] # all on phase A
-                vary_iter = 29     
+                vary_iter = 29
             if ICDI_toggle:
                 cons_Vmag_ICDI = [0.95,0.95,0.95]
                 cons_Vang_ICDI = [0 -2.5, 0 -2.5, 0 - 2.5] # all on phase A
