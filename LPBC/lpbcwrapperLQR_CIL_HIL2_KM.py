@@ -1470,8 +1470,7 @@ CILscaling = 10 #in VA
 # Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
 # rate = 5
-# rate = 10 #HHHERE for debugging issue with timestep 1 command
-rate = 9
+rate = 10 #HHHERE for debugging issue with timestep 1 command
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
