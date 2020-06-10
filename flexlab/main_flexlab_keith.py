@@ -71,8 +71,8 @@ filepath = pathname+filename
 # test_ID = 'T9.3' # which test case you want to run
 test_ID = 'T3.3' # which test case you want to run
 # sim_length_min = 50 # amount of time to record for in minutes
-# sim_length_min = 1/60
-sim_length_min = 60
+sim_length_min = 1/60
+# sim_length_min = 60
 # In[run]:
 
 # run functions...
