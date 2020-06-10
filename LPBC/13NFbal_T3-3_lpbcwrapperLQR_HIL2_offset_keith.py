@@ -1294,24 +1294,24 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 error('actType error')
 
             #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
-            max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
+            max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase
             used_Pcmd_pu = self.Pcmd_pu.copy()
             used_Qcmd_pu = self.Qcmd_pu.copy()
-            print('HHHERE np.shape(used_Qcmd_pu)', np.shape(used_Qcmd_pu))
-            print('self.Pcmd_pu[0] ', self.Pcmd_pu[0])
-            print('HHHERE np.shape(max_PU_power)', np.shape(max_PU_power))
-            print('max_PU_power[0] ', max_PU_power[0])
+            # print('HHHERE np.shape(used_Qcmd_pu)', np.shape(used_Qcmd_pu))
+            # print('self.Pcmd_pu[0] ', self.Pcmd_pu[0])
+            # print('HHHERE np.shape(max_PU_power)', np.shape(max_PU_power))
+            # print('max_PU_power[0] ', max_PU_power[0])
             for i in np.arange(len(used_Pcmd_pu)):
-                if self.Pcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                    used_Pcmd_pu[i] = max_PU_power
-                elif self.Pcmd_pu[i] < -max_PU_power:
-                    used_Pcmd_pu[i] = -max_PU_power
+                if self.Pcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                    used_Pcmd_pu[i] = max_PU_power[i]
+                elif self.Pcmd_pu[i] < -max_PU_power[i]:
+                    used_Pcmd_pu[i] = -max_PU_power[i]
                 # else:
                 #     used_Pcmd_pu[i] = self.Pcmd_pu
-                if self.Qcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                    used_Qcmd_pu[i] = max_PU_power
-                elif self.Qcmd_pu[i] < -max_PU_power:
-                    used_Qcmd_pu[i] = -max_PU_power
+                if self.Qcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                    used_Qcmd_pu[i] = max_PU_power[i]
+                elif self.Qcmd_pu[i] < -max_PU_power[i]:
+                    used_Qcmd_pu[i] = -max_PU_power[i]
                 # else:
                 #     used_Qcmd_pu = self.Qcmd_pu
             print('DEBUGGGGGGGGG used_Pcmd_pu ', used_Pcmd_pu)
