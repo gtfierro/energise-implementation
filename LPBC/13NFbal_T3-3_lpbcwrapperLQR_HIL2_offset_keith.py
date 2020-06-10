@@ -1311,6 +1311,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Q_implemented_PU = used_Qcmd_pu
             print('self.P_implemented_PU ', self.P_implemented_PU)
             print('self.Q_implemented_PU ', self.Q_implemented_PU)
+            #HERE self.P_implemented_PU could be self.Pact_PU, but self.Pact_PU requires a PMU current meas, so have to use an if statement to set self.P_implemented_PU with P_act
 
             self.Pact_kVA = self.Pact
             self.Qact_kVA = self.Qact
