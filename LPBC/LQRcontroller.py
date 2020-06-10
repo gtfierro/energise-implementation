@@ -256,9 +256,9 @@ class LQRcontroller:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
         print(ubefore)
-        print(ubefore[0])
+        print(ubefore[0,:])
         print(self.u)
-        print(self.u[0])
+        print(self.u[0,:])
         if any(ubefore[0] != self.u[0]):
             print('&&&&&&&&&&&& u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
             print('&&&&&&&&&&&& u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
