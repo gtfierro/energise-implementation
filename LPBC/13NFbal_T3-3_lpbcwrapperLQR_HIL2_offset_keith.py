@@ -480,19 +480,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
             Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        print('len(local_phasors[plug]) ', len(local_phasors[plug]))
-        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
-
-        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
-        print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
-
-        print('VmagCount ', VmagCount)
-        print('VmagRefCount ', VmagRefCount)
-        print('Vmag ', Vmag)
-        print('VmagRef ', VmagRef)
-        print('Vmag_relative ', Vmag_relative)
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('len(local_phasors[plug]) ', len(local_phasors[plug]))
+        # print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+        #
+        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
+        #
+        # print('VmagCount ', VmagCount)
+        # print('VmagRefCount ', VmagRefCount)
+        # print('Vmag ', Vmag)
+        # print('VmagRef ', VmagRef)
+        # print('Vmag_relative ', Vmag_relative)
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
 
         # loops through each set of voltage measurements for each phase
         local_time_index = [np.NaN]*nphases
@@ -1565,12 +1565,12 @@ elif testcase == 'manual':
     # lpbcidx = ['675'] #nodes of actuation
     # key = '675'
     # testcase = '13unb'
-    lpbcidx = ['632'] #nodes of actuation
-    key = '632'
-    testcase = '13unb'
-    # lpbcidx = ['18'] #for 33
-    # key = '18'
-    # testcase = '33'
+    # lpbcidx = ['632'] #nodes of actuation
+    # key = '632'
+    # testcase = '13unb'
+    lpbcidx = ['6'] #for 33
+    key = '6'
+    testcase = '33'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
