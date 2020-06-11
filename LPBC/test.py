@@ -4,6 +4,10 @@ import numpy as np
 
 import sys
 
+if x is not None:
+
+
+sys.exit()
 
 nphases = 3
 print(np.zeros(2*nphases))
