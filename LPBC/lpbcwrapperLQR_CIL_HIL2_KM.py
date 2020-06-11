@@ -495,6 +495,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 local_time = int(local_packet['time'])
                 # loops though every reference uPMU reading starting from most recent
                 ref_packet_offset = 0 #for debugging
+                i = 0
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
 
@@ -519,9 +520,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Vang_notRelativeSum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
                         VangRefSum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
                         VangCount[phase] += 1
-                        # if refAngleUsedVec[i] == 1:
-                        #     print('WARNING, this ref angle was already used')
-                        # refAngleUsedVec[i] = 1
+                        if refAngleUsedVec[i] == 1:
+                            print(f'WARNING, this ref angle {i} was already used')
+                        refAngleUsedVec[i] = 1
 
                         flag[phase] = 0
                         #for debugging
@@ -530,6 +531,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # break # dont want this break when doing averaging
 
                     ref_packet_offset += 1 #for debugging
+                    i += 1
                 # if flag[phase] == 0:
                 #     break
             if flag[phase] == 1:
