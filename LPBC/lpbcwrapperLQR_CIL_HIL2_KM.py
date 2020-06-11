@@ -725,7 +725,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     ImagSum[phase] += Imagi
                     ImagCount[phase] += 1
-             Imag[phase] = ImagSum[phase]/ImagCount[phase]
+            Imag[phase] = ImagSum[phase]/ImagCount[phase]
         print('ImagCount ', ImagCount)
         print('Imag ', Imag)
         print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
