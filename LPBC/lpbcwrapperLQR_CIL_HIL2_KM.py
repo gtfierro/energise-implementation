@@ -774,7 +774,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if flag[phase] == 1:
                 print('PhasorI_calc: No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
             else:
-                Iang_notRelative[phase] = Iang_notRelativeSum[phase]/IangCount[phase] HHHH
+                Iang_notRelative[phase] = Iang_notRelativeSum[phase]/IangCount[phase]
 
         print('Iang_notRelative ', Iang_notRelative)
         print('IangCount ', IangCount)
