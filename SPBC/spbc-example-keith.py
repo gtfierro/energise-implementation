@@ -107,7 +107,7 @@ if constant_phasor == True:
         #     lpbc_nodeIDs = ['675','671'] # would need to change convention to run mult actuator tests
         #     cons_Vmag = [0.99,0.99,0.99]
         #     cons_Vang = [0 -1, -120 -1, 120 -1]
-    if feederID == 'UCB33':
+    if feederID == '33':
         cons_kVbase = np.ones(3)*(12.47/np.sqrt(3))
         cons_kVAbase = np.ones(3)*3000/3
         if testID == 'T3.3':
