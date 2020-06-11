@@ -1613,6 +1613,7 @@ CILscaling = 500/3.3
 
 # rate = 15
 rate = 20
+print('rate ', rate)
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
