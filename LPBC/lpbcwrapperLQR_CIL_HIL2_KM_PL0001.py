@@ -51,7 +51,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 1000):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -815,6 +815,135 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.pf_ctrl[i] = 0.1
                 print(f'pf cmd: {self.pf_ctrl[i]}, batt cmd: {self.batt_cmd[i]}')
                 urls.append(f"http://131.243.41.47:9090/control?P_ctrl={self.invPperc_ctrl[i]},pf_ctrl={self.pf_ctrl[i]},inv_id={inv}")
+
+
+        if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
+            print(f'PCMD_VA: {Pcmd_VA}')
+            print(f'QCMD_VA: {Qcmd_VA}')
+            Pcmd_VA = abs(
+                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            Qcmd_VA = abs(
+                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+
+            # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
+            if self.offset_mode == 1:
+                id = 3
+                offset_inc = 200
+                CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
+                Pcmd_ORT_VA = Pcmd_VA * self.localSratio
+                Qcmd_ORT_VA = Qcmd_VA * self.localSratio
+                P_offset_inc_idx = Pcmd_ORT_VA // (offset_inc*1000)
+                Q_offset_inc_idx = Qcmd_ORT_VA // (offset_inc*1000)
+                CIL_offset = offset_inc * np.concatenate([P_offset_inc_idx,Q_offset_inc_idx]) # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                mtx = [0] * nphases*2
+                # cap at max offset
+                for i in range(nphases*2):
+                    if CIL_offset[i] > CIL_offset_max:
+                        CIL_offset[i] = CIL_offset_max
+                        if i < 3:
+                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset_max}')
+                        if i >= 3:
+                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset_max}')
+                # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
+                mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
+                mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
+                mtx_register = np.arange(301,306+1).tolist()
+                # update inverter command to account for CIL offset
+                offset_steps = self.ORT_max_VA/1000/offset_inc
+                offsetSratio = self.localSratio/offset_steps
+                Pcmd_ORT_VA_rem = Pcmd_ORT_VA - P_offset_inc_idx * offset_inc * 1000
+                Qcmd_ORT_VA_rem = Qcmd_ORT_VA - Q_offset_inc_idx * offset_inc * 1000
+                if self.offset_mode == 1:
+                    Pcmd_VA = Pcmd_ORT_VA_rem/offsetSratio
+                    Qcmd_VA = Qcmd_ORT_VA_rem/offsetSratio
+                print('OFFSET COMMANDS:')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_rem: {Pcmd_ORT_VA_rem}')
+                print(f'mtx: {mtx}')
+                print(f'Pcmd_rem: {Pcmd_VA}')
+                print(f'Qcmd_rem: {Qcmd_VA}')
+            if self.offset_mode == 2:
+                id = 3
+                offset_inc = 200
+                offset_steps = self.ORT_max_VA/1000/offset_inc
+                offsetSratio = self.localSratio/offset_steps
+
+                inv_offset_perc = offset_inc/(self.ORT_max_VA/1000)
+                CIL_offset_perc = 1 - inv_offset_perc
+                CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
+                Pcmd_ORT_VA = Pcmd_VA * self.localSratio
+                Qcmd_ORT_VA = Qcmd_VA * self.localSratio
+                CIL_offset = CIL_offset_perc * np.concatenate([Pcmd_ORT_VA,Qcmd_ORT_VA]) / 1000 # this is a value that gets sent as kW/kVar direct to ORT via modbus
+                mtx = [0] * nphases*2
+                # cap at max offset
+                for i in range(nphases*2):
+                    if CIL_offset[i] > CIL_offset_max:
+                        CIL_offset[i] = CIL_offset_max
+                        if i < 3:
+                            print(f'P_CIL_offset[{i}] over max - reduced to {CIL_offset_max}')
+                        if i >= 3:
+                            print(f'Q_CIL_offset[{i-3}] over max - reduced to {CIL_offset_max}')
+                # send as P1,Q1,P2,Q2,P3,Q3 to 301 - 306
+                mtx[0:nphases*2-1:2] = CIL_offset[0:nphases]
+                mtx[1:nphases*2:2] = CIL_offset[nphases:nphases*2]
+                mtx_register = np.arange(301,306+1).tolist()
+
+                Pcmd_VA = Pcmd_ORT_VA * inv_offset_perc / offsetSratio
+                Qcmd_VA = Qcmd_ORT_VA * inv_offset_perc / offsetSratio
+                print('OFFSET COMMANDS:')
+                print(f'Pcmd_ORT_VA: {Pcmd_ORT_VA}')
+                print(f'Pcmd_ORT_VA_inv: {Pcmd_ORT_VA * inv_offset_perc}')
+                print(f'mtx: {mtx}')
+                print(f'Pcmd_inv: {Pcmd_VA}')
+                print(f'Qcmd_inv: {Qcmd_VA}')
+            for i in range(len(Pcmd_VA)):
+                if Pcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Pcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: P over ORT MAX ([0,1,2] -> [1,2,3])')
+                if Qcmd_VA[i] > self.ORT_max_VA/self.localSratio:
+                    Qcmd_VA[i] = self.ORT_max_VA/self.localSratio
+                    print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
+            print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
+
+            # +50 to Q is a constant offset due to hardware measurement error
+            # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
+            # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
+            Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
+            Qcmd_perc = (Qcmd_VA + 50) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+
+            act_idxs = act_idxs.tolist()
+            for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
+                if Pcmd_perc[i] > 50:
+                    Pcmd_perc[i] = 50
+                if Pcmd_perc[i] < 0.1:
+                    Pcmd_perc[i] = 0.1
+            for j in range(len(Qcmd_perc)):  # checks Qcmd for inverter limit
+                if Qcmd_perc[j] > 50:
+                    Qcmd_perc[j] = 50
+                if Qcmd_perc[j] < 0.1:
+                    Qcmd_perc[j] = 0.1
+            print(f'Pcmd_perc: {Pcmd_perc}')
+            print(f'Qcmd_perc: {Qcmd_perc}')
+            # Debugging section
+            # if 3 or 2 in act_idxs:
+            #     print('warning phase B or C activated')
+            #     return
+            # for Pcmd_perc_phase, inv in zip(Pcmd_perc, act_idxs):
+            #     Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
+            #     inv = inv.item()  # changes data type
+            #     if inv == 1:
+            #         urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},inv_id={inv}")
+            #     else:
+            #         print('inv != 1')
+            #         return
+
+            for Pcmd_perc_phase, Qcmd_perc_phase, inv in zip(Pcmd_perc, Qcmd_perc, act_idxs):
+                Pcmd_perc_phase = Pcmd_perc_phase.item()  # changes data type from numpy to python int/float
+                Qcmd_perc_phase = Qcmd_perc_phase.item()  # changes data type
+                if type(inv) != int:
+                    inv = inv.item()  # changes data type
+                urls.append(f"http://131.243.41.48:9090/control?dyn_P_ctrl={Pcmd_perc_phase},dyn_Q_ctrl={Qcmd_perc_phase},inv_id={inv}")
+
         responses = map(session.get, urls)
         results = [resp.result() for resp in responses]
         for i in range(nphases):
@@ -822,6 +951,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 commandReceipt[i] = 'success'
             else:
                 commandReceipt[i] = 'failure'
+        print(f'INV COMMAND RECEIPT: {commandReceipt}')
+        if self.offset_mode == 1 or self.offset_mode == 2:
+            try:
+                self.client.connect()
+                for i in range(len(mtx)):
+                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+                print(f'sent offsets: {mtx}')
+            except Exception as e:
+                print(e)
+            finally:
+                self.client.close()
         return commandReceipt
 
 
@@ -1450,9 +1590,12 @@ elif testcase == 'manual':
     # lpbcidx = ['632'] #nodes of actuation
     # key = '632'
     # testcase = '13unb'
-    lpbcidx = ['6'] #for 33
-    key = '6'
-    testcase = '33'
+    # lpbcidx = ['6'] #for 33
+    # key = '6'
+    # testcase = '33'
+    lpbcidx = ['N_300063911']
+    key = 'N_300063911'
+    testcase = 'PL0001'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1542,8 +1685,8 @@ entitydict[5] = 'lpbc_6.ent'
 pmu123Channels = np.asarray([]) # DONE FOR CIL
 
 #HHHHERE HHHERE want one of the two lines below depending on the CIL test
-# pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #this one for T3.3
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #for 13unbal and 33 #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #this one for T3.3
+# pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #for 13unbal and 33 #these also have current channels, but dont need them
 
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
@@ -1554,6 +1697,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
+# inverterScaling = 1000/1 #HHHERE
 inverterScaling = 500/3.3
 loadScaling = 350
 CILscaling = 10 #in VA

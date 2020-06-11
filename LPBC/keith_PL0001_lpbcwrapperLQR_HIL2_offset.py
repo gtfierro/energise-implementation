@@ -52,7 +52,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 1000):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -790,7 +790,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # CIL OFFSET FUNCATIONALITY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1:
                 id = 3
-                offset_inc = 100
+                offset_inc = 200
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
@@ -826,7 +826,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'Qcmd_rem: {Qcmd_VA}')
             if self.offset_mode == 2:
                 id = 3
-                offset_inc = 100
+                offset_inc = 200
                 offset_steps = self.ORT_max_VA/1000/offset_inc
                 offsetSratio = self.localSratio/offset_steps
 
@@ -1575,9 +1575,12 @@ elif testcase == 'manual':
     # lpbcidx = ['632'] #nodes of actuation
     # key = '632'
     # testcase = '13unb'
-    lpbcidx = ['6'] #for 33
-    key = '6'
-    testcase = '33'
+    # lpbcidx = ['6'] #for 33
+    # key = '6'
+    # testcase = '33'
+    lpbcidx = ['N_300063911']
+    key = 'N_300063911'
+    testcase = 'PL0001'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1665,8 +1668,8 @@ entitydict[5] = 'lpbc_6.ent'
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
 
 #HHHHERE HHHERE want one of the two lines below depending on the CIL test
-# pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #for 13unbal and 33  #for 8.1
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+# pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #for 13unbal and 33  #for 8.1
 
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
@@ -1677,7 +1680,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-inverterScaling = 500/1
+inverterScaling = 1000/1 #@JASPER TODO (and possibly ORT_max_kVA) --> 1000/1 for ORT_max_kVA = 1000
 loadScaling = 350
 CILscaling = 500/3.3
 
