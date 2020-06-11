@@ -413,10 +413,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #         self.VmagRef[phase] = V_mag_ref
         #         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
 
+        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', ordered_local[0][0]['time'] - ordered_local[0][-1]['time'])
+        print('ref[0][0][time] - ref[0][-1][time] ', ref[0][0]['time'] - ref[0][-1]['time'])
         print('ordered_local[0][0][time] ', ordered_local[0][0]['time'])
         print('ordered_local[0][-1][time] ', ordered_local[0][-1]['time'])
         print('ref[0][0][time] ', ref[0][0]['time'])
         print('ref[0][-1][time] ', ref[0][-1]['time'])
+        Vmag = np.asarray([np.NaN]*nphases)
+        VmagRef = np.asarray([np.NaN]*nphases)
+        Vmag_relative = np.asarray([np.NaN]*nphases)
+
         VmagSum = np.zeros(nphases)
         VmagCount = np.zeros(nphases)
         VmagRefSum = np.zeros(nphases)
