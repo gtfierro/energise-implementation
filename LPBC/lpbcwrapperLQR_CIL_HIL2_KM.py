@@ -257,7 +257,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -415,10 +415,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
         print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
-        print('ordered_local[0][0][time] ', ordered_local[0][0]['time'])
-        print('ordered_local[0][-1][time] ', ordered_local[0][-1]['time'])
-        print('ref[0][0][time] ', ref[0][0]['time'])
-        print('ref[0][-1][time] ', ref[0][-1]['time'])
+        # print('ordered_local[0][0][time] ', ordered_local[0][0]['time'])
+        # print('ordered_local[0][-1][time] ', ordered_local[0][-1]['time'])
+        # print('ref[0][0][time] ', ref[0][0]['time'])
+        # print('ref[0][-1][time] ', ref[0][-1]['time'])
         Vmag = np.asarray([np.NaN]*nphases)
         VmagRef = np.asarray([np.NaN]*nphases)
         Vmag_relative = np.asarray([np.NaN]*nphases)
@@ -503,9 +503,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
-                        V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
-                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
+                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                         V_ang_ref_firstPhaseSum[phase] += V_ang_ref_firstPhaseTemp #because each phase (of the current meas) needs a V_ang_ref_firstPhase
