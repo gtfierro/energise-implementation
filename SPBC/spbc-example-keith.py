@@ -60,7 +60,7 @@ if constant_phasor == True:
             # cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T12.1':
             lpbc_phases = ['a']
-            lpbc_nodeIDs = ['671']
+            lpbc_nodeIDs = ['671'] # HERE
             cons_Vmag = [0.99]
             cons_Vang = [0 -1]
             varying_targ_toggle = True
@@ -74,7 +74,7 @@ if constant_phasor == True:
                 cons_Vang_ICDI = [0 -2.5]
         if testID == 'T12.3':
             lpbc_phases = ['a','b','c'] # here a,b,c are jsut referring to the different nodes (671,652,692)
-            lpbc_nodeIDs = ['671']
+            lpbc_nodeIDs = ['671'] #HERE
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 - 1, 0 - 1, 0 - 1] # all on phase A
             varying_targ_toggle = True
@@ -99,22 +99,22 @@ if constant_phasor == True:
             lpbc_nodeIDs = ['632']
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 -1, -120 -1, 120 -1]
-        if testID == 'T8.2':
-            lpbc_phases = ['a','b','c']
-            lpbc_nodeIDs = ['675','671']
-            cons_Vmag = [0.99,0.99,0.99]
-            cons_Vang = [0 -1, -120 -1, 120 -1]
+        # if testID == 'T8.2':
+        #     lpbc_phases = ['a','b','c']
+        #     lpbc_nodeIDs = ['675','671'] # would need to change convention to run mult actuator tests
+        #     cons_Vmag = [0.99,0.99,0.99]
+        #     cons_Vang = [0 -1, -120 -1, 120 -1]
     if feederID == 'UCB33':
         cons_kVbase = np.ones(3)*(12.47/np.sqrt(3))
         cons_kVAbase = np.ones(3)*3000/3
         if testID == 'T3.3':
             lpbc_phases = ['a','b','c']
-            lpbc_nodeIDs = ['18']
+            lpbc_nodeIDs = ['18'] #HERE
             cons_Vmag = [0.99,0.99,0.99]
             cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T8.1':
             lpbc_phases = ['a','b','c']
-            lpbc_nodeIDs = ['18']
+            lpbc_nodeIDs = ['18'] #HERE
             cons_Vmag = [0.97,0.97,0.97]
             cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
         if testID == 'T8.2':

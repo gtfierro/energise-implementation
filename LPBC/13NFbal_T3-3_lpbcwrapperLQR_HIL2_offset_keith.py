@@ -1539,8 +1539,6 @@ SPBCname = 'spbc-jasper-1'
 #testcase = '13bal'
 testcase = 'manual'
 
-testcase_wManual = testcase
-
 acts_to_phase_dict = dict()
 actType_dict = dict()
 if testcase == '37':
@@ -1564,13 +1562,15 @@ elif testcase == '13bal':
 #TODO: set test case here
 elif testcase == 'manual':
     #HHHHERE HHHERE this is where you change the test (and pmu123PChannels below)
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
-    # testcase_wManual = '13bal'
-    testcase_wManual = '13unb'
+    # lpbcidx = ['675'] #nodes of actuation
+    # key = '675'
+    # testcase = '13unb'
+    lpbcidx = ['632'] #nodes of actuation
+    key = '632'
+    testcase = '13unb'
     # lpbcidx = ['18'] #for 33
     # key = '18'
-    # testcase_wManual = '33'
+    # testcase = '33'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1714,7 +1714,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
         error('actType Error')
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
-    cfg['testcase'] = testcase_wManual #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
+    cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
