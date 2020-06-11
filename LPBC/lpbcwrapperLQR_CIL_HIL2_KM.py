@@ -1446,9 +1446,11 @@ elif testcase == '13bal':
 #TODO: set test case here
 elif testcase == 'manual':
     #HHHHERE HHHERE this is where you change the test (and pmu123PChannels below)
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    # lpbcidx = ['675'] #nodes of actuation
+    # key = '675'
     # testcase = '13bal'
+    lpbcidx = ['632'] #nodes of actuation
+    key = '632'
     testcase = '13unb'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
