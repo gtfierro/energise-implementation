@@ -29,7 +29,8 @@ dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
 # feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
 # testID = 'T3.3'             # testID has to match the feeder
-feederID =  '13unbal'
+# feederID =  '13unbal'
+feederID =  '33'
 testID = 'T8.1'
 
 if dummy_ref == True:
@@ -116,12 +117,12 @@ if constant_phasor == True:
             cons_Vang = [0 -1, -120 -1, 120 -1]
         if testID == 'T8.1':
             lpbc_phases = ['a','b','c']
-            lpbc_nodeIDs = ['18'] #HERE
+            lpbc_nodeIDs = ['6']
             cons_Vmag = [0.97,0.97,0.97]
             cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
         if testID == 'T8.2':
             lpbc_phases = ['a','b','c']
-            lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
+            lpbc_nodeIDs = ['6'] # was ['18', '26'] for 18 inv, 26 loadracks
             cons_Vmag = [0.97,0.97,0.97]
             cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
     if feederID == 'PL0001':
