@@ -527,7 +527,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         #for debugging
                         print('ref_packet_offset ', ref_packet_offset)
                         print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
-                        break
+                        # break # dont want this break when doing averaging
 
                     ref_packet_offset += 1 #for debugging
                 if flag[phase] == 0:
