@@ -27,8 +27,10 @@ start_hour = 11             # [INPUT HERE] #I think the load start time is deter
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T3.3'             # testID has to match the feeder
+# feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+# testID = 'T3.3'             # testID has to match the feeder
+feederID =  '13unbal'
+testID = 'T8.1'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
