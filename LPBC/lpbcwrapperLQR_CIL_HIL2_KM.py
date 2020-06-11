@@ -530,8 +530,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # break # dont want this break when doing averaging
 
                     ref_packet_offset += 1 #for debugging
-                if flag[phase] == 0:
-                    break
+                # if flag[phase] == 0:
+                #     break
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
