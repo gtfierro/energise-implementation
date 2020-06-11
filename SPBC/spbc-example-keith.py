@@ -97,8 +97,10 @@ if constant_phasor == True:
         if testID == 'T8.1':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['632']
-            cons_Vmag = [0.99,0.99,0.99]
-            cons_Vang = [0 -1, -120 -1, 120 -1]
+            # cons_Vmag = [0.99,0.99,0.99]
+            # cons_Vang = [0 -1, -120 -1, 120 -1]
+            cons_Vmag = [0.98,0.98,0.98]
+            cons_Vang = [0 -2, -120 -2, 120 -2]
         # if testID == 'T8.2':
         #     lpbc_phases = ['a','b','c']
         #     lpbc_nodeIDs = ['675','671'] # would need to change convention to run mult actuator tests
