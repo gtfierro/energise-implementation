@@ -1700,7 +1700,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 # inverterScaling = 1000/1 #HHHERE
 inverterScaling = 500/1
 loadScaling = 350
-CILscaling = 10 #in VA
+CILscaling = 20 #in VA
 #CILscaling = Sratio (below):
 # command given will get multiplied by [150] in switch matrix
 # then divided by 15,000 to give a value in kW internally in Flexlab OpalRT (I think)
