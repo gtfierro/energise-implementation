@@ -498,8 +498,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        # V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
-                        # V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
+                        V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        V_mag_local = V_mag_local * self.scaling33NF
+                        V_mag_ref = V_mag_ref * self.scaling33NF
+
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
@@ -507,20 +510,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
 
-                        # calculates relative phasors
-                        # self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-                        # self.Vmag[phase] = V_mag_local
-                        # self.VmagRef[phase] = V_mag_ref
-                        # self.Vmag_relative[phase] = V_mag_local - V_mag_ref
-                        # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-                        # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-                        # # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
-                        # # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
-                        #uncomment above and change the return statement if you want the default to be to use the previous V measurment when V measurements are not successfully calculated for each phase
+                        Vmag[phase] = V_mag_local
+                        VmagRef[phase] = V_mag_ref
+                        Vmag_relative[phase] = V_mag_local - V_mag_ref
+
                         Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-                        # Vmag[phase] = V_mag_local
-                        # VmagRef[phase] = V_mag_ref
-                        # Vmag_relative[phase] = V_mag_local - V_mag_ref
                         Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
                         VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
                         # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
