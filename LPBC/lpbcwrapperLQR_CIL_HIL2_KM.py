@@ -445,9 +445,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     VmagRefSum[phase] += VmagRefi
                     VmagRefCount[phase] += 1
-             Vmag[phase] = VmagSum[phase]/VmagCount[phase]
-             VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
-             Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
         print('VmagCount ', VmagCount)
         print('VmagRefCount ', VmagRefCount)
