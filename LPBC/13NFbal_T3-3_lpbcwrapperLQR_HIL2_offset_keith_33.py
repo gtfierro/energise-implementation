@@ -323,6 +323,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
+        self.scaling33NF = 3.
+
         #vars for plots
         self.controlStepsTaken_counter = 0
         self.testcase = cfg['testcase']
@@ -529,6 +531,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # Extract measurements from closest timestamps
                         V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        V_mag_local = V_mag_local * self.scaling33NF
+                        V_mag_ref = V_mag_ref * self.scaling33NF
 
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
