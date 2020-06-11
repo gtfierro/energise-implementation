@@ -450,37 +450,37 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         VmagRef = np.asarray([np.NaN]*nphases)
         Vmag_relative = np.asarray([np.NaN]*nphases)
 
-        VmagSum = np.zeros(nphases)
-        VmagCount = np.zeros(nphases)
-        VmagRefSum = np.zeros(nphases)
-        VmagRefCount = np.zeros(nphases)
-        for phase in range(nphases):
-            # loops through every ordered_local uPMU reading
-            for local_packet in ordered_local[phase]:
-                Vmagi = local_packet['magnitude']
-                if Vmagi is None:
-                    print('Vmagi is None')
-                elif np.isnan(Vmagi):
-                    print('Vmagi is NaN')
-                elif Vmagi == 0:
-                    print('Vmagi is 0')
-                else:
-                    VmagSum[phase] += Vmagi
-                    VmagCount[phase] += 1
-            for ref_packet in ref[phase]:
-                VmagRefi = local_packet['magnitude']
-                if VmagRefi is None:
-                    print('VmagRefi is None')
-                elif np.isnan(VmagRefi):
-                    print('VmagRefi is NaN')
-                elif VmagRefi == 0:
-                    print('VmagRefi is 0')
-                else:
-                    VmagRefSum[phase] += VmagRefi
-                    VmagRefCount[phase] += 1
-            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
-            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
-            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
+        # VmagSum = np.zeros(nphases)
+        # VmagCount = np.zeros(nphases)
+        # VmagRefSum = np.zeros(nphases)
+        # VmagRefCount = np.zeros(nphases)
+        # for phase in range(nphases):
+        #     # loops through every ordered_local uPMU reading
+        #     for local_packet in ordered_local[phase]:
+        #         Vmagi = local_packet['magnitude']
+        #         if Vmagi is None:
+        #             print('Vmagi is None')
+        #         elif np.isnan(Vmagi):
+        #             print('Vmagi is NaN')
+        #         elif Vmagi == 0:
+        #             print('Vmagi is 0')
+        #         else:
+        #             VmagSum[phase] += Vmagi
+        #             VmagCount[phase] += 1
+        #     for ref_packet in ref[phase]:
+        #         VmagRefi = local_packet['magnitude']
+        #         if VmagRefi is None:
+        #             print('VmagRefi is None')
+        #         elif np.isnan(VmagRefi):
+        #             print('VmagRefi is NaN')
+        #         elif VmagRefi == 0:
+        #             print('VmagRefi is 0')
+        #         else:
+        #             VmagRefSum[phase] += VmagRefi
+        #             VmagRefCount[phase] += 1
+        #     Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+        #     VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+        #     Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
         # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         # print('len(local_phasors[plug]) ', len(local_phasors[plug]))
