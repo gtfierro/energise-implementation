@@ -417,53 +417,53 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         VmagRef = np.asarray([np.NaN]*nphases)
         Vmag_relative = np.asarray([np.NaN]*nphases)
 
-        # VmagSum = np.zeros(nphases)
-        # VmagCount = np.zeros(nphases)
-        # VmagRefSum = np.zeros(nphases)
-        # VmagRefCount = np.zeros(nphases)
-        # for phase in range(nphases):
-        #     # loops through every ordered_local uPMU reading
-        #     for local_packet in ordered_local[phase]:
-        #         Vmagi = local_packet['magnitude']
-        #         Vmagi = Vmagi * self.scaling33NF
-        #         if Vmagi is None:
-        #             print('Vmagi is None')
-        #         elif np.isnan(Vmagi):
-        #             print('Vmagi is NaN')
-        #         elif Vmagi == 0:
-        #             print('Vmagi is 0')
-        #         else:
-        #             VmagSum[phase] += Vmagi
-        #             VmagCount[phase] += 1
-        #     for ref_packet in ref[phase]:
-        #         VmagRefi = ref_packet['magnitude']
-        #         VmagRefi = VmagRefi * self.scaling33NF
-        #         if VmagRefi is None:
-        #             print('VmagRefi is None')
-        #         elif np.isnan(VmagRefi):
-        #             print('VmagRefi is NaN')
-        #         elif VmagRefi == 0:
-        #             print('VmagRefi is 0')
-        #         else:
-        #             VmagRefSum[phase] += VmagRefi
-        #             VmagRefCount[phase] += 1
-        #     Vmag[phase] = VmagSum[phase]/VmagCount[phase]
-        #     VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
-        #     Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
-        #
-        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        # print('len(local_phasors[plug]) ', len(local_phasors[plug]))
-        # print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
-        #
-        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
-        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
-        #
-        # print('VmagCount ', VmagCount)
-        # print('VmagRefCount ', VmagRefCount)
-        # print('Vmag ', Vmag)
-        # print('VmagRef ', VmagRef)
-        # print('Vmag_relative ', Vmag_relative)
-        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        VmagSum = np.zeros(nphases)
+        VmagCount = np.zeros(nphases)
+        VmagRefSum = np.zeros(nphases)
+        VmagRefCount = np.zeros(nphases)
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading
+            for local_packet in ordered_local[phase]:
+                Vmagi = local_packet['magnitude']
+                Vmagi = Vmagi * self.scaling33NF
+                if Vmagi is None:
+                    print('Vmagi is None')
+                elif np.isnan(Vmagi):
+                    print('Vmagi is NaN')
+                elif Vmagi == 0:
+                    print('Vmagi is 0')
+                else:
+                    VmagSum[phase] += Vmagi
+                    VmagCount[phase] += 1
+            for ref_packet in ref[phase]:
+                VmagRefi = ref_packet['magnitude']
+                VmagRefi = VmagRefi * self.scaling33NF
+                if VmagRefi is None:
+                    print('VmagRefi is None')
+                elif np.isnan(VmagRefi):
+                    print('VmagRefi is NaN')
+                elif VmagRefi == 0:
+                    print('VmagRefi is 0')
+                else:
+                    VmagRefSum[phase] += VmagRefi
+                    VmagRefCount[phase] += 1
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
+
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug]))
+        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+
+        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
+
+        print('VmagCount ', VmagCount)
+        print('VmagRefCount ', VmagRefCount)
+        print('Vmag ', Vmag)
+        print('VmagRef ', VmagRef)
+        print('Vmag_relative ', Vmag_relative)
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
 
         # loops through each set of voltage measurements for each phase
         local_time_index = [np.NaN]*nphases
@@ -498,10 +498,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
-                        V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
-                        V_mag_local = V_mag_local * self.scaling33NF #HERE specific to 33 node feeder
-                        V_mag_ref = V_mag_ref * self.scaling33NF
+                        # V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
+                        # V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        # V_mag_local = V_mag_local * self.scaling33NF #HERE specific to 33 node feeder
+                        # V_mag_ref = V_mag_ref * self.scaling33NF
+                        # Vmag[phase] = V_mag_local
+                        # VmagRef[phase] = V_mag_ref
+                        # Vmag_relative[phase] = V_mag_local - V_mag_ref
 
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
@@ -509,10 +512,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #because each phase (of the current meas) needs a V_ang_ref_firstPhase
                         if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
-
-                        Vmag[phase] = V_mag_local
-                        VmagRef[phase] = V_mag_ref
-                        Vmag_relative[phase] = V_mag_local - V_mag_ref
 
                         Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
                         Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])

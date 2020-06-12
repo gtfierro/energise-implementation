@@ -259,7 +259,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.ref_time_index = [np.NaN]*nphases
 
         self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
-        self.nPhasorReadings = 1300
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -503,11 +502,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     if abs(ref_time - local_time) <= self.pmuTimeWindow:
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
+
                         # Extract measurements from closest timestamps
-                        V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
-                        V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
-                        V_mag_local = V_mag_local * self.scalingPGE #HERE specific to 33 node feeder
-                        V_mag_ref = V_mag_ref * self.scalingPGE
+
+                        # V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
+                        # V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        # V_mag_local = V_mag_local * self.scalingPGE #HERE specific to 33 node feeder
+                        # V_mag_ref = V_mag_ref * self.scalingPGE
+                        # Vmag[phase] = V_mag_local
+                        # VmagRef[phase] = V_mag_ref
+                        # Vmag_relative[phase] = V_mag_local - V_mag_ref
 
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
@@ -515,10 +519,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #because each phase (of the current meas) needs a V_ang_ref_firstPhase
                         if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
-
-                        Vmag[phase] = V_mag_local
-                        VmagRef[phase] = V_mag_ref
-                        Vmag_relative[phase] = V_mag_local - V_mag_ref
 
                         Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
                         Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
@@ -1703,8 +1703,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-# inverterScaling = 1000/1 #HHHERE
-inverterScaling = 500/1
+inverterScaling = 1000/1 
 loadScaling = 350
 CILscaling = 20 #in VA
 #CILscaling = Sratio (below):
