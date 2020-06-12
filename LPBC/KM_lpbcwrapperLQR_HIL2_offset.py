@@ -289,7 +289,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
+        # self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 240
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
