@@ -161,14 +161,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qcost = np.asmatrix(np.eye(12))
             # Qcost[3:6,3:6] = Qcost[3:6,3:6]*10 #penalize ang state error
             # Qcost[9:12,9:12] = Qcost[9:12,9:12]*10  #penalize integrated ang error
-            Qcost[6:12,6:12] = Qcost[6:12,6:12]*10 #penalize all integrated state error
+            #HHERE
+            # Qcost[6:12,6:12] = Qcost[6:12,6:12]*10 #penalize all integrated state error
 
             #R matrix determines the penalties placed on control effort
             #the first 3 are P control effort for each state, the second 3 are Q control effort
             Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
             # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
             # Rcost = Rcost*1e-1 #for cheap P and Q
-            Rcost = Rcost*1e1 #HHHERE
+            Rcost = Rcost*5e1 #HHHERE
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)

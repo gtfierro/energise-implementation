@@ -139,10 +139,10 @@ if constant_phasor == True:
         if testID == 'T9.3':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['N_300063911']
-            # cons_Vmag = [0.98,0.98,0.98]
-            # cons_Vang = [0 - 3, -120 - 3, 120 - 3]
-            cons_Vmag = [0.98,0.93,0.98]
-            cons_Vang = [0 - 4, -120 - 4, 120 - 1]            
+            cons_Vmag = [0.98,0.98,0.98]
+            cons_Vang = [0 - 3, -120 - 3, 120 - 3]
+            # cons_Vmag = [0.98,0.93,0.98]
+            # cons_Vang = [0 - 4, -120 - 4, 120 - 1]
 
     print('WARNING: constant_phasor ON')
 
