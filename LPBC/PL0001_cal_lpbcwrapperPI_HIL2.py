@@ -1356,7 +1356,7 @@ inverterScaling = 1000/1 #@JASPER TODO (and possibly ORT_max_kVA) --> 1000/1 for
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 20
+rate = 30
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
