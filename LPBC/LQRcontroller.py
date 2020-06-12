@@ -56,6 +56,7 @@ class LQRcontroller:
         self.u = np.asmatrix(np.zeros(2*nphases)) #this makes a row matrix
 
         #disturbance initialization
+        self.distInitialized = 0
         self.d_est = np.asmatrix(np.zeros(2*nphases))
         self.IcompPrev = np.asmatrix(np.zeros(nphases,dtype=np.complex_))
         self.VcompPrev = np.asmatrix(np.zeros(nphases,dtype=np.complex_))
@@ -145,17 +146,20 @@ class LQRcontroller:
         return u_naive
 
 
-    def updateDisturbance(self,Vmag,Vang,printDOBCterms):
+    def updateDisturbance(self,Vmag,Vang,V0mag,V0ang,printDOBCterms=0):
         if self.linearizeplant:
-            u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
+            u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-np.hstack((V0mag,V0ang))).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
+            # u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
         else:
             u_d_eff = self.pfEqns3phase(Vmag,Vang,self.Zeffkest)
-        if self.iteration_counter != 1: #iteration_counter is 1 in the first call
+        # if self.iteration_counter != 1: #iteration_counter is 1 in the first call
+        if self.distInitialized == 1:
             dm = u_d_eff - self.u
             self.d_est = (1-self.lpAlpha)*self.d_est + self.lpAlpha*dm
         else: #initialize
             dm = u_d_eff
             self.d_est = dm
+            self.distInitialized = 1
         if printDOBCterms:
             print('u_d_eff ' + str(u_d_eff))
             print('self.d_est ' + str(self.d_est))
@@ -320,7 +324,7 @@ class LQRcontroller:
 
         #DOBC
         if self.cancelDists:
-            self.d_est = self.updateDisturbance(Vmag,Vang,printDOBCterms)
+            self.d_est = self.updateDisturbance(Vmag,Vang,V0mag,V0ang,printDOBCterms)
 
         #Feedback Control input for next round
         if self.linearizeplant:
