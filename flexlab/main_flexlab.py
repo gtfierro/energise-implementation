@@ -71,7 +71,7 @@ filepath = pathname+filename
 
 test_ID = 'T9.3'
 sim_length_min = 50 # amount of time to record for in minutes
-# sim_length_min = 1/60
+sim_length_min = 1/60
 # In[run]:
 
 # run functions...
