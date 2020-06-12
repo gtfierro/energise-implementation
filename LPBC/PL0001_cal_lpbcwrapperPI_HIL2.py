@@ -1095,14 +1095,14 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.calibration_test == True:
                 print('CALIBRATION TEST')
                 calID_idx = ['TC1','TC2','TC3','TC4']
-                Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500],
-                                'TC2': [0,0,0,0,0,0],
-                                'TC3': [0,200,0,300,0,400,0,500],
-                                'TC4': [0,0,0,0,0,0,0,0]}
-                Qcmd_cal_kVA = {'TC1': [0,0,0,0,0,0],
-                                'TC2': [0,100,200,300,400,500],
-                                'TC3': [0,0,0,0,0,0,0,0],
-                                'TC4': [0,200,0,300,0,400,0,500]}
+                Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500,0,-100,-200,-300,-400,-500],
+                                'TC2': [0,0,0,0,0,0,0,0,0,0,0,0],
+                                'TC3': [0,200,0,300,0,400,0,500,0,-200,0,-300,0,-400,0,-500],
+                                'TC4': [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
+                Qcmd_cal_kVA = {'TC1': [0,0,0,0,0,0,0,0,0,0,0,0],
+                                'TC2': [0,100,200,300,400,500,0,-100,-200,-300,-400,-500],
+                                'TC3': [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                                'TC4': [0,200,0,300,0,400,0,500,0,-200,0,-300,0,-400,0,-500]}
                 calID_lens = {}
                 calID_lens['TC0'] = 0
                 calID_lens_idx = ['TC0']
@@ -1117,6 +1117,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         iter_idx = self.cal_iter_counter - calID_lens[calID_lens_idx[i-1]]
                         self.Pcmd_kVA = np.ones(3) * Pcmd_cal_kVA[ID][iter_idx] / self.localSratio
                         self.Qcmd_kVA = np.ones(3) * Qcmd_cal_kVA[ID][iter_idx] / self.localSratio
+                if self.cal_iter_counter >= calID_lens['TC4']:
+                    self.Pcmd_kVA = np.zeros(3)
+                    self.Qcmd_kVA = np.zeros(3)
+                    print('CALIBRATION OVER')
+                    break
+                    
             #END CALIBRATION
 
             if self.actType == 'inverter':
@@ -1350,7 +1356,7 @@ inverterScaling = 1000/1 #@JASPER TODO (and possibly ORT_max_kVA) --> 1000/1 for
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 30
+rate = 20
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
