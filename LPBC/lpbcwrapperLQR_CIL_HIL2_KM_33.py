@@ -436,7 +436,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #             VmagSum[phase] += Vmagi
         #             VmagCount[phase] += 1
         #     for ref_packet in ref[phase]:
-        #         VmagRefi = local_packet['magnitude']
+        #         VmagRefi = ref_packet['magnitude']
         #         VmagRefi = VmagRefi * self.scaling33NF
         #         if VmagRefi is None:
         #             print('VmagRefi is None')

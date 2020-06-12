@@ -394,7 +394,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             phase_idx = plug_to_V_idx[plug]
             ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
             ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
- 
+
         print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         print('len(local_phasors[plug]) ', len(local_phasors[plug]))
         print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
@@ -441,7 +441,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     VmagSum[phase] += Vmagi
                     VmagCount[phase] += 1
             for ref_packet in ref[phase]:
-                VmagRefi = local_packet['magnitude']
+                VmagRefi = ref_packet['magnitude']
                 if VmagRefi is None:
                     print('VmagRefi is None')
                 elif np.isnan(VmagRefi):
