@@ -61,27 +61,27 @@ functions from ORT_modbus_energise:
 
 # In[settings]:
 
-pathname = 'sw_mat_HIL2/'
+# pathname = 'sw_mat_HIL2/'
 # filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
 # filename = 'HIL2_switch_matrix_13NF_bal_CILdebug.xlsx'
 # filename = 'HIL2_switch_matrix_13NF_bal_offset.xlsx'
 # filename = 'HIL_switch_matrix_13NF_unbal_offset.xlsx'
-filename = 'HIL_switch_matrix_PL0001_offset_PO.xlsx'
-filepath = pathname+filename
+# filename = 'HIL_switch_matrix_PL0001_offset_PO.xlsx'
+# filepath = pathname+filename
 
-test_ID = 'T9.3'
-sim_length_min = 50 # amount of time to record for in minutes
+# test_ID = 'T9.3'
+# sim_length_min = 50 # amount of time to record for in minutes
 # sim_length_min = 1/60
 # In[run]:
 
 # run functions...
 
-dfsw_in,dfsw_out = read_sw_mat(filepath)
+# dfsw_in,dfsw_out = read_sw_mat(filepath)
 
 #set_switches(dfsw_in,dfsw_out,test_ID)
 
-
-sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+sim_pause()
+# sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
 # sim_start_pause_stop(1)
 
 
