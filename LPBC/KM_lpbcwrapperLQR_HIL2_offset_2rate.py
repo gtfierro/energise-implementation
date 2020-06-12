@@ -714,7 +714,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # Initialize
         ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
         ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
-
+        flag = [1] * nphases
+        
         for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
             # if len(local_phasors[plug]) > self.nPhasorReadings:
             #     dataWindowLength = self.nPhasorReadings
