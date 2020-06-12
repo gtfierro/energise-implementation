@@ -609,41 +609,39 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
-            if self.calibration_test == True:
-                print('CALIBRATION TEST')
-                calID_idx = ['TC1','TC2','TC3','TC4']
-                Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500],
-                                'TC2': [0,0,0,0,0,0],
-                                'TC3': [0,200,0,300,0,400,0,500],
-                                'TC4': [0,0,0,0,0,0,0,0]}
-                Qcmd_cal_kVA = {'TC1': [0,0,0,0,0,0],
-                                'TC2': [0,100,200,300,400,500],
-                                'TC3': [0,0,0,0,0,0,0,0],
-                                'TC4': [0,200,0,300,0,400,0,500]}
-                calID_lens = {}
-                calID_lens['TC0'] = 0
-                calID_lens_idx = ['TC0']
-                for i, ID in enumerate(calID_idx):
-                    cum_length = 0
-                    for j in range(i+1):
-                        cum_length += len(Pcmd_cal_kVA[calID_idx[j]])
-                    calID_lens[ID] = cum_length
-                    calID_lens_idx.append(ID)
-                for i, ID in enumerate(calID_lens):
-                    if self.cal_iter_counter >= calID_lens[calID_lens_idx[i-1]] and self.cal_iter_counter < calID_lens[calID_lens_idx[i]]:
-                        iter_idx = self.cal_iter_counter - calID_lens[calID_lens_idx[i-1]]
-                        Pcmd_VA = np.ones(3) * Pcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
-                        Qcmd_VA = np.ones(3) * Qcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
+            # if self.calibration_test == True:
+            #     print('CALIBRATION TEST')
+            #     calID_idx = ['TC1','TC2','TC3','TC4']
+            #     Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500],
+            #                     'TC2': [0,0,0,0,0,0],
+            #                     'TC3': [0,200,0,300,0,400,0,500],
+            #                     'TC4': [0,0,0,0,0,0,0,0]}
+            #     Qcmd_cal_kVA = {'TC1': [0,0,0,0,0,0],
+            #                     'TC2': [0,100,200,300,400,500],
+            #                     'TC3': [0,0,0,0,0,0,0,0],
+            #                     'TC4': [0,200,0,300,0,400,0,500]}
+            #     calID_lens = {}
+            #     calID_lens['TC0'] = 0
+            #     calID_lens_idx = ['TC0']
+            #     for i, ID in enumerate(calID_idx):
+            #         cum_length = 0
+            #         for j in range(i+1):
+            #             cum_length += len(Pcmd_cal_kVA[calID_idx[j]])
+            #         calID_lens[ID] = cum_length
+            #         calID_lens_idx.append(ID)
+            #     for i, ID in enumerate(calID_lens):
+            #         if self.cal_iter_counter >= calID_lens[calID_lens_idx[i-1]] and self.cal_iter_counter < calID_lens[calID_lens_idx[i]]:
+            #             iter_idx = self.cal_iter_counter - calID_lens[calID_lens_idx[i-1]]
+            #             Pcmd_VA = np.ones(3) * Pcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
+            #             Qcmd_VA = np.ones(3) * Qcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
 
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
+            Pcmd_VA = abs(
+                Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
+            Qcmd_VA = abs(
+                Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
             
-            # commented out for calibration tests
-            # Pcmd_VA = abs(
-            #     Pcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
-            # Qcmd_VA = abs(
-            #     Qcmd_kVA * 1000)  # abs values for working only in quadrant 1. Will use modbus to determine quadrant
-
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1:
                 id = 3
@@ -1092,6 +1090,34 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
+
+            # START CALIBRATION
+            if self.calibration_test == True:
+                print('CALIBRATION TEST')
+                calID_idx = ['TC1','TC2','TC3','TC4']
+                Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500],
+                                'TC2': [0,0,0,0,0,0],
+                                'TC3': [0,200,0,300,0,400,0,500],
+                                'TC4': [0,0,0,0,0,0,0,0]}
+                Qcmd_cal_kVA = {'TC1': [0,0,0,0,0,0],
+                                'TC2': [0,100,200,300,400,500],
+                                'TC3': [0,0,0,0,0,0,0,0],
+                                'TC4': [0,200,0,300,0,400,0,500]}
+                calID_lens = {}
+                calID_lens['TC0'] = 0
+                calID_lens_idx = ['TC0']
+                for i, ID in enumerate(calID_idx):
+                    cum_length = 0
+                    for j in range(i+1):
+                        cum_length += len(Pcmd_cal_kVA[calID_idx[j]])
+                    calID_lens[ID] = cum_length
+                    calID_lens_idx.append(ID)
+                for i, ID in enumerate(calID_lens):
+                    if self.cal_iter_counter >= calID_lens[calID_lens_idx[i-1]] and self.cal_iter_counter < calID_lens[calID_lens_idx[i]]:
+                        iter_idx = self.cal_iter_counter - calID_lens[calID_lens_idx[i-1]]
+                        self.Pcmd_kVA = np.ones(3) * Pcmd_cal_kVA[ID][iter_idx] / self.localSratio
+                        self.Qcmd_kVA = np.ones(3) * Qcmd_cal_kVA[ID][iter_idx] / self.localSratio
+            #END CALIBRATION
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4:
