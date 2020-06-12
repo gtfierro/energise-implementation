@@ -257,8 +257,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 40 #HHHERE for debugging
-        # self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -473,7 +472,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
         #important thing is that the other notRelative angles are seperated by ~120degrees
         for phase in range(nphases):
-            print('phase ', phase)
             refAngleUsedVec = np.zeros(dataWindowLength) # debug to check if any refs are used twice (they shouldnt be)
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
