@@ -1146,16 +1146,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 commandReceipt[i] = 'failure'
         print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        if self.offset_mode == 1 or self.offset_mode == 2:
-            try:
-                self.client.connect()
-                for i in range(len(mtx)):
-                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-                print(f'sent offsets: {mtx}')
-            except Exception as e:
-                print(e)
-            finally:
-                self.client.close()
+        #HHHHERE DEBUG
+        # if self.offset_mode == 1 or self.offset_mode == 2:
+        #     try:
+        #         self.client.connect()
+        #         for i in range(len(mtx)):
+        #             self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+        #         print(f'sent offsets: {mtx}')
+        #     except Exception as e:
+        #         print(e)
+        #     finally:
+        #         self.client.close()
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
@@ -1500,20 +1501,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if self.currentMeasExists:
                     if len(local_phasors) >= self.nphases*2:
                         if self.controllerType == 'LQR':
-                            #check if V_ang_ref_firstPhase and time_indexes exist
-                            if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
-                                print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
-                                self.Icomp_pu = [np.NaN]*self.nphases
-                            else:
-                                if self.AveragePhasorMeasurements:
-                                    self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-                                else:
-                                    self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                            if self.AveragePhasorMeasurements:
+                                self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                                 self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                                 #HERE havent checked that the current measurements are legit yet
                                 self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
                                 #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
                                 self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
+                            else:
+                                #check if V_ang_ref_firstPhase and time_indexes exist
+                                if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
+                                    print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
+                                    self.Icomp_pu = [np.NaN]*self.nphases
+                                else:
+                                    self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                                    self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
+                                    #HERE havent checked that the current measurements are legit yet
+                                    self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
+                                    #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
+                                    self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
                         # calculate P/Q from actuators
                         (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
                         self.Pact_pu = self.Pact / self.localkVAbase
