@@ -1144,11 +1144,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vang_wrap > 0:
                 # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                 Vang_wrap = Vang_wrap - np.radians(360.)
-                print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
             elif Vang_wrap < 0:
                 # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                 Vang_wrap = Vang_wrap + np.radians(360.)
-                print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
         return Vang_wrap
 
     def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
