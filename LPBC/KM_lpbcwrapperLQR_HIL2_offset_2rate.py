@@ -346,6 +346,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.perturbPowerCommand = 0
         self.perturbScale = .1
 
+        self.AveragePhasorMeasurements = 1 # =1: Take the average phasor meas, =0: take the most recent
+
 
     def targetExtraction(self,phasor_target):
         #this implies A,B,C order to measurements from SPBC
@@ -1444,8 +1446,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            # (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            if self.AveragePhasorMeasurements:
+                (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            else:
+                (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             # if any(np.isnan(self.Vang_relative)):
             #     print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
             #     return
@@ -1501,8 +1505,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                                 print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
                                 self.Icomp_pu = [np.NaN]*self.nphases
                             else:
-                                # self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
-                                self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                                if self.AveragePhasorMeasurements:
+                                    self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                                else:
+                                    self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
                                 self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                                 #HERE havent checked that the current measurements are legit yet
                                 self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
@@ -1590,24 +1596,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
                 #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
 
-                if self.actType == 'inverter':
-                    if self.currentMeasExists or self.mode == 3 or self.mode == 4:
-                        self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
-                        self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
-                        #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
-                        print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
-                    else:
-                        print('couldnt send inverter commands because no current measurement available')
-                elif self.actType == 'load':
-                    # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                    self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                    print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
-                elif self.actType == 'modbus':
-                    # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                    print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
-                else:
-                    error('actType error')
+                #HHHERE for debugging
+                # if self.actType == 'inverter':
+                #     if self.currentMeasExists or self.mode == 3 or self.mode == 4:
+                #         self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
+                #         self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
+                #         #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
+                #         print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
+                #     else:
+                #         print('couldnt send inverter commands because no current measurement available')
+                # elif self.actType == 'load':
+                #     # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                #     self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                #     print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
+                # elif self.actType == 'modbus':
+                #     # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                #     result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                #     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
+                # else:
+                #     error('actType error')
 
                 #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
                 max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase
@@ -1793,8 +1800,8 @@ Tells each LPBC whether it sends commands to loads or inverters
 
 '''
 
-
-SPBCname = 'spbc-jasper-1'
+SPBCname = 'spbc2'
+# SPBCname = 'spbc-jasper-1'
 # SPBCname = 'spbc-example-jasper'
 
 #Manual entry here to determine test case, phases, etc.
