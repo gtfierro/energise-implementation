@@ -531,8 +531,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # Extract measurements from closest timestamps
                         V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
-                        V_mag_local = V_mag_local * self.scalingPGE = 12.6/4.16
-                        V_mag_ref = V_mag_ref * self.scalingPGE = 12.6/4.16
+                        V_mag_local = V_mag_local * self.scalingPGE
+                        V_mag_ref = V_mag_ref * self.scalingPGE
 
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
@@ -1682,7 +1682,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 1000/1 #@JASPER TODO (and possibly ORT_max_kVA) --> 1000/1 for ORT_max_kVA = 1000
 loadScaling = 350
-CILscaling = 500/3.3
+CILscaling = 20
 
 rate = 15
 # rate = 20
