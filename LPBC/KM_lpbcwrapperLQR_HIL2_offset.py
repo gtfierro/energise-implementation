@@ -167,7 +167,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
             # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
             # Rcost = Rcost*1e-1 #for cheap P and Q
-            # Rcost = Rcost*5e1  #for expensive P and Q
+            Rcost = Rcost*5e1  #for expensive P and Q
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
