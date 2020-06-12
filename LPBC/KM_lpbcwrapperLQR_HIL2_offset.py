@@ -1839,9 +1839,12 @@ elif testcase == '13unb':
     loadScaling = 350
     CILscaling = 10 #in VA
 elif testcase == '33':
-    testNumber = '8.1'
-    lpbcidx = ['6'] #for 33
-    key = '6'
+    # testNumber = '8.1'
+    # lpbcidx = ['6'] #for 33
+    # key = '6'
+    testNumber = '3.3'
+    lpbcidx = ['18'] #for 33
+    key = '18'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
     ORT_max_kVA = 500
