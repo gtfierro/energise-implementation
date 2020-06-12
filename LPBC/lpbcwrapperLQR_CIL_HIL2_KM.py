@@ -489,13 +489,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
         #important thing is that the other notRelative angles are seperated by ~120degrees
         for phase in range(nphases):
+            print('phase ', phase)
             refAngleUsedVec = np.zeros(dataWindowLength) # debug to check if any refs are used twice (they shouldnt be)
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
                 # extract most recent ordered_local uPMU reading
                 local_time = int(local_packet['time'])
                 # loops though every reference uPMU reading starting from most recent
-                ref_packet_offset = 0 #for debugging
                 i = 0
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
@@ -511,6 +511,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
                         V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
                         V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        print('V_ang_local ', V_ang_local)
+                        print('V_ang_ref ', V_ang_ref)
+                        print('V_ang_ref_firstPhaseTemp ', V_ang_ref_firstPhaseTemp)
 
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
@@ -529,11 +532,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         flag[phase] = 0
                         #for debugging
                         if phase == 0:
-                            print('ref_packet_offset ', ref_packet_offset)
+                            print('i used ', i)
                             print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
                         # break # dont want this break when doing averaging
 
-                    ref_packet_offset += 1 #for debugging
                     i += 1
                 # if flag[phase] == 0:
                 #     break
@@ -1142,11 +1144,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vang_wrap > 0:
                 # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                 Vang_wrap = Vang_wrap - np.radians(360.)
-                # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
             elif Vang_wrap < 0:
                 # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                 Vang_wrap = Vang_wrap + np.radians(360.)
-                # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
 
     def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
