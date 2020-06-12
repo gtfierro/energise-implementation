@@ -730,6 +730,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # print('Current ref[phase][0][time] ', ref[phase][0]['time'])
         # print('Current ref[phase][-1][time] ', ref[phase][-1]['time'])
 
+        Imag = np.asarray([np.NaN]*nphases)
+
         ImagSum = np.zeros(nphases)
         ImagCount = np.zeros(nphases)
         for phase in range(nphases):
@@ -750,7 +752,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # print('Imag ', Imag)
         # print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
 
-        Iang_notRelative = [np.NaN] * nphases
+        Iang_notRelative = np.asarray([np.NaN]*nphases)
 
         IangCount = np.zeros(nphases)
         Iang_notRelativeSum = np.zeros(nphases)
