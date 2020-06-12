@@ -27,18 +27,18 @@ start_hour = 11             # [INPUT HERE]
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T12.3'
+feederID =  'PL0001'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T9.3'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
 if constant_phasor == True:
     # set phasor target values here (not relative)
-    #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
+    # cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
     # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
     cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
-    #cons_Vang = [-1.61526,-121.75103,118.20174]
-    #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
+    # cons_Vang = [-1.61526,-121.75103,118.20174]
+    # cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     cons_Vang = [0 - 3, -120 - 3, 120 - 3]
     # FOR T12 - all angles should be the same value since all on phase A.
     cons_Vang = [0 - 3, -120 - 3, 120 - 3]
