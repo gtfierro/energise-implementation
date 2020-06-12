@@ -436,19 +436,19 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
             Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        print('len(local_phasors[plug]) ', len(local_phasors[plug]))
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug])) #this is the number of phasor measurements delivered. often it is 120*rate (number of seconds)
         print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
-
-        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
-        print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
+        #
+        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
 
         print('VmagCount ', VmagCount)
-        print('VmagRefCount ', VmagRefCount)
-        print('Vmag ', Vmag)
-        print('VmagRef ', VmagRef)
-        print('Vmag_relative ', Vmag_relative)
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('VmagRefCount ', VmagRefCount)
+        # print('Vmag ', Vmag)
+        # print('VmagRef ', VmagRef)
+        # print('Vmag_relative ', Vmag_relative)
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
 
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
@@ -496,9 +496,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
                         # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
                         # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
-                        print('V_ang_local ', V_ang_local)
-                        print('V_ang_ref ', V_ang_ref)
-                        print('V_ang_ref_firstPhaseTemp ', V_ang_ref_firstPhaseTemp)
 
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
@@ -516,9 +513,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                         flag[phase] = 0
                         #for debugging
-                        if phase == 0:
-                            print('i used ', i)
-                            print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+                        # if phase == 0:
+                        #     print('i used ', i)
+                        #     print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
                         # break # dont want this break when doing averaging
 
                     i += 1
@@ -533,12 +530,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 VangRef[phase] = VangRefSum[phase]/VangCount[phase]
                 V_ang_ref_firstPhase[phase] = V_ang_ref_firstPhaseSum[phase]/VangCount[phase]
 
-        print('Vang_notRelative ', Vang_notRelative)
-        print('Vang_relative ', Vang_relative)
-        print('VangRef ', VangRef)
-        print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
+        # print('Vang_notRelative ', Vang_notRelative)
+        # print('Vang_relative ', Vang_relative)
+        # print('VangRef ', VangRef)
+        # print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
         print('VangCount ', VangCount)
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
