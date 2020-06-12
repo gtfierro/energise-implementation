@@ -51,7 +51,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print(f'Building LPBC for performance node {busId}')
         self.busId = busId
-        self.timesteplength = rate * numStepsPerActuation
+        timesteplength = rate * numStepsPerActuation
+        self.timesteplength = timesteplength
         self.stepCount = 0
         self.numStepsPerActuation = numStepsPerActuation
 
