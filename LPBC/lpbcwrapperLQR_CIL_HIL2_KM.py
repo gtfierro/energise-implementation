@@ -257,7 +257,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 4 #HHHERE for debugging
+        # self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -506,12 +507,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
-                        V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
-                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
-                        # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
-                        # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
-                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        # V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        # V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+                        # V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
+                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
 
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
@@ -692,34 +693,128 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
-    # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
-    def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, nphases, plug_to_V_idx):
+    def phasorI_calc(self, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
         #uses the same time indeces and votlage reference from the voltage search
         # Initialize
         ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
-        # ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
-        Imag = [np.NaN] * nphases
-        # Iang_relative = [np.NaN] * nphases
+        ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
+
+        for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
+            # if len(local_phasors[plug]) > self.nPhasorReadings:
+            #     dataWindowLength = self.nPhasorReadings
+            # else:
+            #     dataWindowLength = len(local_phasors[plug])
+            phase_idx = plug_to_V_idx[plug]
+            # the + nphases gives the current rather than the voltage measurements
+            ordered_local[phase_idx] = local_phasors[plug + nphases][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
+            # no + nphases for ref bc you WANT the voltage ref
+            ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
+
+        print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+        print('Current ordered_local[phase][0][time] ', ordered_local[phase][0]['time'])
+        print('Current ordered_local[phase][-1][time] ', ordered_local[phase][-1]['time'])
+        print('Current ref[phase][0][time] ', ref[phase][0]['time'])
+        print('Current ref[phase][-1][time] ', ref[phase][-1]['time'])
+
+        ImagSum = np.zeros(nphases)
+        ImagCount = np.zeros(nphases)
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading
+            for local_packet in ordered_local[phase]:
+                Imagi = local_packet['magnitude']
+                if Imagi is None:
+                    print('Imagi is None')
+                elif np.isnan(Imagi):
+                    print('Imagi is NaN')
+                elif Imagi == 0:
+                    print('Imagi is 0')
+                else:
+                    ImagSum[phase] += Imagi
+                    ImagCount[phase] += 1
+            Imag[phase] = ImagSum[phase]/ImagCount[phase]
+        print('ImagCount ', ImagCount)
+        print('Imag ', Imag)
+        print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+
         Iang_notRelative = [np.NaN] * nphases
-        for plug in range(nphases):
-            phase_idx = plug_to_V_idx[plug] #assumes the current plugs are hooked up the same way
-            ordered_local[phase_idx] = local_phasors[plug + nphases][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
-            # ref[plug] = reference_phasors[plug + nphases][-dataWindowLength:] #plug + nphases selects the current data rather than the voltage data
+
+        IangCount = np.zeros(nphases)
+        Iang_notRelativeSum = np.zeros(nphases)
+
+        refAngleUsedVec = np.zeros(dataWindowLength) # to check if any refs are used twice (they shouldnt be)
+        #for ref_i, ref_packet in enumerate(reversed(ref[phase])):
 
         for phase in range(nphases):
-            # Extract measurements from closest timestamps
-            I_ang_local = ordered_local[phase][local_time_index[phase]]['angle']
-            # I_ang_ref = ref[phase][ref_time_index[phase]]['angle']
-            # I_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] # this is wrong, need to Vref[0]
-            I_ang_ref_firstPhase = V_ang_ref_firstPhase[phase] # V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #this is indexed by phase in case the different phase measurements use different time steps
+            # loops through every ordered_local uPMU reading starting from most recent
+            for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
+                # extract most recent ordered_local uPMU reading
+                local_time = int(local_packet['time'])
+                # loops though every reference uPMU reading starting from most recent
+                for ref_packet in reversed(ref[phase]):
+                    ref_time = int(ref_packet['time'])
 
-            # self.Iang_relative[phase] = np.radians(I_ang_local - I_ang_ref)  #uses self. so it defaults to previous value
-            # self.Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
-            Iang_notRelative[phase] = np.radians(I_ang_local - I_ang_ref_firstPhase)
-            Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
+                    # check timestamps of ordered_local and reference uPMU if within 2 ms
+                    if abs(ref_time - local_time) <= self.pmuTimeWindow:
+                        local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
+                        ref_time_index[phase] = ref[phase].index(ref_packet)
+                        # Extract measurements from closest timestamps
+                        I_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+
+                        if V_ang_ref_firstPhase[phase] == np.NaN or V_ang_ref_firstPhase[phase] == None: #(could put in a better check here, eg is the angle in a reasonable range)
+                            print('WARNING: [in phasorI_calc] issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
+
+                        Iang_notRelativeSum[phase] += np.radians(I_ang_local - V_ang_ref_firstPhaseTemp)
+                        IangCount[phase] += 1
+                        # if refAngleUsedVec[i] == 1:
+                        #     print('WARNING, this ref angle was already used')
+                        # refAngleUsedVec[i] = 1
+
+                        flag[phase] = 0
+                        #for debugging
+                        print(f'Current ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+
+            if flag[phase] == 1:
+                print('PhasorI_calc: No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
+            else:
+                Iang_notRelative[phase] = Iang_notRelativeSum[phase]/IangCount[phase]
+
+        print('Iang_notRelative ', Iang_notRelative)
+        print('IangCount ', IangCount)
+        print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
 
         # return self.Iang_notRelative, self.Iang_relative, self.Imag
         return Iang_notRelative, Imag
+
+    #old version that didnt take average
+    # # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
+    # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, nphases, plug_to_V_idx):
+    #     #uses the same time indeces and votlage reference from the voltage search
+    #     # Initialize
+    #     ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+    #     # ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
+    #     Imag = [np.NaN] * nphases
+    #     # Iang_relative = [np.NaN] * nphases
+    #     Iang_notRelative = [np.NaN] * nphases
+    #     for plug in range(nphases):
+    #         phase_idx = plug_to_V_idx[plug] #assumes the current plugs are hooked up the same way
+    #         ordered_local[phase_idx] = local_phasors[plug + nphases][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
+    #         # ref[plug] = reference_phasors[plug + nphases][-dataWindowLength:] #plug + nphases selects the current data rather than the voltage data
+    #
+    #     for phase in range(nphases):
+    #         # Extract measurements from closest timestamps
+    #         I_ang_local = ordered_local[phase][local_time_index[phase]]['angle']
+    #         # I_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+    #         # I_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] # this is wrong, need to Vref[0]
+    #         I_ang_ref_firstPhase = V_ang_ref_firstPhase[phase] # V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #this is indexed by phase in case the different phase measurements use different time steps
+    #
+    #         # self.Iang_relative[phase] = np.radians(I_ang_local - I_ang_ref)  #uses self. so it defaults to previous value
+    #         # self.Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
+    #         Iang_notRelative[phase] = np.radians(I_ang_local - I_ang_ref_firstPhase)
+    #         Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
+    #
+    #     # return self.Iang_notRelative, self.Iang_relative, self.Imag
+    #     return Iang_notRelative, Imag
 
 
     #just uses the most recent current and voltage measurements, doesnt need a match w reference
@@ -1039,17 +1134,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # max_degrees = 300.
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
-        while abs(Vang) > np.radians(max_degrees):
-            if Vang > 0:
-                # print(f'Vang[{phase}] = {Vang[phase]}')
-                Vang_wrap = Vang - np.radians(360.)
-                # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                # # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-            elif Vang < 0:
-                # print(f'Vang[{phase}] = {Vang[phase]}')
-                Vang_wrap = Vang + np.radians(360.)
-                # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                # # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+        # if abs(Vang) > np.radians(max_degrees):
+        #     if Vang > 0:
+        #         Vang_wrap = Vang - np.radians(360.)
+        #     elif Vang < 0:
+        #         Vang_wrap = Vang + np.radians(360.)
+        while abs(Vang_wrap) > np.radians(max_degrees):
+            if Vang_wrap > 0:
+                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                Vang_wrap = Vang_wrap - np.radians(360.)
+                # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+            elif Vang_wrap < 0:
+                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                Vang_wrap = Vang_wrap + np.radians(360.)
+                # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
 
     def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
@@ -1059,15 +1157,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Vang_wrap = Vang
         for phase in range(nphases):
             # if abs(Vang[phase]) > np.radians(max_degrees):
-            while abs(Vang[phase]) > np.radians(max_degrees):
-                if Vang[phase] > 0:
-                    print(f'Vang[{phase}] = {Vang[phase]}')
-                    Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+            #     if Vang[phase] > 0:
+            #         print(f'Vang[{phase}] = {Vang[phase]}')
+            #         Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+            #         print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+            #         # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+            #     elif Vang[phase] < 0:
+            #         print(f'Vang[{phase}] = {Vang[phase]}')
+            #         Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+            #         print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+            #         # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+            while abs(Vang_wrap[phase]) > np.radians(max_degrees):
+                if Vang_wrap[phase] > 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
                     print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
                     # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-                elif Vang[phase] < 0:
-                    print(f'Vang[{phase}] = {Vang[phase]}')
-                    Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+                elif Vang_wrap[phase] < 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
                     print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
                     # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
@@ -1156,7 +1264,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            # (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             # if any(np.isnan(self.Vang_relative)):
             if Vmeas_all_phases == 0:
                 # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
@@ -1196,8 +1305,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
                             self.Icomp_pu = [np.NaN]*self.nphases
                         else:
-                            self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
-                            self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
+                            # self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                            self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)                            self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                             #HERE havent checked that the current measurements are legit yet
                             self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
                             #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)

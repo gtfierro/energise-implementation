@@ -697,7 +697,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
-    # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
     def phasorI_calc(self, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
         #uses the same time indeces and votlage reference from the voltage search
         # Initialize
@@ -778,10 +777,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         flag[phase] = 0
                         #for debugging
                         print(f'Current ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
-                        break
 
-                if flag[phase] == 0:
-                    break
             if flag[phase] == 1:
                 print('PhasorI_calc: No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
             else:
