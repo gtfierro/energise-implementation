@@ -259,6 +259,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.ref_time_index = [np.NaN]*nphases
 
         self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 1080
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -427,7 +428,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for local_packet in ordered_local[phase]:
                 Vmagi = local_packet['magnitude']
                 Vmagi = Vmagi * self.scalingPGE
-                print('Vmagi ', Vmagi)
+                # print('Vmagi ', Vmagi)
                 if Vmagi is None:
                     print('Vmagi is None')
                 elif np.isnan(Vmagi):
@@ -440,7 +441,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             for ref_packet in ref[phase]:
                 VmagRefi = ref_packet['magnitude']
                 VmagRefi = VmagRefi * self.scalingPGE
-                print('VmagRefi ', VmagRefi)
+                # print('VmagRefi ', VmagRefi)
                 if VmagRefi is None:
                     print('VmagRefi is None')
                 elif np.isnan(VmagRefi):
@@ -457,6 +458,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         print('len(local_phasors[plug]) ', len(local_phasors[plug]))
         print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+        print('len(ordered_local[phase]) ', len(ordered_local[phase]))
+        print('len(ref[phase]) ', len(ref[phase]))
 
         print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
         print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))

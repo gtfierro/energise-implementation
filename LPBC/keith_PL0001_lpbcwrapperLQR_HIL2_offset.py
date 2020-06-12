@@ -161,8 +161,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Qcost = np.asmatrix(np.eye(12))
             # Qcost[3:6,3:6] = Qcost[3:6,3:6]*10 #penalize ang state error
             # Qcost[9:12,9:12] = Qcost[9:12,9:12]*10  #penalize integrated ang error
-            #HHERE
-            # Qcost[6:12,6:12] = Qcost[6:12,6:12]*10 #penalize all integrated state error
+            Qcost[6:12,6:12] = Qcost[6:12,6:12]*10 #penalize all integrated state error
 
             #R matrix determines the penalties placed on control effort
             #the first 3 are P control effort for each state, the second 3 are Q control effort
@@ -470,7 +469,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #             VmagSum[phase] += Vmagi
         #             VmagCount[phase] += 1
         #     for ref_packet in ref[phase]:
-        #         VmagRefi = local_packet['magnitude']
+        #         VmagRefi = ref_packet['magnitude']
         #         if VmagRefi is None:
         #             print('VmagRefi is None')
         #         elif np.isnan(VmagRefi):
