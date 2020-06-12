@@ -1146,16 +1146,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 commandReceipt[i] = 'failure'
         print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        if self.offset_mode == 1 or self.offset_mode == 2:
-            try:
-                self.client.connect()
-                for i in range(len(mtx)):
-                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-                print(f'sent offsets: {mtx}')
-            except Exception as e:
-                print(e)
-            finally:
-                self.client.close()
+        #HHHHERE DEBUG
+        # if self.offset_mode == 1 or self.offset_mode == 2:
+        #     try:
+        #         self.client.connect()
+        #         for i in range(len(mtx)):
+        #             self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+        #         print(f'sent offsets: {mtx}')
+        #     except Exception as e:
+        #         print(e)
+        #     finally:
+        #         self.client.close()
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
