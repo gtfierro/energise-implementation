@@ -788,7 +788,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
 
         Iang_notRelative = np.asarray([np.NaN]*nphases)
-
+        local_time_index = [np.NaN]*nphases
+        ref_time_index = [np.NaN]*nphases
+        
         IangCount = np.zeros(nphases)
         Iang_notRelativeSum = np.zeros(nphases)
 
