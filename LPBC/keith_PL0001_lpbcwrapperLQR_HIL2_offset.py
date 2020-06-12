@@ -121,7 +121,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             so the current measurement used to estimate Z should use localSbase
             (current meas has not accounted for inverter offset hack to reduce oscillations)
             '''
-            self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+            self.usingNonpuZeff = 1 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
             self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
@@ -167,7 +167,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #the first 3 are P control effort for each state, the second 3 are Q control effort
             Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
             # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
-            # Rcost = Rcost*1e-1 #for cheap P and Q #HHHERE
+            # Rcost = Rcost*1e-1 #for cheap P and Q
+            Rcost = Rcost*1e1 #HHHERE
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
