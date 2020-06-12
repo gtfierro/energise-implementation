@@ -22,11 +22,6 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 from PIcontroller import *
 from LQRcontroller import *
 
-#HHERE there is a Q-offset of +/- 100 or 200 VARs. need to take this into account and cancel it
-#address this with internal feedback for Q command (interal PI controller), based on what was actually sent out?
-
-#HHERE the battery P commands have weird step size issues
-#a solution would be turnign down the scaling offsetting the measurements by a set ammount that is pre-designed to meet the phasor target
 
 #HHERE check measurements and commands align with below
 '''
@@ -36,7 +31,7 @@ Inverter Pmax limiting is ambigious to direction
 Inverter power factor commands are for Q only, defined positive for reactive power into the network, or OUT of the battery (this is the oppposite of how the PMU measures it)
 
 Changes made for flexlab convention:
-Did not change enaythign within PQcalc or phasorI_calc
+Did not change anything within PQcalc or phasorI_calc
 Did switch the sign of self.Icomp_pu, which is fed into the impedance estimator only
 Did not switch the sign of Pact and Qact (which are positive out of network), or Pcmd and Qcmd (which are positive into the network)
 Switched signs of Pact and Qact that are fed into check saturation and ICDI (which still communicates to SPBC using postive into network convention)
@@ -46,17 +41,15 @@ load_cmd is still postive into the network (for just P)
 modbus is positive out of the network (switched internally)
 '''
 
-#HHERE put in t
 
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print(f'Building LPBC for performance node {busId}')
-        # INITIALIZATION
         self.busId = busId
         self.timesteplength = timesteplength
 
@@ -72,7 +65,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # kp_mag = [0.01*mag_scale]
             # ki_mag = [0.3*mag_scale]
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
-
         elif self.controllerType == 'LQR':
             '''
             kV and kVA base are recieved in targetExtraction, which is called by step.
@@ -94,13 +86,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if self.usingNonpuZeff:
                 ZeffkinitInPU = 0
                 Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
-                if testcase == 'manual': #HERE for debugging, assumes 13bal is used
-                    Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
+                # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+                #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
             else:
                 ZeffkinitInPU = 1
                 Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
-                if testcase == 'manual': #HERE for debugging, assumes 13bal is used
-                    Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
+                # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+                #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
             Zeffk_df = pd.read_csv(Zeffkpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
             Zeffk_df = Zeffk_df.apply(lambda col: col.apply(lambda val: complex(val.strip('()')))) #bc data is complex
             Zeffk_init = np.asmatrix(Zeffk_df.values)
@@ -135,7 +127,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #the first 3 are P control effort for each state, the second 3 are Q control effort
             Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
             # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
-            Rcost = Rcost*1e-1 #for cheap P and Q
+            # Rcost = Rcost*1e-1 #for cheap P and Q
+            # Rcost = Rcost*5e1  #for expensive P and Q
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
@@ -144,7 +137,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             lam = .95
             # lam = .5
@@ -257,7 +250,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 120 # 150 # 100  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -289,6 +282,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
+
+        self.VmagScaling = VmagScaling #this is a hack to get flexlab to work. default to 1
 
         #vars for plots
         self.controlStepsTaken_counter = 0
@@ -395,30 +390,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
             ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
 
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        print('len(local_phasors[plug]) ', len(local_phasors[plug]))
-        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
-        #this was creating issues when intitial phasor reading wasnt correct
-        # if self.Vang_relative == 'initialize':
-        #     self.Vang_relative = np.zeros(nphases)
-        #     # loops through every phase with actuation
-        #     for phase in range(nphases): #phases descrived by a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
-        #         # Initialize: Extract measurements from most recent timestamps only for first iteration
-        #         V_mag_local = ordered_local[phase][-1]['magnitude']
-        #         V_ang_local = ordered_local[phase][-1]['angle'] - self.ametek_phase_shift
-        #         V_mag_ref = ref[phase][-1]['magnitude']
-        #         V_ang_ref = ref[phase][-1]['angle']
-        #         self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-        #         self.Vmag[phase] = V_mag_local
-        #         self.VmagRef[phase] = V_mag_ref
-        #         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
-
-        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
-        print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
-        # print('ordered_local[0][0][time] ', ordered_local[0][0]['time'])
-        # print('ordered_local[0][-1][time] ', ordered_local[0][-1]['time'])
-        # print('ref[0][0][time] ', ref[0][0]['time'])
-        # print('ref[0][-1][time] ', ref[0][-1]['time'])
         Vmag = np.asarray([np.NaN]*nphases)
         VmagRef = np.asarray([np.NaN]*nphases)
         Vmag_relative = np.asarray([np.NaN]*nphases)
@@ -431,6 +402,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # loops through every ordered_local uPMU reading
             for local_packet in ordered_local[phase]:
                 Vmagi = local_packet['magnitude']
+                Vmagi = Vmagi * self.VmagScaling
                 if Vmagi is None:
                     print('Vmagi is None')
                 elif np.isnan(Vmagi):
@@ -442,6 +414,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     VmagCount[phase] += 1
             for ref_packet in ref[phase]:
                 VmagRefi = ref_packet['magnitude']
+                VmagRefi = VmagRefi * self.VmagScaling
                 if VmagRefi is None:
                     print('VmagRefi is None')
                 elif np.isnan(VmagRefi):
@@ -455,17 +428,23 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
             Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug])) #this is the number of phasor measurements delivered. often it is 120*rate (number of seconds)
+        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+        #
+        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
+
         print('VmagCount ', VmagCount)
-        print('VmagRefCount ', VmagRefCount)
-        print('Vmag ', Vmag)
-        print('VmagRef ', VmagRef)
-        print('Vmag_relative ', Vmag_relative)
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('VmagRefCount ', VmagRefCount)
+        # print('Vmag ', Vmag)
+        # print('VmagRef ', VmagRef)
+        # print('Vmag_relative ', Vmag_relative)
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
 
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
 
-        #below isnt needed if you switch back to using self. values
         Vang_notRelative = np.asarray([np.NaN]*nphases)
         Vang_relative = np.asarray([np.NaN]*nphases)
         VangRef = np.asarray([np.NaN]*nphases)
@@ -482,19 +461,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         V_ang_ref_firstPhaseSum = np.zeros(nphases)
         # V_ang_ref_firstPhaseCount = np.zeros(nphases)
 
-        refAngleUsedVec = np.zeros(dataWindowLength) # to check if any refs are used twice (they shouldnt be)
-        #for ref_i, ref_packet in enumerate(reversed(ref[phase])):
-
         #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
         #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
         #important thing is that the other notRelative angles are seperated by ~120degrees
         for phase in range(nphases):
+            refAngleUsedVec = np.zeros(dataWindowLength) # debug to check if any refs are used twice (they shouldnt be)
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
                 # extract most recent ordered_local uPMU reading
                 local_time = int(local_packet['time'])
                 # loops though every reference uPMU reading starting from most recent
-                ref_packet_offset = 0 #for debugging
                 i = 0
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
@@ -507,9 +483,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
                         V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        #dont think you actually need/want PhasorV_ang_wraparound_1d
                         # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
                         # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
                         # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                         V_ang_ref_firstPhaseSum[phase] += V_ang_ref_firstPhaseTemp #because each phase (of the current meas) needs a V_ang_ref_firstPhase
@@ -520,17 +498,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Vang_notRelativeSum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
                         VangRefSum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
                         VangCount[phase] += 1
-                        if refAngleUsedVec[i] == 1:
+                        if refAngleUsedVec[i] == 1 and phase == 0: #debug
                             print(f'WARNING, this ref angle {i} was already used')
                         refAngleUsedVec[i] = 1
 
                         flag[phase] = 0
                         #for debugging
-                        print('ref_packet_offset ', ref_packet_offset)
-                        print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+                        # if phase == 0:
+                        #     print('i used ', i)
+                        #     print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
                         # break # dont want this break when doing averaging
 
-                    ref_packet_offset += 1 #for debugging
                     i += 1
                 # if flag[phase] == 0:
                 #     break
@@ -543,83 +521,148 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 VangRef[phase] = VangRefSum[phase]/VangCount[phase]
                 V_ang_ref_firstPhase[phase] = V_ang_ref_firstPhaseSum[phase]/VangCount[phase]
 
-        print('Vang_notRelative ', Vang_notRelative)
-        print('Vang_relative ', Vang_relative)
-        print('VangRef ', VangRef)
-        print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
+        # print('Vang_notRelative ', Vang_notRelative)
+        # print('Vang_relative ', Vang_relative)
+        # print('VangRef ', VangRef)
+        # print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
         print('VangCount ', VangCount)
-        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
-        # #old version that just returns a single Vmag and Vang match
-        # Vang_notRelative = np.asarray([np.NaN]*nphases)
-        # VangRef = np.asarray([np.NaN]*nphases)
-        # Vang_relative = np.asarray([np.NaN]*nphases)
+    # older version that didnt take average of angles
+    def old_phasorV_calc(self, local_phasors, reference_phasors, nphases, plug_to_V_idx):
+        # Initialize
+        #ordered_local and ref are the PMU meas data sets from the local and ref PMUs, respectively. First dim is phase, second is dataWindowLength.
+        # ordered_local = [None] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+        # ref = [None] * nphases
+        ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+        ref = [0] * nphases
+        flag = [1] * nphases #used to check if a phasor match was found
+        Vmeas_all_phases = 1
+        # Extract latest nPhasorReadings readings from local and ref uPMUs, and put local in phase-order (ref is assumed to be in phase-order)
+        for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
+            if len(local_phasors[plug]) > self.nPhasorReadings:
+                dataWindowLength = self.nPhasorReadings
+            else:
+                dataWindowLength = len(local_phasors[plug])
+            phase_idx = plug_to_V_idx[plug]
+            ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
+            ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
+            #HERE small chance theres a problem here w copying a mutable data type and not using .copy()
+
+        #this was creating issues when intitial phasor reading wasnt correct
+        # if self.Vang_relative == 'initialize':
+        #     self.Vang_relative = np.zeros(nphases)
+        #     # loops through every phase with actuation
+        #     for phase in range(nphases): #phases descrived by a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
+        #         # Initialize: Extract measurements from most recent timestamps only for first iteration
+        #         V_mag_local = ordered_local[phase][-1]['magnitude']
+        #         V_ang_local = ordered_local[phase][-1]['angle'] - self.ametek_phase_shift
+        #         V_mag_ref = ref[phase][-1]['magnitude']
+        #         V_ang_ref = ref[phase][-1]['angle']
+        #         self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+        #         self.Vmag[phase] = V_mag_local
+        #         self.VmagRef[phase] = V_mag_ref
+        #         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
+
+        Vmag = np.asarray([np.NaN]*nphases)
+        VmagRef = np.asarray([np.NaN]*nphases)
+        Vmag_relative = np.asarray([np.NaN]*nphases)
+
+        VmagSum = np.zeros(nphases)
+        VmagCount = np.zeros(nphases)
+        VmagRefSum = np.zeros(nphases)
+        VmagRefCount = np.zeros(nphases)
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading
+            for local_packet in ordered_local[phase]:
+                Vmagi = local_packet['magnitude']
+                Vmagi = Vmagi * self.VmagScaling
+                if Vmagi is None:
+                    print('Vmagi is None')
+                elif np.isnan(Vmagi):
+                    print('Vmagi is NaN')
+                elif Vmagi == 0:
+                    print('Vmagi is 0')
+                else:
+                    VmagSum[phase] += Vmagi
+                    VmagCount[phase] += 1
+            for ref_packet in ref[phase]:
+                VmagRefi = ref_packet['magnitude']
+                VmagRefi = VmagRefi * self.VmagScaling
+                if VmagRefi is None:
+                    print('VmagRefi is None')
+                elif np.isnan(VmagRefi):
+                    print('VmagRefi is NaN')
+                elif VmagRefi == 0:
+                    print('VmagRefi is 0')
+                else:
+                    VmagRefSum[phase] += VmagRefi
+                    VmagRefCount[phase] += 1
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
+
+        # loops through each set of voltage measurements for each phase
+        local_time_index = [np.NaN]*nphases
+        ref_time_index = [np.NaN]*nphases
+        #below isnt needed if you switch back to using self. values
+        Vang_notRelative = np.asarray([np.NaN]*nphases)
+        VangRef = np.asarray([np.NaN]*nphases)
+        Vang_relative = np.asarray([np.NaN]*nphases)
         # Vmag = np.asarray([np.NaN]*nphases)
         # VmagRef = np.asarray([np.NaN]*nphases)
         # Vmag_relative = np.asarray([np.NaN]*nphases)
-        #
-        # # V_ang_ref_firstPhase = [np.NaN]
-        # V_ang_ref_firstPhase = [np.NaN]*nphases #using this for back-compatibility
-        #
-        # #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
-        # #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
-        # #important thing is that the other notRelative angles are seperated by ~120degrees
-        # for phase in range(nphases):
-        #     # loops through every ordered_local uPMU reading starting from most recent
-        #     for local_packet in reversed(ordered_local[phase]):
-        #         # extract most recent ordered_local uPMU reading
-        #         local_time = int(local_packet['time'])
-        #         # loops though every reference uPMU reading starting from most recent
-        #         for ref_packet in reversed(ref[phase]):
-        #             ref_time = int(ref_packet['time'])
-        #
-        #             #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
-        #
-        #             # check timestamps of ordered_local and reference uPMU if within 2 ms
-        #             if abs(ref_time - local_time) <= self.pmuTimeWindow:
-        #                 local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
-        #                 ref_time_index[phase] = ref[phase].index(ref_packet)
-        #                 # Extract measurements from closest timestamps
-        #                 # V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
-        #                 # V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
-        #                 V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
-        #                 V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
-        #                 # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
-        #                 V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #because each phase (of the current meas) needs a V_ang_ref_firstPhase
-        #                 if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
-        #                     print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
-        #
-        #                 # calculates relative phasors
-        #                 # self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-        #                 # self.Vmag[phase] = V_mag_local
-        #                 # self.VmagRef[phase] = V_mag_ref
-        #                 # self.Vmag_relative[phase] = V_mag_local - V_mag_ref
-        #                 # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-        #                 # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-        #                 # # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
-        #                 # # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
-        #
-        #                 #uncomment above and change the return statement if you want the default to be to use the previous V measurment when V measurements are not successfully calculated for each phase
-        #                 Vmag[phase] = V_mag_local
-        #                 VmagRef[phase] = V_mag_ref
-        #                 Vmag_relative[phase] = V_mag_local - V_mag_ref
-        #                 Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-        #                 Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-        #                 VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
-        #                 # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
-        #                 # VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
-        #                 flag[phase] = 0
-        #                 break
-        #         if flag[phase] == 0:
-        #             break
-        #     if flag[phase] == 1:
-        #         print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
-        #         Vmeas_all_phases = 0
-        #         #self. vars are assigned and returned so that if a match isnt found, it returns the previous match
-        # # return (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
-        # return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+
+        # V_ang_ref_firstPhase = [np.NaN]
+        V_ang_ref_firstPhase = [np.NaN]*nphases #using this for back-compatibility
+
+        #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
+        #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
+        #important thing is that the other notRelative angles are seperated by ~120degrees
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading starting from most recent
+            for local_packet in reversed(ordered_local[phase]):
+                # extract most recent ordered_local uPMU reading
+                local_time = int(local_packet['time'])
+                # loops though every reference uPMU reading starting from most recent
+                for ref_packet in reversed(ref[phase]):
+                    ref_time = int(ref_packet['time'])
+
+                    #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+
+                    # check timestamps of ordered_local and reference uPMU if within 2 ms
+                    if abs(ref_time - local_time) <= self.pmuTimeWindow:
+                        local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
+                        ref_time_index[phase] = ref[phase].index(ref_packet)
+                        # Extract measurements from closest timestamps
+                        # V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
+                        # V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
+                        # Vmag[phase] = V_mag_local
+                        # VmagRef[phase] = V_mag_ref
+                        # Vmag_relative[phase] = V_mag_local - V_mag_ref
+
+                        V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+                        # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
+                        V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #because each phase (of the current meas) needs a V_ang_ref_firstPhase
+                        if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
+                            print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
+
+                        Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+                        Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+                        VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
+                        # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+                        # VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
+                        flag[phase] = 0
+                        break
+                if flag[phase] == 0:
+                    break
+            if flag[phase] == 1:
+                print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
+                Vmeas_all_phases = 0
+        return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
         # #alternative to find a timestamp at which all voltages are aligned, rather than finding presumably different time steps for each phase
@@ -714,6 +757,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # no + nphases for ref bc you WANT the voltage ref
             ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
 
+        #havent debugged this yet..
         print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
         print('Current ordered_local[phase][0][time] ', ordered_local[phase][0]['time'])
         print('Current ordered_local[phase][-1][time] ', ordered_local[phase][-1]['time'])
@@ -762,8 +806,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        I_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
-                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        I_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        # I_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
 
                         if V_ang_ref_firstPhase[phase] == np.NaN or V_ang_ref_firstPhase[phase] == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: [in phasorI_calc] issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
@@ -790,35 +836,35 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # return self.Iang_notRelative, self.Iang_relative, self.Imag
         return Iang_notRelative, Imag
 
-    #old version that didnt take average
-    # # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
-    # def phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, nphases, plug_to_V_idx):
-    #     #uses the same time indeces and votlage reference from the voltage search
-    #     # Initialize
-    #     ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
-    #     # ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
-    #     Imag = [np.NaN] * nphases
-    #     # Iang_relative = [np.NaN] * nphases
-    #     Iang_notRelative = [np.NaN] * nphases
-    #     for plug in range(nphases):
-    #         phase_idx = plug_to_V_idx[plug] #assumes the current plugs are hooked up the same way
-    #         ordered_local[phase_idx] = local_phasors[plug + nphases][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
-    #         # ref[plug] = reference_phasors[plug + nphases][-dataWindowLength:] #plug + nphases selects the current data rather than the voltage data
-    #
-    #     for phase in range(nphases):
-    #         # Extract measurements from closest timestamps
-    #         I_ang_local = ordered_local[phase][local_time_index[phase]]['angle']
-    #         # I_ang_ref = ref[phase][ref_time_index[phase]]['angle']
-    #         # I_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] # this is wrong, need to Vref[0]
-    #         I_ang_ref_firstPhase = V_ang_ref_firstPhase[phase] # V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #this is indexed by phase in case the different phase measurements use different time steps
-    #
-    #         # self.Iang_relative[phase] = np.radians(I_ang_local - I_ang_ref)  #uses self. so it defaults to previous value
-    #         # self.Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
-    #         Iang_notRelative[phase] = np.radians(I_ang_local - I_ang_ref_firstPhase)
-    #         Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
-    #
-    #     # return self.Iang_notRelative, self.Iang_relative, self.Imag
-    #     return Iang_notRelative, Imag
+    # old version that didnt take average
+    # def old_phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
+    def old_phasorI_calc(self, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, nphases, plug_to_V_idx):
+        #uses the same time indeces and votlage reference from the voltage search
+        # Initialize
+        ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+        # ref = [0] * nphases #dont think this is ever needed, current is not a relative measurement the way voltage is
+        Imag = [np.NaN] * nphases
+        # Iang_relative = [np.NaN] * nphases
+        Iang_notRelative = [np.NaN] * nphases
+        for plug in range(nphases):
+            phase_idx = plug_to_V_idx[plug] #assumes the current plugs are hooked up the same way
+            ordered_local[phase_idx] = local_phasors[plug + nphases][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
+            # ref[plug] = reference_phasors[plug + nphases][-dataWindowLength:] #plug + nphases selects the current data rather than the voltage data
+
+        for phase in range(nphases):
+            # Extract measurements from closest timestamps
+            I_ang_local = ordered_local[phase][local_time_index[phase]]['angle']
+            # I_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+            # I_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] # this is wrong, need to Vref[0]
+            I_ang_ref_firstPhase = V_ang_ref_firstPhase[phase] # V_ang_ref_firstPhase[phase] = ref[0][ref_time_index[phase]]['angle'] #this is indexed by phase in case the different phase measurements use different time steps
+
+            # self.Iang_relative[phase] = np.radians(I_ang_local - I_ang_ref)  #uses self. so it defaults to previous value
+            # self.Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
+            Iang_notRelative[phase] = np.radians(I_ang_local - I_ang_ref_firstPhase)
+            Imag[phase] = ordered_local[phase][local_time_index[phase]]['magnitude']
+
+        # return self.Iang_notRelative, self.Iang_relative, self.Imag
+        return Iang_notRelative, Imag
 
 
     #just uses the most recent current and voltage measurements, doesnt need a match w reference
@@ -1138,17 +1184,20 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # max_degrees = 300.
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
-        while abs(Vang) > np.radians(max_degrees):
-            if Vang > 0:
-                # print(f'Vang[{phase}] = {Vang[phase]}')
-                Vang_wrap = Vang - np.radians(360.)
-                # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                # # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-            elif Vang < 0:
-                # print(f'Vang[{phase}] = {Vang[phase]}')
-                Vang_wrap = Vang + np.radians(360.)
-                # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                # # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+        # if abs(Vang) > np.radians(max_degrees):
+        #     if Vang > 0:
+        #         Vang_wrap = Vang - np.radians(360.)
+        #     elif Vang < 0:
+        #         Vang_wrap = Vang + np.radians(360.)
+        while abs(Vang_wrap) > np.radians(max_degrees):
+            if Vang_wrap > 0:
+                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                Vang_wrap = Vang_wrap - np.radians(360.)
+                print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+            elif Vang_wrap < 0:
+                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                Vang_wrap = Vang_wrap + np.radians(360.)
+                print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
         return Vang_wrap
 
     def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
@@ -1158,15 +1207,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         Vang_wrap = Vang
         for phase in range(nphases):
             # if abs(Vang[phase]) > np.radians(max_degrees):
-            while abs(Vang[phase]) > np.radians(max_degrees):
-                if Vang[phase] > 0:
-                    print(f'Vang[{phase}] = {Vang[phase]}')
-                    Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+            #     if Vang[phase] > 0:
+            #         print(f'Vang[{phase}] = {Vang[phase]}')
+            #         Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+            #         print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+            #         # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+            #     elif Vang[phase] < 0:
+            #         print(f'Vang[{phase}] = {Vang[phase]}')
+            #         Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+            #         print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+            #         # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+            while abs(Vang_wrap[phase]) > np.radians(max_degrees):
+                if Vang_wrap[phase] > 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
                     print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
                     # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-                elif Vang[phase] < 0:
-                    print(f'Vang[{phase}] = {Vang[phase]}')
-                    Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+                elif Vang_wrap[phase] < 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
                     print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
                     # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
@@ -1255,7 +1314,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            # (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            # (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
             # if any(np.isnan(self.Vang_relative)):
             if Vmeas_all_phases == 0:
@@ -1296,7 +1355,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
                             self.Icomp_pu = [np.NaN]*self.nphases
                         else:
-                            # self.Iang_notRelative, self.Imag = self.phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                            # self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
                             self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                             self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                             #HERE havent checked that the current measurements are legit yet
@@ -1362,9 +1421,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print('Zeffkest bus ' + str(self.busId) + ' : ' + str(Zeffkest))
             print('ZeffkestErr bus ' + str(self.busId) + ' : ' + str(np.linalg.norm(Zeffkest-self.ZeffkTru)))
             print('GtMag ' + str(self.busId) + ' : ' + str(np.linalg.norm(Gt)))
-            #in case you want to save and plot the Zeff error:
-            # self.ZeffkError.append(np.linalg.norm(Zeffkest-self.ZeffkTru)) #frob norm is default
-            # self.GtMag.append(np.linalg.norm(Gt))
 
             # The controller is entirely in PU. So if the pu P and Q commands are ultimately enacted on the network
             #according to the network-wide kVAbase (that was used to calculate the Zbase that was used to build the controller), then there shouldn’t be any problems.
@@ -1603,40 +1659,67 @@ SPBCname = 'spbc-jasper-1'
 
 #Manual entry here to determine test case, phases, etc.
 #Test Case
-#testcase = '37'
 #testcase = '13unb'
 #testcase = '13bal'
-testcase = 'manual'
+# testcase = '33'
+testcase = 'PL0001'
+# testcase = 'manual'
 
 acts_to_phase_dict = dict()
 actType_dict = dict()
-if testcase == '37':
-    # subkVAbase = 2500
-    pass
-elif testcase == '13unb':
-    # subkVAbase = 5000
-    lpbcidx = ['671','680']
-    key = '671'
-    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #phase on the network (in simulation)
-    actType_dict[key] = 'inverter'
-    key = '680'
-    acts_to_phase_dict[key] = np.asarray(['','','C']) #HERE Single phase actuation might cause problems #the nonzero entries correspond to the actuator indices
-    actType_dict[key] = 'load'
-elif testcase == '13bal':
-    # subkVAbase = 5000
+if testcase == '13bal':
+    testNumber = '3.3'
     lpbcidx = ['675'] #may have to set these manually
     for key in lpbcidx: #makes them all three phase inverters
         acts_to_phase_dict[key] = np.asarray(['A','B','C']) #3 phase default #['A','',''] or ['','C',''] or ['A','B','C','A','B','C'] or ['A','','','A','',''] are also examples, ['A','C','B'] and ['B','B','B'] are not allowed (yet)
         actType_dict[key] = 'inverter' #'inverter' or 'load'
-#TODO: set test case here
-elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    ORT_max_kVA = 500
+    VmagScaling = 1
+    inverterScaling = 500/3.3
+    loadScaling = 350
+    CILscaling = 10 #in VA
+elif testcase == '13unb':
+    # lpbcidx = ['671','680']
+    # key = '671'
+    # acts_to_phase_dict[key] = np.asarray(['A','B','C']) #phase on the network (in simulation)
+    # actType_dict[key] = 'inverter'
+    # key = '680'
+    # acts_to_phase_dict[key] = np.asarray(['','','C']) #HERE Single phase actuation might cause problems #the nonzero entries correspond to the actuator indices
+    # actType_dict[key] = 'load'
+    testNumber = '8.1'
+    lpbcidx = ['632'] #nodes of actuation
+    key = '632'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
-
-# elif testcase == '33':
-# elif testcase == 'PL0001':
+    ORT_max_kVA = 500
+    VmagScaling = 1
+    inverterScaling = 500/3.3
+    loadScaling = 350
+    CILscaling = 10 #in VA
+elif testcase == '33':
+    testNumber = '8.1'
+    lpbcidx = ['6'] #for 33
+    key = '6'
+    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    ORT_max_kVA = 500
+    VmagScaling = 3. #this is a hack to get flexlab to work
+    inverterScaling = 500/3.3
+    loadScaling = 350
+    CILscaling = 10 #in VA
+elif testcase == 'PL0001':
+    testNumber = '9.3'
+    lpbcidx = ['N_300063911']
+    key = 'N_300063911'
+    acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
+    actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
+    ORT_max_kVA = 1000
+    VmagScaling = 12.6/4.16
+    inverterScaling = 1000/1
+    loadScaling = 350
+    CILscaling = 20 #in VA
+elif testcase == 'manual':
+    print('MOVED TESTS TO ACTUAL TEST CASES')
 
 #these should be established once for the FLexlab,
 #they take care of cases where a pmu port does not correspond to the given inverter number
@@ -1651,7 +1734,6 @@ pmu123P_plugs_dict = dict()
 pmu4_plugs_dict = dict()
 
 plug_to_phase_dict = dict()
-
 
 for key in lpbcidx:
     #act_idxs assumes that, for each lpbc with multiple actuators, the actuators are dispatched in A, B, C order
@@ -1719,9 +1801,15 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-#HHHERE want one of the two lines below depending on the CIL test
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #this one for T3.3
-# pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+
+#HHERE this is a hack that Leo implemented to avoid the plug mapping
+if testNumber == '3.3' or testNumber == '9.3':
+    pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3'])
+elif testNumber == '8.1':
+    pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+else:
+    error('Not a valid test number yet (determine what pmu123PChannels should be and include it in the if statements)')
+
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
@@ -1730,10 +1818,6 @@ nlpbc = len(lpbcidx)
 #cfg file is used to build each LPBC, this is a template that is modified below for each LPBC
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
-#this is HIL specific
-inverterScaling = 500/3.3
-loadScaling = 350
-CILscaling = 10 #in VA
 #CILscaling = Sratio (below):
 # command given will get multiplied by [150] in switch matrix
 # then divided by 15,000 to give a value in kW internally in Flexlab OpalRT (I think)
@@ -1743,6 +1827,7 @@ CILscaling = 10 #in VA
 
 # rate = 5
 rate = 10 #HHHERE for debugging issue with timestep 1 command
+print('rate ', rate)
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
@@ -1788,8 +1873,9 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
-    currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
-    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio) #Every LPBC will have its own step that it calls on its own
+    # currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
+    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess
 
