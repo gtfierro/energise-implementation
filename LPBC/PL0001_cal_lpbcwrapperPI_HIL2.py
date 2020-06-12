@@ -1031,65 +1031,65 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
             #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            if any(np.isnan(self.Vang)):
-                print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
-                return
-            if Vmeas_all_phases == 0:
-                print('Didnt receive a measurement for each phase, not acting')
-                return
-            self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
-            self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
-            self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
-            self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
-            self.phasor_error_ang = self.VangTarg - self.Vang
-            self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
-            self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
-            print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
-            print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
-            print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
-            print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
+            # (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+            # if any(np.isnan(self.Vang)):
+            #     print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
+            #     return
+            # if Vmeas_all_phases == 0:
+            #     print('Didnt receive a measurement for each phase, not acting')
+            #     return
+            # self.Vang = self.PhasorV_ang_wraparound(self.Vang, self.nphases)
+            # self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
+            # self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
+            # self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
+            # self.phasor_error_ang = self.VangTarg - self.Vang
+            # self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
+            # self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
+            # print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
+            # print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
+            # print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
+            # print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang))
 
-            #get current measurements, determine saturation if current measurements exist
-            if self.currentMeasExists:
-                if self.controllerType == 'LQR':
-                    (self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx) #HERE in Flexlab this positive flowing out of the Network
-                    self.Imag_pu = self.Imag / self.localIbase #this takes into account Sratio
-                    self.Icomp_pu = self.Imag_pu*np.cos(self.Iang) + self.Imag_pu*np.sin(self.Iang)*1j #Assumed current is positive into the Ametek (postive for positive injection), and Iangs are relative and thus base 0 for all phases
-                    self.Icomp_pu = -self.Icomp_pu #HERE, want current to be positive into the network for Z estimation
-                (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HERE this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab # calculate P/Q from actuators
-                self.Pact_pu = self.Pact / self.localkVAbase
-                self.Qact_pu = self.Qact / self.localkVAbase
-            else:
-                self.Icomp_pu = [np.NaN]*self.nphases
+            # #get current measurements, determine saturation if current measurements exist
+            # if self.currentMeasExists:
+            #     if self.controllerType == 'LQR':
+            #         (self.Iang,self.Imag) = self.phasorI_calc(local_time_index, ref_time_index, dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx) #HERE in Flexlab this positive flowing out of the Network
+            #         self.Imag_pu = self.Imag / self.localIbase #this takes into account Sratio
+            #         self.Icomp_pu = self.Imag_pu*np.cos(self.Iang) + self.Imag_pu*np.sin(self.Iang)*1j #Assumed current is positive into the Ametek (postive for positive injection), and Iangs are relative and thus base 0 for all phases
+            #         self.Icomp_pu = -self.Icomp_pu #HERE, want current to be positive into the network for Z estimation
+            #     (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HERE this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab # calculate P/Q from actuators
+            #     self.Pact_pu = self.Pact / self.localkVAbase
+            #     self.Qact_pu = self.Qact / self.localkVAbase
+            # else:
+            #     self.Icomp_pu = [np.NaN]*self.nphases
 
-            #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
-            (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-            (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
+            # #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention 
+            # (self.sat_arrayP, self.sat_arrayQ) = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
+            # (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
 
-            #run control loop
-            print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-            print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-            print('self.sat_arrayP ' + str(self.sat_arrayP))
-            print('self.sat_arrayQ ' + str(self.sat_arrayQ))
-            if self.controllerType == 'PI':
-                (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-            elif self.controllerType == 'LQR':
-                if self.currentMeasExists:
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
-                else:
-                    (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
-            print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
-            print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
-            print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
+            # #run control loop
+            # print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+            # print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+            # print('self.sat_arrayP ' + str(self.sat_arrayP))
+            # print('self.sat_arrayQ ' + str(self.sat_arrayQ))
+            # if self.controllerType == 'PI':
+            #     (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+            # elif self.controllerType == 'LQR':
+            #     if self.currentMeasExists:
+            #         (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ, self.Icomp_pu) #all Vangs must be in radians
+            #     else:
+            #         (self.Pcmd_pu,self.Qcmd_pu) = self.controller.LQRupdate(self.Vmag_pu, self.Vang, self.VmagTarg_pu, self.VangTarg, self.VmagRef_pu, self.VangRef, self.sat_arrayP, self.sat_arrayQ)
+            # print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
+            # print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
+            # print('localkVAbase bus ' + str(self.busId) + ' : ' + str(self.localkVAbase))
 
-            #HHERE debugging
-            # self.Pcmd_pu[1] = 0
-            # self.Pcmd_pu[2] = 0
-            # self.Qcmd_pu = np.zeros(nphases)
+            # #HHERE debugging
+            # # self.Pcmd_pu[1] = 0
+            # # self.Pcmd_pu[2] = 0
+            # # self.Qcmd_pu = np.zeros(nphases)
 
-            self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
-            self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
+            # self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
+            # self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
 
             # START CALIBRATION
             if self.calibration_test == True:
