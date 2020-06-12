@@ -1511,7 +1511,7 @@ testcase = 'PL0001'
 acts_to_phase_dict = dict()
 actType_dict = dict()
 if testcase == '13bal':
-    testNumber == '3.3'
+    testNumber = '3.3'
     lpbcidx = ['675'] #may have to set these manually
     for key in lpbcidx: #makes them all three phase inverters
         acts_to_phase_dict[key] = np.asarray(['A','B','C']) #3 phase default #['A','',''] or ['','C',''] or ['A','B','C','A','B','C'] or ['A','','','A','',''] are also examples, ['A','C','B'] and ['B','B','B'] are not allowed (yet)
@@ -1529,7 +1529,7 @@ elif testcase == '13unb':
     # key = '680'
     # acts_to_phase_dict[key] = np.asarray(['','','C']) #HERE Single phase actuation might cause problems #the nonzero entries correspond to the actuator indices
     # actType_dict[key] = 'load'
-    testNumber == '8.1'
+    testNumber = '8.1'
     lpbcidx = ['632'] #nodes of actuation
     key = '632'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
@@ -1540,7 +1540,7 @@ elif testcase == '13unb':
     loadScaling = 350
     CILscaling = 10 #in VA
 elif testcase == '33':
-    testNumber == '8.1'
+    testNumber = '8.1'
     lpbcidx = ['6'] #for 33
     key = '6'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
@@ -1551,7 +1551,7 @@ elif testcase == '33':
     loadScaling = 350
     CILscaling = 10 #in VA
 elif testcase == 'PL0001':
-    testNumber == '9.3'
+    testNumber = '9.3'
     lpbcidx = ['N_300063911']
     key = 'N_300063911'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
