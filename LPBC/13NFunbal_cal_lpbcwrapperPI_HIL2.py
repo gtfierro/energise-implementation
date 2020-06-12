@@ -73,41 +73,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # controller gains must be list, even if single phase. can use different gains for each phase
             # e.g. if only actuating on 2 phases (B and C) just put gains in order in list: [#gain B, #gain C]
             print('made a PI controller')
-            #3.1
-# =============================================================================
-#             kp_ang = [0.0034]
-#             ki_ang = [0.0677]
-#             kp_mag = [0.5670]
-#             ki_mag = [3.4497]
-# =============================================================================
-            
-            #3.2
-            # alph = 0.4
-            # beta = 0.75
-            # kp_ang = [0.00108*alph,0.0342*alph]
-            # ki_ang = [0.0618*alph,0.0677*alph]
-            # kp_mag = [0.6901*beta,1.6522*beta]
-            # ki_mag = [3.46*beta,3.5004*beta]
-            
-            #3.3
-# =============================================================================
-            alph = 0.4
-            beta = 0.65
+
+            # 13 unbal T8
+            alph = 0.6     #0.45
+            beta = 0.7     #0.35
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
             ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
             kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
             ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
-# =============================================================================
 
-            #5.1
-# =============================================================================
-#             alph = 0.75
-#             kp_ang = [0.004*alph]*3
-#             ki_ang = [0.0798*alph]*3
-#             kp_mag = [0,0,0]
-#             ki_mag = [0,0,0]
-# =============================================================================
-            
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
             #If jsut LQR controller is used, from here down should come from the creation of each LPBC, and ultimately the toml file
@@ -223,7 +197,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # https config
         #these are the actuators (inverters) that are controlled by a given lpbc. inverters are counted off 1,2,3, loads are counted off 0,1,2
         self.act_idxs = np.asarray(act_idxs)
- #'inverter' or 'load'
+        #'inverter' or 'load'
         if self.actType == 'inverter':
             self.act_idxs = self.act_idxs + 1 #inverters indexed starting with 1 not 0
 
@@ -244,7 +218,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                         debug=False, ComClient=ModbusRTUClient)
         self.inv_Pmax = 7000 #check with Maxime
         self.inv_Qmax = 5000 #check with Maxime
-        self.offset_mode = 2 # set to 1 for remainder offset, 2 for percentage offset, 0 for no offset
+        self.offset_mode = 2
 
         self.calibration_test = True
         self.cal_iter_counter = 0
@@ -587,7 +561,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
 
         if self.mode == 4: #mode 4: HIL2 dynamic P and Q control
-
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
             Pcmd_VA = abs(
@@ -598,7 +571,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # CIL OFFSET FUNCATIONALITAY (to reduce scaling --> smaller oscillation from Q control)
             if self.offset_mode == 1:
                 id = 3
-                offset_inc = 100 #kVA in opal from inverter
+                offset_inc = 100
                 CIL_offset_max = self.ORT_max_VA/1000 - offset_inc
                 Pcmd_ORT_VA = Pcmd_VA * self.localSratio
                 Qcmd_ORT_VA = Qcmd_VA * self.localSratio
@@ -634,7 +607,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print(f'Qcmd_rem: {Qcmd_VA}')
             if self.offset_mode == 2:
                 id = 3
-                offset_inc = 100 
+                offset_inc = 100
                 offset_steps = self.ORT_max_VA/1000/offset_inc
                 offsetSratio = self.localSratio/offset_steps
 
@@ -675,11 +648,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print(i,' inverter: Q over ORT MAX ([0,1,2] -> [1,2,3])')
             print(f'absolute value of P/Q:{Pcmd_VA},{Qcmd_VA}')
 
-            # +100 to Q is a constant offset that gets subtracted out to try to get Q closer to 0
+            # +50 to Q is a constant offset due to hardware measurement error
             # +1000 to P is a constant offset that then gets subtracted out in an effort to reduce the change in pf across the range of actuation values
             # i.e. 1000 - 2000 output by the inverter is actually 0 - 1000 in the model.
             Pcmd_perc = (Pcmd_VA + 1000) / inv_Pmax * 100  # Pcmd to inverters must be a percentage of Pmax
-            Qcmd_perc = (Qcmd_VA + 100) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
+            Qcmd_perc = (Qcmd_VA + 50) / inv_Qmax * 100 # Qcmd to inverters must be a percentage of Qmax
 
             act_idxs = act_idxs.tolist()
             for i in range(len(Pcmd_perc)):  # checks Pcmd for inverter limit
@@ -815,16 +788,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 value[i] = 4
         print(f'registers 2: {inv_act_idxs_registers}')
         print(f'values 2: {value}')
-        if self.offset_mode == 1 or self.offset_mode == 2:
-            try:
-                client.connect()
-                for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
-                    client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
-                    print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
-            except Exception as e:
-                print(e)
-            finally:
-                client.close()
+        try:
+            client.connect()
+            for i in range(len(act_idxs)):  # write quadrant changes to modbus registers
+                client.write_registers(inv_act_idxs_registers[i], value[i], unit=id)
+                print('Quadrant for inv:', inv_act_idxs_registers[i], 'to quadrant', value[i])
+        except Exception as e:
+            print(e)
+        finally:
+            client.close()
         return
 
     def modbustoOpal(self, nphases, Pcmd_kVA, Qcmd_kVA, ORT_max_VA, localSratio, client ):
@@ -1044,7 +1016,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
             # self.Qcmd_kVA = self.Qcmd_pu * self.localkVAbase #localkVAbase takes into account that network_kVAbase is scaled down by localSratio (divides by localSratio)
-
+            
             # START CALIBRATION
             if self.calibration_test == True:
                 print(f'CALIBRATION TEST iter {self.cal_iter_counter}')
@@ -1078,7 +1050,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.cal_iter_counter += 1
                     
             #END CALIBRATION
-
 
             if self.actType == 'inverter':
                 if self.currentMeasExists or self.mode == 3 or self.mode == 4:
@@ -1297,7 +1268,7 @@ entitydict[5] = 'lpbc_6.ent'
 
 "Make sure phases are in consecutive order in config. Voltage first, then current. i.e., L1, L2, I1, I2"
 pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_123/C1','uPMU_123/C2','uPMU_123/C3'])
-pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
@@ -1311,7 +1282,7 @@ inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 500/3.3
 
-rate = 30
+rate = 15
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
