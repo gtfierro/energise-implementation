@@ -30,10 +30,10 @@ constant_phasor = True      # [INPUT HERE]
 # feederID =  '13bal'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
 # testID = 'T3.3'             # testID has to match the feeder
 # feederID =  '13unbal'
-# feederID =  '33'
-# testID = 'T8.1'
-feederID =  'PL0001'
-testID = 'T9.3'
+feederID =  '33'
+testID = 'T8.1'
+# feederID =  'PL0001'
+# testID = 'T9.3'
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')

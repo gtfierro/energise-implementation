@@ -1150,17 +1150,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             else:
                 commandReceipt[i] = 'failure'
         print(f'INV COMMAND RECEIPT: {commandReceipt}')
-        #HHHHERE DEBUG
-        # if self.offset_mode == 1 or self.offset_mode == 2:
-        #     try:
-        #         self.client.connect()
-        #         for i in range(len(mtx)):
-        #             self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
-        #         print(f'sent offsets: {mtx}')
-        #     except Exception as e:
-        #         print(e)
-        #     finally:
-        #         self.client.close()
+        #HHHERE DEBUG commneting out this Par turns off inverter commands
+        if self.offset_mode == 1 or self.offset_mode == 2:
+            try:
+                self.client.connect()
+                for i in range(len(mtx)):
+                    self.client.write_registers(int(mtx_register[i]), int(mtx[i]), unit=id)
+                print(f'sent offsets: {mtx}')
+            except Exception as e:
+                print(e)
+            finally:
+                self.client.close()
         return commandReceipt
 
     def API_inverters(self, act_idxs, Pcmd_kVA, Qcmd_kVA, inv_Pmax, inv_Qmax, flexgrid):
@@ -1606,25 +1606,25 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #localkVAbase is not a good name (bc its not the same thing as how voltage bases change throughout a network)
                 #instead localkVAbase should be called flexlabAdjustedkVAbase #HHERE
 
-                #HHHERE for debugging
-                # if self.actType == 'inverter':
-                #     if self.currentMeasExists or self.mode == 3 or self.mode == 4:
-                #         self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
-                #         self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
-                #         #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
-                #         print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
-                #     else:
-                #         print('couldnt send inverter commands because no current measurement available')
-                # elif self.actType == 'load':
-                #     # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                #     self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                #     print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
-                # elif self.actType == 'modbus':
-                #     # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                #     result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                #     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
-                # else:
-                #     error('actType error')
+                #HHHERE for debugging  commneting out this Par turns off commands
+                if self.actType == 'inverter':
+                    if self.currentMeasExists or self.mode == 3 or self.mode == 4:
+                        self.commandReceipt = self.httptoInverters(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.inv_Pmax, self.inv_Qmax) #calculating Pact requires an active current measurement
+                        self.modbustoOpal_quadrant(self.Pcmd_kVA, self.Qcmd_kVA, self.Pact, self.Qact, self.act_idxs, self.client)
+                        #self.API_inverters(self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA, self.Pmax, self.Qmax, self.flexgrid)
+                        print('inverter command receipt bus ' + str(self.busId) + ' : ' + 'executed')
+                    else:
+                        print('couldnt send inverter commands because no current measurement available')
+                elif self.actType == 'load':
+                    # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                    self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
+                    print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
+                elif self.actType == 'modbus':
+                    # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                    print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
+                else:
+                    error('actType error')
 
                 #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
                 max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase
@@ -1818,8 +1818,8 @@ SPBCname = 'spbc2'
 #Test Case
 #testcase = '13unb'
 #testcase = '13bal'
-# testcase = '33'
-testcase = 'PL0001'
+testcase = '33'
+# testcase = 'PL0001'
 # testcase = 'manual'
 
 acts_to_phase_dict = dict()
