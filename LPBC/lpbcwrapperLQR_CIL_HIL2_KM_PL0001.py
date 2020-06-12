@@ -135,7 +135,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #the first 3 are P control effort for each state, the second 3 are Q control effort
             Rcost = np.asmatrix(np.eye(6)) #control cost (smaller control cost gets to setpoint faster)
             # Rcost[3:,3:] = Rcost[3:,3:]**1e-1 #for cheap Q
-            Rcost = Rcost*1e-1 #for cheap P and Q
+            # Rcost = Rcost*1e-1 #for cheap P and Q
+            Rcost = Rcost*5e1
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
@@ -417,53 +418,55 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         VmagRef = np.asarray([np.NaN]*nphases)
         Vmag_relative = np.asarray([np.NaN]*nphases)
 
-        # VmagSum = np.zeros(nphases)
-        # VmagCount = np.zeros(nphases)
-        # VmagRefSum = np.zeros(nphases)
-        # VmagRefCount = np.zeros(nphases)
-        # for phase in range(nphases):
-        #     # loops through every ordered_local uPMU reading
-        #     for local_packet in ordered_local[phase]:
-        #         Vmagi = local_packet['magnitude']
-        #         Vmagi = Vmagi * self.scalingPGE
-        #         if Vmagi is None:
-        #             print('Vmagi is None')
-        #         elif np.isnan(Vmagi):
-        #             print('Vmagi is NaN')
-        #         elif Vmagi == 0:
-        #             print('Vmagi is 0')
-        #         else:
-        #             VmagSum[phase] += Vmagi
-        #             VmagCount[phase] += 1
-        #     for ref_packet in ref[phase]:
-        #         VmagRefi = local_packet['magnitude']
-        #         VmagRefi = VmagRefi * self.scalingPGE
-        #         if VmagRefi is None:
-        #             print('VmagRefi is None')
-        #         elif np.isnan(VmagRefi):
-        #             print('VmagRefi is NaN')
-        #         elif VmagRefi == 0:
-        #             print('VmagRefi is 0')
-        #         else:
-        #             VmagRefSum[phase] += VmagRefi
-        #             VmagRefCount[phase] += 1
-        #     Vmag[phase] = VmagSum[phase]/VmagCount[phase]
-        #     VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
-        #     Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
-        #
-        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        # print('len(local_phasors[plug]) ', len(local_phasors[plug]))
-        # print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
-        #
-        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
-        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
-        #
-        # print('VmagCount ', VmagCount)
-        # print('VmagRefCount ', VmagRefCount)
-        # print('Vmag ', Vmag)
-        # print('VmagRef ', VmagRef)
-        # print('Vmag_relative ', Vmag_relative)
-        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        VmagSum = np.zeros(nphases)
+        VmagCount = np.zeros(nphases)
+        VmagRefSum = np.zeros(nphases)
+        VmagRefCount = np.zeros(nphases)
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading
+            for local_packet in ordered_local[phase]:
+                Vmagi = local_packet['magnitude']
+                Vmagi = Vmagi * self.scalingPGE
+                print('Vmagi ', Vmagi)
+                if Vmagi is None:
+                    print('Vmagi is None')
+                elif np.isnan(Vmagi):
+                    print('Vmagi is NaN')
+                elif Vmagi == 0:
+                    print('Vmagi is 0')
+                else:
+                    VmagSum[phase] += Vmagi
+                    VmagCount[phase] += 1
+            for ref_packet in ref[phase]:
+                VmagRefi = local_packet['magnitude']
+                VmagRefi = VmagRefi * self.scalingPGE
+                print('VmagRefi ', VmagRefi)
+                if VmagRefi is None:
+                    print('VmagRefi is None')
+                elif np.isnan(VmagRefi):
+                    print('VmagRefi is NaN')
+                elif VmagRefi == 0:
+                    print('VmagRefi is 0')
+                else:
+                    VmagRefSum[phase] += VmagRefi
+                    VmagRefCount[phase] += 1
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
+
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug]))
+        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+
+        print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
+
+        print('VmagCount ', VmagCount)
+        print('VmagRefCount ', VmagRefCount)
+        print('Vmag ', Vmag)
+        print('VmagRef ', VmagRef)
+        print('Vmag_relative ', Vmag_relative)
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
 
         # loops through each set of voltage measurements for each phase
         local_time_index = [np.NaN]*nphases
