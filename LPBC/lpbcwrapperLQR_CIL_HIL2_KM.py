@@ -485,13 +485,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         V_ang_ref_firstPhaseSum = np.zeros(nphases)
         # V_ang_ref_firstPhaseCount = np.zeros(nphases)
 
-        refAngleUsedVec = np.zeros(dataWindowLength) # to check if any refs are used twice (they shouldnt be)
-        #for ref_i, ref_packet in enumerate(reversed(ref[phase])):
-
         #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
         #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
         #important thing is that the other notRelative angles are seperated by ~120degrees
         for phase in range(nphases):
+            refAngleUsedVec = np.zeros(dataWindowLength) # debug to check if any refs are used twice (they shouldnt be)
             # loops through every ordered_local uPMU reading starting from most recent
             for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
                 # extract most recent ordered_local uPMU reading
@@ -524,14 +522,15 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Vang_notRelativeSum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
                         VangRefSum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
                         VangCount[phase] += 1
-                        if refAngleUsedVec[i] == 1:
+                        if refAngleUsedVec[i] == 1 and phase == 0: #debug
                             print(f'WARNING, this ref angle {i} was already used')
                         refAngleUsedVec[i] = 1
 
                         flag[phase] = 0
                         #for debugging
-                        print('ref_packet_offset ', ref_packet_offset)
-                        print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+                        if phase == 0:
+                            print('ref_packet_offset ', ref_packet_offset)
+                            print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
                         # break # dont want this break when doing averaging
 
                     ref_packet_offset += 1 #for debugging
