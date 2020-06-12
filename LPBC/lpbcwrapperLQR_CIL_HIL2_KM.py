@@ -505,12 +505,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        # V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
-                        # V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
-                        # V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
-                        V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
-                        V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
-                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        #dont think you actually need/want PhasorV_ang_wraparound_1d
+                        # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
+                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
                         print('V_ang_local ', V_ang_local)
                         print('V_ang_ref ', V_ang_ref)
                         print('V_ang_ref_firstPhaseTemp ', V_ang_ref_firstPhaseTemp)
@@ -759,8 +760,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        I_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
-                        V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
+                        I_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
+                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']                    
+                        # I_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
 
                         if V_ang_ref_firstPhase[phase] == np.NaN or V_ang_ref_firstPhase[phase] == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: [in phasorI_calc] issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
