@@ -124,7 +124,7 @@ if constant_phasor == True:
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18']
             cons_Vmag = [0.97,0.97,0.97]
-            cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
+            cons_Vang = [0 + 0.5, -120 + 0.5, 120 + 0.5]
         if testID == 'T8.2':
             lpbc_phases = ['a','b','c']
             lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
