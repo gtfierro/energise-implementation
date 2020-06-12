@@ -1121,7 +1121,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.Pcmd_kVA = np.zeros(3)
                     self.Qcmd_kVA = np.zeros(3)
                     print('CALIBRATION OVER')
-                    break
                     
             #END CALIBRATION
 
