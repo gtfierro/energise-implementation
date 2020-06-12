@@ -632,8 +632,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 for i, ID in enumerate(calID_lens):
                     if self.cal_iter_counter >= calID_lens[calID_lens_idx[i-1]] and self.cal_iter_counter < calID_lens[calID_lens_idx[i]]:
                         iter_idx = self.cal_iter_counter - calID_lens[calID_lens_idx[i-1]]
-                        Pcmd_VA = Pcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
-                        Qcmd_VA = Qcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
+                        Pcmd_VA = np.ones(3) * Pcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
+                        Qcmd_VA = np.ones(3) * Qcmd_cal_kVA[ID][iter_idx] * 1000 / self.localSratio
 
             print(f'PCMD_VA: {Pcmd_VA}')
             print(f'QCMD_VA: {Qcmd_VA}')
