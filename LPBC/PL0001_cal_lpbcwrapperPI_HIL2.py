@@ -1093,7 +1093,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # START CALIBRATION
             if self.calibration_test == True:
-                print('CALIBRATION TEST')
+                print(f'CALIBRATION TEST iter {self.cal_iter_counter}')
                 calID_idx = ['TC1','TC2','TC3','TC4']
                 Pcmd_cal_kVA = {'TC1': [0,100,200,300,400,500,0,-100,-200,-300,-400,-500],
                                 'TC2': [0,0,0,0,0,0,0,0,0,0,0,0],
@@ -1121,6 +1121,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.Pcmd_kVA = np.zeros(3)
                     self.Qcmd_kVA = np.zeros(3)
                     print('CALIBRATION OVER')
+                self.cal_iter_counter += 1
                     
             #END CALIBRATION
 
