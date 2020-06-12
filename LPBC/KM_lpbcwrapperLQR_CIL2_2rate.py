@@ -1906,7 +1906,8 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['spbc'] = SPBCname
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
     # currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
-    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, currentMeasExists, rate, numStepsPerActuation, localSratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    localVratio = 1
+    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, currentMeasExists, rate, numStepsPerActuation, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess

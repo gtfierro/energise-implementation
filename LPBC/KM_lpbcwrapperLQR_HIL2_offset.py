@@ -289,7 +289,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.local_time_index = [np.NaN]*nphases
         self.ref_time_index = [np.NaN]*nphases
 
-        self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
+        # self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
+        self.nPhasorReadings = 240
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -322,6 +323,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
+        print('VmagScaling ', VmagScaling)
         self.VmagScaling = VmagScaling #this is a hack to get flexlab to work. default to 1
 
         #vars for plots
@@ -1992,7 +1994,8 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
-    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    localVratio = 1
+    lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess
