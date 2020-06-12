@@ -22,10 +22,10 @@ WtoPerc = 100/7000
 VARtoPerc = 100/5000
 
 cons_P_offset = 1000*WtoPerc
-cons_Q_offset = 100*WtoPerc
+cons_Q_offset = 100*VARtoPerc
 
 Pcmd_perc_phase = 0*WtoPerc + cons_P_offset
-Qcmd_perc_phase = 0*WtoPerc + cons_Q_offset
+Qcmd_perc_phase = 0*VARtoPerc + cons_Q_offset
 inv_ls = [1,2,3]
 
 loop = 0
