@@ -55,6 +55,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.timesteplength = timesteplength
         self.stepCount = 0
         self.numStepsPerActuation = numStepsPerActuation
+        self.status = {}
 
         #HERE put in optional accumulator term for PI controller
 
@@ -1524,8 +1525,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 log_actuation = self.save_actuation_data(self.status_phases, self.Pcmd_kVA, self.Qcmd_kVA, self.Pact_kVA, self.Qact_kVA, self.P_PV, self.batt_cmd, self.pf_ctrl)
                 self.log_actuation(log_actuation)
                 # print(log_actuation)
-                status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
-                # print(status)
+                self.status = self.statusforSPBC(self.status_phases, self.phasor_error_mag_pu, self.phasor_error_ang, self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu)
+                # print(self.status)
                 iterend = pytime.time()
 
                 print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
@@ -1606,7 +1607,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                             print('SAVED Zest plots ')
 
-            return status
+            return self.status
 
 
 '''
