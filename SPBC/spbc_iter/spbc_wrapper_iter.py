@@ -11,19 +11,11 @@ import numpy as np
 from setup_3 import *
 from constraints_3 import *
 from dss_3 import *
-from main_run_3_new import *
+from main_run_iter import *
+# import main_run_3
+
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
-
-#init feeder & other vars
-phase_size, feeder_init = feeder_init()
-print('phases on network:',phase_size)
-
-# SETTINGS
-lpbc_phases = ['a','b','c'] # [INPUT HERE]
-lpbc_nodeIDs = ['675'] # [INPUT HERE]
-angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
-spbc_mode = 'normal'
 
 '''
 Q RE T12 - do we have actuators tracking the phasor at their act node, or are they all using the performance 
@@ -34,34 +26,139 @@ phasors from their local node - this way the change in capcities can be broadcas
 aren't at capacity in the form of altered phasor targets.
 '''
 
+# SETTINGS
+
+TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
+start_hour = 0 # [INPUT HERE] (0 for 33 because load data already truncated)
+dummy_ref = True # [INPUT HERE]
+constant_phasor = False # [INPUT HERE]
+
+angle_unit = 'radians' # - 'degrees' or 'radians' - settled on radians
+spbc_mode = 'iter'
+feederID =  'UCB33'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T3.3'
+
 # {actuation node: performance node}
-lpbcdict = { '675': '675'
+lpbcdict = { '18': '18'
     # '671': '671',
     # '652': '652',
     # '692': '692'
 }
 
-TV_load = True # [INPUT HERE] - set whether SPBC cycles through load values or holds constant
-start_hour = 11 # [INPUT HERE]
-
-dummy_ref = True # [INPUT HERE]
-constant_phasor = False # [INPUT HERE]
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
+
+
+ICDI_toggle = False
+varying_targ_toggle = False
+
+if feederID == '13bal': # @LEO can you check these scenarios/targets to make sure they look right
+    cons_kVbase = np.ones(3)*(4.16/np.sqrt(3))
+    cons_kVAbase = np.ones(3)*5000/3
+    if testID == 'T3.3':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['675']
+        cons_Vmag = [0.975,0.975,0.975]
+        cons_Vang = [0 - 1, -120 - 1, 120 - 1]
+        # cons_Vmag = [0.99,0.99,0.99]
+        # cons_Vang = [0 -1, -120 -1, 120 -1]
+    if testID == 'T3.4':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['675']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 -1, -120 -1, 120 - 1]
+        varying_targ_toggle = True
+        if varying_targ_toggle:
+            cons_Vmag_2 = [0.96,0.96,0.96]
+            cons_Vang_2 = [0 -4, -120 -4, 120 -4]
+            vary_iter = 1
+    if testID == 'T12.1':
+        lpbc_phases = ['a']
+        lpbc_nodeIDs = ['671']
+        cons_Vmag = [0.99]
+        cons_Vang = [0 -1]
+        varying_targ_toggle = True
+        ICDI_toggle = True
+        if varying_targ_toggle:
+            cons_Vmag_2 = [0.92]
+            cons_Vang_2 = [0 -4]
+            vary_iter = 29  
+        if ICDI_toggle:
+            cons_Vmag_ICDI = [0.95]
+            cons_Vang_ICDI = [0 -2.5]
+    if testID == 'T12.3':
+        lpbc_phases = ['a','b','c'] # here a,b,c are jsut referring to the different nodes (671,652,692)
+        lpbc_nodeIDs = ['671']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 - 1, 0 - 1, 0 - 1] # all on phase A
+        varying_targ_toggle = True
+        ICDI_toggle = True
+        if varying_targ_toggle:
+            cons_Vmag_2 = [0.92,0.92,0.92]
+            cons_Vang_2 = [0 -4, 0 -4, 0 -4] # all on phase A
+            vary_iter = 29
+        if ICDI_toggle:
+            cons_Vmag_ICDI = [0.95,0.95,0.95]
+            cons_Vang_ICDI = [0 -2.5, 0 -2.5, 0 - 2.5] # all on phase A
+if feederID == '13unbal':
+    cons_kVbase = np.ones(3)*(4.16/np.sqrt(3))
+    cons_kVAbase = np.ones(3)*5000/3
+    if testID == 'T3.3':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['675']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 -1, -120 -1, 120 -1]
+    if testID == 'T8.1':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['675']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 -1, -120 -1, 120 -1]
+    if testID == 'T8.2':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['675','671']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 -1, -120 -1, 120 -1]
+if feederID == 'UCB33':
+    cons_kVbase = np.ones(3)*(12.47/np.sqrt(3))
+    cons_kVAbase = np.ones(3)*3000/3
+    if testID == 'T3.3':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['18']
+        cons_Vmag = [0.99,0.99,0.99]
+        cons_Vang = [0 -1, -120 -1, 120 -1]
+    if testID == 'T8.1':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['18']
+        cons_Vmag = [0.97,0.97,0.97]
+        cons_Vang = [0 -0.1, -120 -0.1, 120 -0.1]
+    if testID == 'T8.2':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['18','26'] #18 inv, 26 loadracks
+        cons_Vmag = [0.97,0.97,0.97]
+        cons_Vang = [0 + 0.5, -120 + 0.5, 120 + 0.5]
+if feederID == 'PL0001':
+    cons_kVbase = np.ones(3)*(12.6/np.sqrt(3))
+    cons_kVAbase = np.ones(3)*1500/3
+    if testID == 'T9.2':
+        lpbc_phases = ['a']
+        lpbc_nodeIDs = ['N_300063911']
+        cons_Vmag = [0.97,0.97,0.97]
+        cons_Vang = [0 - 1, -120 - 1, 120 - 1]
+    if testID == 'T9.3':
+        lpbc_phases = ['a','b','c']
+        lpbc_nodeIDs = ['N_300063911']
+        cons_Vmag = [0.98,0.98,0.98]
+        cons_Vang = [0 - 3, -120 - 3, 120 - 3]
+    
 if constant_phasor == True:
-    # set phasor target values here (not relative)
-    #cons_Vmag = [0.9862920,0.9956446,0.9881567] # [INPUT HERE]
-    # cons_Vmag - 1 = Vmag_relative_pu (where 1, is 1pu at ref/feeder head)
-    cons_Vmag = [0.99,0.99,0.99] # [INPUT HERE]
-    #cons_Vang = [-1.61526,-121.75103,118.20174]
-    #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
-    # USED BELOW ONLY FOR T12
-    cons_Vang = [0 - 1, 0 - 1, 0 - 1]
-    cons_kVbase = np.ones(3)*4.16/np.sqrt(3) # [INPUT HERE]
-    cons_kVAbase = np.ones(3)*5000/3 # [INPUT HERE]
     print('WARNING: constant_phasor ON')
 
+#init feeder & other vars
+# phase_size, feeder_init = main_run_3.feeder_init()
+timestepcur_init = start_hour*60
+phase_size, feeder_init = feeder_init(modelpath, loadfolder, loadpath, timesteps, timestepcur_init, subkVbase_phg, subkVAbase, PVforecast, act_init)
+print('phases on network:',phase_size)
 
 # TODO: vmagprev, check dims across all instances, think it shoud just be 3
 Vmag_prev = []
@@ -236,10 +333,11 @@ class myspbc(pbc.SPBCProcess):
                 if channel == 'ph_C':
                     chanph = 'c'
                 # get perf nodes (lpbc nodes)
-                for key, ibus in feeder_init.busdict.items():
-                    #if lpbc == 'lpbc_' + key:
-                    if lpbc == key:
-                        lpbc_nodes.append(key)
+                if self.iteration == 0:
+                    for key, ibus in feeder_init.busdict.items():
+                        #if lpbc == 'lpbc_' + key:
+                        if lpbc == key:
+                            lpbc_nodes.append(key)
         
         # create list of nodes where ICDI is true (Change to distinguish b/w P & Q)
                 if status['pSaturated'] == True:
@@ -274,41 +372,41 @@ class myspbc(pbc.SPBCProcess):
         refphasor = refphasor_init
         # how to loop through all reference phasor channels
         
-        for channel, data in self.reference_phasors.items():
-            print(f"Channel {channel} has {len(data) if data else 0} points")
-            if data != None:
-                #store most recent uPMU ref phasor values
-                if 'L1' in channel:
-                    refphasor[0,0] = data[-1]['magnitude']
-                    refphasor[0,1] = data[-1]['angle']             
-                if 'L2' in channel:
-                    refphasor[1,0] = data[-1]['magnitude']
-                    refphasor[1,1] = data[-1]['angle']
-                if 'L3' in channel:
-                    refphasor[2,0] = data[-1]['magnitude']
-                    refphasor[2,1] = data[-1]['angle']
-                
-# =============================================================================
-#                 try:
-#                     pmutime = int(data[-1]['time'])
-#                     print(f'pmu timestamp {pmutime}')
-#                     pmu_s = pmutime / 1e9
-#                     print(f'pmu latency: {time.time()-pmu_s}')
-#                 except Exception as e:
-#                     print(e)
-# =============================================================================
-        
-            
-        #convert Vmag to p.u. (subKVbase_phg defined in main)
-        refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
-        #convert angle from degrees to rads
-        # TODO: phases in right order?
-        #[[1.00925961 2.04308987]
-        #[1.00899569 6.2332654 ]
-        #[1.01064548 4.13935041]]
-        refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
-        
         if dummy_ref == False:
+            for channel, data in self.reference_phasors.items():
+                print(f"Channel {channel} has {len(data) if data else 0} points")
+                if data != None:
+                    #store most recent uPMU ref phasor values
+                    if 'L1' in channel:
+                        refphasor[0,0] = data[-1]['magnitude']
+                        refphasor[0,1] = data[-1]['angle']             
+                    if 'L2' in channel:
+                        refphasor[1,0] = data[-1]['magnitude']
+                        refphasor[1,1] = data[-1]['angle']
+                    if 'L3' in channel:
+                        refphasor[2,0] = data[-1]['magnitude']
+                        refphasor[2,1] = data[-1]['angle']
+                    
+    # =============================================================================
+    #                 try:
+    #                     pmutime = int(data[-1]['time'])
+    #                     print(f'pmu timestamp {pmutime}')
+    #                     pmu_s = pmutime / 1e9
+    #                     print(f'pmu latency: {time.time()-pmu_s}')
+    #                 except Exception as e:
+    #                     print(e)
+    # =============================================================================
+            
+                
+            #convert Vmag to p.u. (subKVbase_phg defined in main)
+            refphasor[:,0] = refphasor[:,0]/(subkVbase_phg*1000) # TODO: compute refphasor vmag correctly
+            #convert angle from degrees to rads
+            # TODO: phases in right order?
+            #[[1.00925961 2.04308987]
+            #[1.00899569 6.2332654 ]
+            #[1.01064548 4.13935041]]
+            refphasor[:,1] = refphasor[:,1]*np.pi/180 # TODO: change phB to -120 first?
+        
             print('phasor reference [pu-rad]:')
             print(refphasor)
 
@@ -333,8 +431,10 @@ class myspbc(pbc.SPBCProcess):
             # This could produce some intermediate structure like so:
             if spbc_mode == 'normal':
                 Vtargdict, act_keys, subkVAbase, myfeeder = spbc_run(refphasor,Psat_nodes,Qsat_nodes,lpbc_nodes,self.timestepcur)
-            if spbc_mode == 'iter'
-                Vtargdict, act_keys, subkVAbase, myfeeder = spbc_iter_run(self.timestepcur)
+            if spbc_mode == 'iter':
+                subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(self.timestepcur)
+            for key in lpbc_nodeIDs:
+                print(f'load at {key}: (P) {myfeeder.loaddict[key].Psched}, (Q) {myfeeder.loaddict[key].Qsched}')
             print('VTARGS [pu, deg, kV, kVA]')
             for node, key in Vtargdict.items():
                 for key2, targ in key.items():

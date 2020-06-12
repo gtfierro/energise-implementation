@@ -246,7 +246,7 @@ def DSS_trans(feeder,timestep):
                             + " XHL=" + str(itrans.xpu*100))
     return
 
-def DSS_actuators(feeder,timestep, verbose=True):
+def DSS_actuators(feeder,timestep, verbose=False):
 # Uses DSS commands to add the previously solved-for values of actuator dispatch to the model as negative loads.
     for key,iact in feeder.actdict.items():
         if verbose:
@@ -292,7 +292,7 @@ def DSS_snapshot(feeder,timestep,subkVbase_phg,subkVAbase):
 
     # Sets up the new circuit, assumes 3ph
     dss.run_command("new circuit.currentckt basekv=" + str(subkVbase_phg*np.sqrt(3)) + " pu=1.0000 phases=3 bus1=" 
-                    + subbusname + " Angle=0 MVAsc3=200000 MVASC1=200000")
+                    + subbusname + " Angle=0 MVAsc3=9999999 MVASC1=9999999")
     #dss.run_command("new circuit.currentckt basekv=" + str(subkVbase_phg*np.sqrt(3)) + " pu=1.0000 phases=3 bus1=" 
     #                + subbusname + " Angle=0 MVAsc3=232.4/3 MVASC1=232.4/3")
     DSS_loads(feeder,timestep)
@@ -409,7 +409,8 @@ def DSS_alltimesteps(feeder,alarm):
             else:
                 MVArating_check_list.append(0)
         if all(MVArating_check_list) == False:
-            print('* no MVA ratings provided for ampacity violations *')
+            # print('* no MVA ratings provided for ampacity violations *')
+            pass
 # AMPACITY VIOLATIONS END
                     
         for key,iline in feeder.linedict.items():
@@ -668,7 +669,7 @@ def export_Vtargets(feeder):
 
 def get_targets(feeder):
     
-    print(get_targets)
+    # print(get_targets)
     
     for key,ibus in feeder.busdict.items():
         if ibus.name == 'bus_671':

@@ -34,7 +34,6 @@ def feeder_init(modelpath, loadfolder, loadpath, timesteps, timestepcur, subkVba
     
     return phase_size, myfeeder
 
-
 def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel=1e-5,eps_abs=1e-10, max_iter = 50000): #write 'none' if doesnt exist    
     # set tuning parameters of objectives: 0 = off
     # lam1 - phasor target, lam2 - phase balancing, lam3 - voltage volatility
@@ -258,90 +257,8 @@ def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel
 
     return prob, result, objective, Vtargdict, act_keys
 
-
 # refphasor,Psat_nodes,Qsat_nodes,perf_nodes,timestepcur (inputs from old spbc_run)
 def spbc_iter_run(timestepcur):
-
-    'IEEE13_UNBALANCED'
-    # filepath = "IEEE13/"
-    # modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
-    # loadfolder = "IEEE13/"
-    # loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
-
-    'IEEE13_BALANCED'
-    # filepath = "IEEE13_bal/"
-    # modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-    # loadfolder = "IEEE13_bal/"
-    # loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
-
-    'UCB33'
-    filepath = "UCB33/"
-    modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
-    loadfolder = "UCB33/"
-    loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
-
-    'PL0001_v2'
-    # filepath = "PL0001_v2/"
-    # modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
-    # #modelpath = filepath + "PL0001_OPAL_working_reform_notrans_F.xlsx"
-    # loadfolder = "PL0001_v2/"
-    # loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
-
-    # filepath = "IEEE test cases/Thirteenbus/"
-    # modelpath = filepath + "IEEE13_model_M_confirm.xls"
-    # modeldata = pd.ExcelFile(modelpath)
-     
-    # # All GridBright load files should be in the following folder
-    # loadfolder = "IEEE test cases/Thirteenbus/"
-    # loadpath = loadfolder + "IEEE13_load_M_modified.xlsx"
-    # actpath = loadpath
-
-     
-    # Specify substation kV, kVA bases, and the number of timesteps in the load data
-    'IEEE13'
-    # subkVbase_phg = 4.16/np.sqrt(3)
-    # subkVAbase = 5000.
-    # timesteps = 1
-
-    'UCB33'
-    subkVbase_phg = 12.47/np.sqrt(3)
-    subkVAbase = 3000.
-    timesteps = 1
-
-    'PL0001'
-    # subkVbase_phg = 12.6/np.sqrt(3)
-    # subkVAbase = 1500.
-    # timesteps = 1
-
-
-    # Specify initial timestep
-    date = datetime.datetime.now()
-    month = date.month
-    day = date.day
-    hour = date.hour
-    minute = date.minute
-    #timestepcur = hour*60+minute
-    # timestepcur = 0 #8*60 # [INPUT HERE] Manual input of start time
-    # for HIL timestepcur sent from wrapper
-
-    # Input constnats for PV forecasting
-    PV_on = False # True for ON
-    PVnodes = []
-    PVforecast = {}
-    #PVforecast['on_off'] = PV_on
-    for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
-        PVforecast[node] = {}
-        PVforecast[node]['on_off'] = PV_on
-        PVforecast[node]['lat'] = 37.87
-        PVforecast[node]['lon'] = -122
-        PVforecast[node]['maridian'] = -120
-        PVforecast[node]['PVfrac'] = 0.3
-
-    act_init = {'18': {'a': 707, 'b': 707, 'c': 707},
-        # '652': {'a': 200, 'b': 0, 'c':0},
-        # '671': {'a': 100, 'b': 0, 'c':0},
-        # '692': {'a': 200, 'b': 0, 'c':0}
-            }
 
     phase_size, myfeeder = feeder_init(modelpath, loadfolder, loadpath, timesteps, timestepcur, subkVbase_phg, subkVAbase, PVforecast, act_init)
 
@@ -405,15 +322,15 @@ def spbc_iter_run(timestepcur):
         mag_errors_pu.append(np.average(NLvslinear_mag))
         ang_errors.append(np.average(NLvslinear_ang))
 
-        print("ITERATION " + str(i) + "\n\n")
-        print("Difference between linear and nonlinear voltages\n\n")
-        print("maximum = " + str(np.amax(NLvslinear_mag)) + "V")
-        print("average = " + str(np.average(NLvslinear_mag)) + "V")
-        print("\n\n")
-        print("Difference between linear and nonlinear angles\n\n")
-        print("maximum = " + str(np.amax(NLvslinear_ang)) + " deg")
-        print("average = " + str(np.average(NLvslinear_ang)) + " deg")
-        print("\n\n")
+        # print("ITERATION " + str(i) + "\n\n")
+        # print("Difference between linear and nonlinear voltages\n\n")
+        # print("maximum = " + str(np.amax(NLvslinear_mag)) + "V")
+        # print("average = " + str(np.average(NLvslinear_mag)) + "V")
+        # print("\n\n")
+        # print("Difference between linear and nonlinear angles\n\n")
+        # print("maximum = " + str(np.amax(NLvslinear_ang)) + " deg")
+        # print("average = " + str(np.average(NLvslinear_ang)) + " deg")
+        # print("\n\n")
 
     # # plot error curves
     # plot_subject = "Modified 13 node"
@@ -449,5 +366,88 @@ def spbc_iter_run(timestepcur):
 
     return subkVAbase, myfeeder, Vtargdict, act_keys
 
-subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(0)
+# SETTINGS
+
+'IEEE13_UNBALANCED'
+#  filepath = "IEEE13/"
+#  modelpath = filepath + "001 phasor08_IEEE13_OPAL.xls"
+#  loadfolder = "IEEE13/"
+#  loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
+
+'IEEE13_BALANCED'
+# filepath = "IEEE13_bal/"
+# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+# loadfolder = "IEEE13_bal/"
+# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+
+'UCB33'
+filepath = "UCB33/"
+modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
+loadfolder = "UCB33/"
+loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+
+'PL0001_v2'
+# filepath = "PL0001_v2/"
+# modelpath = filepath + "PL0001_OPAL_working_reform_xfmr.xlsx"
+# #modelpath = filepath + "PL0001_OPAL_working_reform_notrans_F.xlsx"
+# loadfolder = "PL0001_v2/"
+# loadpath = loadfolder + "PL0001_July_Q_F.xlsx"
+
+# filepath = "IEEE test cases/Thirteenbus/"
+# modelpath = filepath + "IEEE13_model_M_confirm.xls"
+# modeldata = pd.ExcelFile(modelpath)
+    
+# # All GridBright load files should be in the following folder
+# loadfolder = "IEEE test cases/Thirteenbus/"
+# loadpath = loadfolder + "IEEE13_load_M_modified.xlsx"
+# actpath = loadpath
+
+    
+# Specify substation kV, kVA bases, and the number of timesteps in the load data
+'IEEE13'
+# subkVbase_phg = 4.16/np.sqrt(3)
+# subkVAbase = 5000.
+# timesteps = 1
+
+'UCB33'
+subkVbase_phg = 12.47/np.sqrt(3)
+subkVAbase = 3000.
+timesteps = 1
+
+'PL0001'
+# subkVbase_phg = 12.6/np.sqrt(3)
+# subkVAbase = 1500.
+# timesteps = 1
+
+
+# Specify initial timestep
+date = datetime.datetime.now()
+month = date.month
+day = date.day
+hour = date.hour
+minute = date.minute
+#timestepcur = hour*60+minute
+# timestepcur = 0 #8*60 # [INPUT HERE] Manual input of start time
+# for HIL timestepcur sent from wrapper
+
+# Input constnats for PV forecasting
+PV_on = False # True for ON
+PVnodes = []
+PVforecast = {}
+#PVforecast['on_off'] = PV_on
+for node in PVnodes: # this sets all nodes the same, would have to manually change fields to have different inputs for different nodes
+    PVforecast[node] = {}
+    PVforecast[node]['on_off'] = PV_on
+    PVforecast[node]['lat'] = 37.87
+    PVforecast[node]['lon'] = -122
+    PVforecast[node]['maridian'] = -120
+    PVforecast[node]['PVfrac'] = 0.3
+
+act_init = {'18': {'a': 707, 'b': 707, 'c': 707},
+    # '652': {'a': 200, 'b': 0, 'c':0},
+    # '671': {'a': 100, 'b': 0, 'c':0},
+    # '692': {'a': 200, 'b': 0, 'c':0}
+        }
+
+# subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(0)
     
