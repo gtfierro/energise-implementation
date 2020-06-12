@@ -322,6 +322,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
 
+        print('VmagScaling ', VmagScaling)
         self.VmagScaling = VmagScaling #this is a hack to get flexlab to work. default to 1
 
         #vars for plots
