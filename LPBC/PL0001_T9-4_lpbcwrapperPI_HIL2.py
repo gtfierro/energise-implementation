@@ -358,7 +358,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # loops through every ordered_local uPMU reading
             for local_packet in ordered_local[phase]:
                 Vmagi = local_packet['magnitude']
-                Vmagi = Vmagi * self.VmagScaling
+                Vmagi = Vmagi * self.scalingPGE
                 if Vmagi is None:
                     print('Vmagi is None')
                 elif np.isnan(Vmagi):
@@ -370,7 +370,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     VmagCount[phase] += 1
             for ref_packet in ref[phase]:
                 VmagRefi = ref_packet['magnitude']
-                VmagRefi = VmagRefi * self.VmagScaling
+                VmagRefi = VmagRefi * self.scalingPGE
                 if VmagRefi is None:
                     print('VmagRefi is None')
                 elif np.isnan(VmagRefi):
