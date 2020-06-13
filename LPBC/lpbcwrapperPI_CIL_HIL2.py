@@ -265,6 +265,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
+        self.VmagScaling = (12.6/np.sqrt(3))/2.401
 
 
 
@@ -382,6 +383,10 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
                         V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+
+                        V_mag_local = V_mag_local * self.VmagScaling
+                        V_mag_ref = V_mag_ref * self.VmagScaling
+
                         # calculates relative phasors
                         self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
                         self.Vmag[phase] = V_mag_local
