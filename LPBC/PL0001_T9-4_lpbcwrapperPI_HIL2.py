@@ -380,81 +380,110 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     VmagRefSum[phase] += VmagRefi
                     VmagRefCount[phase] += 1
-            self.Vmag[phase] = VmagSum[phase]/VmagCount[phase]
-            self.VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
-            self.Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
-        
-        # Initialize
-        # ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
-        # ref = [0] * nphases
-        # flag = [1] * nphases #used to check if a phasor match was found
-        # Vmeas_all_phases = 1
-        # Extract latest nPhasorReadings readings from local and ref uPMUs, and put local in phase-order (ref is assumed to be in phase-order)
-        # for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
-        #     if len(local_phasors[plug]) > self.nPhasorReadings:
-        #         dataWindowLength = self.nPhasorReadings
-        #     else:
-        #         dataWindowLength = len(local_phasors[plug])
-        #     phase_idx = plug_to_V_idx[plug]
-        #     ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
-        #     ref[plug] = reference_phasors[plug][-dataWindowLength:] #from dataWindowLength back to present, puts Lx2 entries in each entry of local, x2 is for magnitude and phase
-            #small chance theres a problem here w copying a mutable data type and not using .copy()
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+            VmagRef[phase] = VmagRefSum[phase]/VmagRefCount[phase]
+            Vmag_relative[phase] = Vmag[phase] - VmagRef[phase]
 
-        #this was creating issues when intitial phasor reading wasnt correct
-        # if self.Vang == 'initialize':
-        #     self.Vang = np.zeros(nphases)
-        #     # loops through every phase with actuation
-        #     for phase in range(nphases): #phases descrived by a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
-        #         # Initialize: Extract measurements from most recent timestamps only for first iteration
-        #         V_mag_local = ordered_local[phase][-1]['magnitude']
-        #         V_ang_local = ordered_local[phase][-1]['angle'] - self.ametek_phase_shift
-        #         V_mag_ref = ref[phase][-1]['magnitude']
-        #         V_ang_ref = ref[phase][-1]['angle']
-        #         self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
-        #         self.Vmag[phase] = V_mag_local
-        #         self.VmagRef[phase] = V_mag_ref
-        #         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug])) #this is the number of phasor measurements delivered. often it is 120*rate (number of seconds)
+        print('len(reference_phasors[plug]) ', len(reference_phasors[plug]))
+        #
+        # print('ordered_local[0][0][time] - ordered_local[0][-1][time] ', int(ordered_local[0][0]['time']) - int(ordered_local[0][-1]['time']))
+        # print('ref[0][0][time] - ref[0][-1][time] ', int(ref[0][0]['time']) - int(ref[0][-1]['time']))
 
-        # loops through each set of voltage measurements for each phase
+        print('VmagCount ', VmagCount)
+        # print('VmagRefCount ', VmagRefCount)
+        # print('Vmag ', Vmag)
+        # print('VmagRef ', VmagRef)
+        # print('Vmag_relative ', Vmag_relative)
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
+
+        Vang_notRelative = np.asarray([np.NaN]*nphases)
+        Vang_relative = np.asarray([np.NaN]*nphases)
+        VangRef = np.asarray([np.NaN]*nphases)
+        # V_ang_ref_firstPhase = [np.NaN]
+        V_ang_ref_firstPhase = np.asarray([np.NaN]*nphases) #using nphase-long version for back-compatibility, they should all be the same
+
+        VangCount = np.zeros(nphases)
+        Vang_notRelativeSum = np.zeros(nphases)
+        # Vang_notRelativeCount = np.zeros(nphases)
+        Vang_relativeSum = np.zeros(nphases)
+        # Vang_relativeCount = np.zeros(nphases)
+        VangRefSum = np.zeros(nphases)
+        # VangRefCount = np.zeros(nphases)
+        V_ang_ref_firstPhaseSum = np.zeros(nphases)
+        # V_ang_ref_firstPhaseCount = np.zeros(nphases)
+
+        #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
+        #this is okay bc the local controller can just use 0 for its first angle (locally), even if that angle is phase is B or C
+        #important thing is that the other notRelative angles are seperated by ~120degrees
         for phase in range(nphases):
+            refAngleUsedVec = np.zeros(dataWindowLength) # debug to check if any refs are used twice (they shouldnt be)
             # loops through every ordered_local uPMU reading starting from most recent
-            for local_packet in reversed(ordered_local[phase]):
+            for local_packet in reversed(ordered_local[phase]): #doesnt need ot be reversed when using averaging (as done now), but doesnt hurt
                 # extract most recent ordered_local uPMU reading
                 local_time = int(local_packet['time'])
                 # loops though every reference uPMU reading starting from most recent
+                i = 0
                 for ref_packet in reversed(ref[phase]):
                     ref_time = int(ref_packet['time'])
-                    
-                    #print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
 
                     # check timestamps of ordered_local and reference uPMU if within 2 ms
                     if abs(ref_time - local_time) <= self.pmuTimeWindow:
-                        local_time_index[phase] = ordered_local[phase].index(local_packet)
+                        local_time_index[phase] = ordered_local[phase].index(local_packet) #saves and returns these so the current measurement can use the measurements from the same timestamps
                         ref_time_index[phase] = ref[phase].index(ref_packet)
                         # Extract measurements from closest timestamps
-                        V_mag_local = ordered_local[phase][local_time_index[phase]]['magnitude']
                         V_ang_local = ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift
-                        V_mag_ref = ref[phase][ref_time_index[phase]]['magnitude']
                         V_ang_ref = ref[phase][ref_time_index[phase]]['angle']
+                        V_ang_ref_firstPhaseTemp = ref[0][ref_time_index[phase]]['angle']
+                        #dont think you actually need/want PhasorV_ang_wraparound_1d
+                        # V_ang_local = self.PhasorV_ang_wraparound_1d(ordered_local[phase][local_time_index[phase]]['angle'] - self.ametek_phase_shift)
+                        # V_ang_ref = self.PhasorV_ang_wraparound_1d(ref[phase][ref_time_index[phase]]['angle'])
+                        # V_ang_ref_firstPhaseTemp = self.PhasorV_ang_wraparound_1d(ref[0][ref_time_index[phase]]['angle'])
 
-                        V_mag_local = V_mag_local * self.scalingPGE
-                        V_mag_ref = V_mag_ref * self.scalingPGE
+                        # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
+                        # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
+                        V_ang_ref_firstPhaseSum[phase] += V_ang_ref_firstPhaseTemp #because each phase (of the current meas) needs a V_ang_ref_firstPhase
+                        if V_ang_ref_firstPhaseTemp == np.NaN or V_ang_ref_firstPhaseTemp == None: #(could put in a better check here, eg is the angle in a reasonable range)
+                            print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
 
-                        # calculates relative phasors
-                        self.Vang[phase] = np.radians(V_ang_local - V_ang_ref)
-                        # self.Vmag[phase] = V_mag_local
-                        # self.VmagRef[phase] = V_mag_ref
-                        # self.Vmag_relative[phase] = V_mag_local - V_mag_ref
+                        Vang_relativeSum[phase] += np.radians(V_ang_local - V_ang_ref)
+                        Vang_notRelativeSum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
+                        VangRefSum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
+                        VangCount[phase] += 1
+                        if refAngleUsedVec[i] == 1 and phase == 0: #debug
+                            print(f'WARNING, this ref angle {i} was already used')
+                        refAngleUsedVec[i] = 1
+
                         flag[phase] = 0
-                        break
-                if flag[phase] == 0:
-                    break
+                        #for debugging
+                        # if phase == 0:
+                        #     print('i used ', i)
+                        #     print(f'ref,local,diff: {ref_time},{local_time},{(ref_time-local_time)/1e6}')
+                        # break # dont want this break when doing averaging
+
+                    i += 1
+                # if flag[phase] == 0:
+                #     break
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
-        return (self.Vang,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+            else:
+                Vang_notRelative[phase] = Vang_notRelativeSum[phase]/VangCount[phase]
+                Vang_relative[phase] = Vang_relativeSum[phase]/VangCount[phase]
+                VangRef[phase] = VangRefSum[phase]/VangCount[phase]
+                V_ang_ref_firstPhase[phase] = V_ang_ref_firstPhaseSum[phase]/VangCount[phase]
+
+        # print('Vang_notRelative ', Vang_notRelative)
+        # print('Vang_relative ', Vang_relative)
+        # print('VangRef ', VangRef)
+        # print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
+        print('VangCount ', VangCount)
+        # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
 
