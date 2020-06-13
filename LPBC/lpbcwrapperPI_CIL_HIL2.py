@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 1000):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -86,12 +86,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
-            alph = 0.45
-            beta = 0.35
-            kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
-            ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
-            kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
-            ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
+            # alph = 0.45
+            # beta = 0.35
+            # kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
+            # ki_ang = [0.0677*alph,0.0677*alph,0.0677*alph]
+            # kp_mag = [0.1750*beta,0.3063*beta,0.8331*beta]
+            # ki_mag = [3.5004*beta,3.5004*beta,3.5004*beta]
 # =============================================================================
 
             #5.1
@@ -118,6 +118,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
             # kp_mag = [3*beta, 3*beta, 3*beta]
             # ki_mag = [0.5*beta, 0.5*beta, 0.5*beta]
+
+            #9.3
+            # alph = 3
+            # beta = 4.5
+            alph = 0.2
+            beta = 0.2
+            lam_i = 1.2
+            kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
+            ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
+            kp_mag = [2*beta, 2*beta, 2*beta]
+            ki_mag = [0.6*beta*lam_i, 0.6*beta*lam_i, 0.6*beta*lam_i]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -1012,8 +1023,8 @@ elif testcase == '13bal':
         actType_dict[key] = 'inverter' #'inverter' or 'load'
 #TODO: set test case here
 elif testcase == 'manual':
-    lpbcidx = ['675'] #nodes of actuation
-    key = '675'
+    lpbcidx = ['N_300063911'] #nodes of actuation
+    key = 'N_300063911'
     acts_to_phase_dict[key] = np.asarray(['A','B','C']) #which phases to actuate for each lpbcidx # INPUT PHASES
     actType_dict[key] = 'inverter' #choose: 'inverter', 'load', or 'modbus'
 
@@ -1099,7 +1110,7 @@ entitydict[5] = 'lpbc_6.ent'
 '''NOTE: CHANGED PMUS TO CONFIGURE TO CIL TESTING BECAUSE COULD NOT FIGURE OUT HOW TO GET THE PMUS WITHOUT ERROR'''
 #pmu123Channels = np.asarray(['uPMU_123/L1','uPMU_123/L2','uPMU_123/L3','uPMU_4/C1','uPMU_4/C2','uPMU_4/C3'])
 pmu123Channels = np.asarray([]) # DONE FOR CIL
-pmu123PChannels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3']) #these also have current channels, but dont need them
+pmu123PChannels = np.asarray(['uPMU_123P/L1','uPMU_123P/L2','uPMU_123P/L3']) #these also have current channels, but dont need them
 pmu4Channels = np.asarray(['uPMU_4/L1','uPMU_4/L2','uPMU_4/L3'])
 refChannels = np.asarray(['uPMU_0/L1','uPMU_0/L2','uPMU_0/L3','uPMU_0/C1','uPMU_0/C2','uPMU_0/C3'])
 
@@ -1109,9 +1120,9 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-inverterScaling = 500/3.3
+inverterScaling = 1000/1
 loadScaling = 350
-CILscaling = 10 #in VA
+CILscaling = 20 #in VA
 
 rate = 10
 
