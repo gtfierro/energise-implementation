@@ -292,7 +292,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         # self.HistLength = 100
         # self.HistLength = 10
-        self.HistLength = 5
+        self.HistLength = 25
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1432,8 +1432,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             fakeVangRef = np.zeros(self.nphases)
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
                         else:
-                            print('!!!!!!!!!!!!!! P_implemented_PU ', self.P_implemented_PU)
-                            print('!!!!!!!!!!!!!! Q_implemented_PU ', self.Q_implemented_PU)
+                            # print('!!!!!!!!!!!!!! P_implemented_PU ', self.P_implemented_PU)
+                            # print('!!!!!!!!!!!!!! Q_implemented_PU ', self.Q_implemented_PU)
                             self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
 
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
