@@ -105,9 +105,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
             #for testing the Zeffestimator
-            # self.Zeffk_init_mult = .5
+            self.Zeffk_init_mult = .5
             # self.Zeffk_init_mult = 2
-            self.Zeffk_init_mult = 1
+            # self.Zeffk_init_mult = 1
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
             # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
             ######################## LQR Controller Parameters #######################
@@ -132,7 +132,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
-            cancelDists = 0 #setting this to 0 turns the disturbance cancelation off
+            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
             # lpAlpha = .5
 
@@ -1890,7 +1890,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
-    # currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
+    currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
     localVratio = 1
     lpbcdict[key] = lpbcwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
