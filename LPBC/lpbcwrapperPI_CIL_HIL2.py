@@ -48,7 +48,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 1000):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA = 500):
         super().__init__(cfg)
 
         # INITIALIZATION
@@ -263,7 +263,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
-        self.VmagScaling = (12.6/np.sqrt(3))/2.401
+        self.VmagScaling = 1 # PL0001: 12.6/4.16, 33NF: 12.47/4.16
 
 
 
@@ -1123,7 +1123,7 @@ nlpbc = len(lpbcidx)
 cfg_file_template = config_from_file('template.toml') #config_from_file defined in XBOSProcess
 
 #this is HIL specific
-inverterScaling = 1000/1
+inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 20 #in VA
 
