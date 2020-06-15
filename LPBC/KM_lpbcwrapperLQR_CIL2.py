@@ -1155,7 +1155,9 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             result = ('exceptions', e)
         finally:
             client.close()
-        return result, P_implemented_PU, Q_implemented_PU
+
+        return result
+        # return result, P_implemented_PU, Q_implemented_PU
 
 
     def initializeActuators(self, mode):
@@ -1475,40 +1477,42 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                    result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
-                    # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
+                    max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase
                     print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
                 else:
                     print('couldnt send commands because no current measurement available') #HERE what?
             elif self.actType == 'load':
                 # self.commandReceipt, self.P_implemented_PU, self.Q_implemented_PU = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
                 self.commandReceipt = self.httptoLoads(self.nphases, self.act_idxs, self.Pcmd_kVA, self.Qcmd_kVA)
-                self.P_implemented_PU = self.Pcmd_pu #HERE change these if load commands are not always realized
-                self.Q_implemented_PU = self.Qcmd_pu
+                # self.P_implemented_PU = self.Pcmd_pu #HERE change these if load commands are not always realized
+                # self.Q_implemented_PU = self.Qcmd_pu
                 print('load command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
             elif self.actType == 'modbus':
-                result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
-                # result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                result = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA, self.localSratio)
+                max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase
                 print('Opal command receipt bus ' + str(self.busId) + ' : ' + str(result))
             else:
                 error('actType error')
 
-            # #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
-            # max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
-            # if self.Pcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-            #     used_Pcmd_pu = max_PU_power
-            # elif self.Pcmd_pu < -max_PU_power:
-            #     used_Pcmd_pu = -max_PU_power
-            # else:
-            #     used_Pcmd_pu = self.Pcmd_pu
-            # if self.Qcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-            #     used_Qcmd_pu = max_PU_power
-            # elif self.Qcmd_pu < -max_PU_power:
-            #     used_Qcmd_pu = -max_PU_power
-            # else:
-            #     used_Qcmd_pu = self.Qcmd_pu
-            # self.P_implemented_PU = used_Pcmd_pu
-            # self.Q_implemented_PU = used_Qcmd_pu
+            #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
+            for i in nphases:
+                if self.Pcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+                    used_Pcmd_pu[i] = max_PU_power
+                elif self.Pcmd_pu[i] < -max_PU_power:
+                    used_Pcmd_pu[i] = -max_PU_power
+                else:
+                    used_Pcmd_pu[i] = self.Pcmd_pu[i]
+                if self.Qcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
+                    used_Qcmd_pu[i] = max_PU_power
+                elif self.Qcmd_pu[i] < -max_PU_power:
+                    used_Qcmd_pu[i] = -max_PU_power
+                else:
+                    used_Qcmd_pu[i] = self.Qcmd_pu[i]
+            self.P_implemented_PU = used_Pcmd_pu
+            self.Q_implemented_PU = used_Qcmd_pu
             print('self.P_implemented_PU ', self.P_implemented_PU)
             print('self.Q_implemented_PU ', self.Q_implemented_PU)
             #HERE self.P_implemented_PU could be self.Pact_PU, but self.Pact_PU requires a PMU current meas, so have to use an if statement to set self.P_implemented_PU with P_act

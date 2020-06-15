@@ -184,6 +184,7 @@ class LQRcontroller:
         elif self.onesaturated == 0 and all(np.abs(self.PcommandPrev) > self.powerThresholdForIcompEst) and all(np.abs(self.QcommandPrev) > self.powerThresholdForIcompEst):
             # the actuators arent saturated (so the estimation of the current meas from the power command is legit)
             Icomp_est = self.phasorI_estFromScmd(Vcomp, self.PcommandPrev, self.QcommandPrev)
+            print('Estimated Icomp for Zeffk estimation: ', Icomp_est)
             Icomp = np.asmatrix(Icomp_est)
         else:
             if printZeffterms:
@@ -256,9 +257,11 @@ class LQRcontroller:
         if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
             self.u[0,:self.nphases] = P_implemented
             self.PcommandPrev = P_implemented
+            print('&&&&&&&&&&&& self.PcommandPrev', self.PcommandPrev)
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
+            print('&&&&&&&&&&&& self.QcommandPrev', self.QcommandPrev)
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement is working as intended
