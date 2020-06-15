@@ -1355,7 +1355,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
             Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_notRelative) + self.Vmag_pu*np.sin(self.Vang_notRelative)*1j
 
-            if self.stepCount < self.numStepsPerActuation: 
+            if self.stepCount < self.numStepsPerActuation:
                 self.stepCount += 1
                 if self.controllerType == 'LQR':
                     VmagMat = np.asmatrix(self.Vmag_pu) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
@@ -1696,9 +1696,9 @@ SPBCname = 'spbc-jasper-1'
 #Manual entry here to determine test case, phases, etc.
 #Test Case
 #testcase = '13unb'
-#testcase = '13bal'
+testcase = '13bal'
 # testcase = '33'
-testcase = 'PL0001'
+# testcase = 'PL0001'
 # testcase = 'manual'
 
 acts_to_phase_dict = dict()
