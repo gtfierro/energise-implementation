@@ -291,8 +291,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         # self.HistLength = 100
-        # self.HistLength = 10
-        self.HistLength = 25
+        self.HistLength = 10
+        # self.HistLength = 50
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -301,7 +301,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 1
+        self.perturbPowerCommand = 0
         self.perturbScale = .1
 
         self.AveragePhasorMeasurements = 1 # =1: Take the average phasor meas, =0: take the most recent
@@ -1452,8 +1452,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #HHHERE for debugging
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3)
-            self.Pcmd_pu = np.ones(3)*.2 #HHHHERE
-            self.Qcmd_pu = np.ones(3)*.2
+            # self.Pcmd_pu = np.ones(3)*.2 #HHHHERE
+            # self.Qcmd_pu = np.ones(3)*.2
 
             if self.perturbPowerCommand:
                 self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
