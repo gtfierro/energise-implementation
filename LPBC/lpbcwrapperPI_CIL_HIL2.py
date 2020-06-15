@@ -1125,7 +1125,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 #this is HIL specific
 inverterScaling = 500/1
 loadScaling = 350
-CILscaling = 20 #in VA
+CILscaling = 10 #in VA
 
 rate = 10
 
