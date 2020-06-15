@@ -1290,6 +1290,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if phasor_target is None and self.VangTarg_relative == 'initialize':
             print('No target received from SPBC by bus ' + str(self.busId))
+            if self.pauseCount != 0:
+                self.pauseCount += 1
             return #don't need to return a status, when there isnt one to report
         else:
             if phasor_target is None:
@@ -1621,7 +1623,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
                             print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                             print('SAVED Zest plots ')
-                self.pauseCount += 1            
+                self.pauseCount += 1
             elif self.pauseCount < self.numStepsPerActuation:
                 self.pauseCount += 1
                 print('PAUSECOUNT ', self.pauseCount)
