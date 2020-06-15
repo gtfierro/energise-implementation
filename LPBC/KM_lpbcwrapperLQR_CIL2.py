@@ -1499,16 +1499,16 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
             for i in np.arange(nphases):
-                if self.Pcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                    used_Pcmd_pu[i] = max_PU_power
-                elif self.Pcmd_pu[i] < -max_PU_power:
-                    used_Pcmd_pu[i] = -max_PU_power
+                if self.Pcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                    used_Pcmd_pu[i] = max_PU_power[i]
+                elif self.Pcmd_pu[i] < -max_PU_power[i]:
+                    used_Pcmd_pu[i] = -max_PU_power[i]
                 else:
                     used_Pcmd_pu[i] = self.Pcmd_pu[i]
-                if self.Qcmd_pu[i] > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                    used_Qcmd_pu[i] = max_PU_power
-                elif self.Qcmd_pu[i] < -max_PU_power:
-                    used_Qcmd_pu[i] = -max_PU_power
+                if self.Qcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                    used_Qcmd_pu[i] = max_PU_power[i]
+                elif self.Qcmd_pu[i] < -max_PU_power[i]:
+                    used_Qcmd_pu[i] = -max_PU_power[i]
                 else:
                     used_Qcmd_pu[i] = self.Qcmd_pu[i]
             self.P_implemented_PU = used_Pcmd_pu
