@@ -54,6 +54,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         timesteplength = rate * numStepsPerActuation
         self.timesteplength = timesteplength
         self.stepCount = 0
+        self.pauseCount = 0
         self.numStepsPerActuation = numStepsPerActuation
         self.status = {}
 
@@ -1368,8 +1369,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V0angMat = np.asmatrix(self.VangRef)
                     printDOBCterms = 1
                     self.controller.updateDisturbance(VmagMat,VangMat,V0magMat,V0angMat,printDOBCterms)
-            else:
-                self.stepCount = 0
+            elif self.pauseCount == 0:
                 #these are used for PI controller
                 self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
                 self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
@@ -1621,7 +1621,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
                             print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                             print('SAVED Zest plots ')
-
+            elif self.pauseCount < self.numStepsPerActuation:
+                self.pauseCount += 1
+                print('PAUSECOUNT ', self.pauseCount)
+            else:
+                self.pauseCount = 0
+                self.stepCount = 0
             return self.status
 
 
