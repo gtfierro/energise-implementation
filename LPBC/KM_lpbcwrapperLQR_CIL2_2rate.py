@@ -1621,6 +1621,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
                             print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                             print('SAVED Zest plots ')
+                self.pauseCount += 1            
             elif self.pauseCount < self.numStepsPerActuation:
                 self.pauseCount += 1
                 print('PAUSECOUNT ', self.pauseCount)
