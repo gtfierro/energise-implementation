@@ -259,13 +259,13 @@ class LQRcontroller:
             self.PcommandPrev = P_implemented
             print('&&&&&&&&&&&& self.PcommandPrev', self.PcommandPrev)
         else:
-            print('&&&&&&&&&&&& P_implemented was NAN')
+            print('&&&&&&&&&&&& P_implemented was None')
         if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
             print('&&&&&&&&&&&& self.QcommandPrev', self.QcommandPrev)
         else:
-            print('&&&&&&&&&&&& Q_implemented was NAN')            
+            print('&&&&&&&&&&&& Q_implemented was None')
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement is working as intended
