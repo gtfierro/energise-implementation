@@ -1803,8 +1803,8 @@ SPBCname = 'spbc2'
 #Test Case
 #testcase = '13unb'
 #testcase = '13bal'
-testcase = '33'
-# testcase = 'PL0001'
+# testcase = '33'
+testcase = 'PL0001'
 # testcase = 'manual'
 
 acts_to_phase_dict = dict()
