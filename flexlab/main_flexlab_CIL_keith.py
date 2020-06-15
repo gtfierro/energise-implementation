@@ -63,15 +63,15 @@ functions from ORT_modbus_energise:
 
 pathname = 'sw_mat_HIL2/'
 # filename = 'HIL2_switch_matrix_13NF_bal.xlsx'
-# filename = 'HIL2_switch_matrix_13NF_bal_CILdebug.xlsx'
+filename = 'HIL2_switch_matrix_13NF_bal_CILdebug.xlsx'
 # filename = 'HIL_switch_matrix_13NF_unbal_CIL.xlsx'
 # filename = 'HIL_switch_matrix_33NF_bal_CIL.xlsx'
-filename = 'HIL_switch_matrix_PL0001_CIL.xlsx'
+# filename = 'HIL_switch_matrix_PL0001_CIL.xlsx'
 filepath = pathname+filename
 
-# test_ID = 'T3.3' # which test case you want to run
+test_ID = 'T3.3' # which test case you want to run
 # test_ID = 'T8.1'
-test_ID = 'T9.3'
+# test_ID = 'T9.3'
 sim_length_min = 50 # amount of time to record for in minutes
 # sim_length_min = 1/60
 # sim_length_min = 60

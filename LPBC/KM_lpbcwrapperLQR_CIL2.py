@@ -1677,9 +1677,9 @@ SPBCname = 'spbc-jasper-1'
 #Manual entry here to determine test case, phases, etc.
 #Test Case
 #testcase = '13unb'
-#testcase = '13bal'
+testcase = '13bal'
 # testcase = '33'
-testcase = 'PL0001'
+# testcase = 'PL0001'
 # testcase = 'manual'
 
 acts_to_phase_dict = dict()
@@ -1842,8 +1842,8 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 # Sratio divides the network kVA
 # Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
-# rate = 5
-rate = 10 #HHHERE for debugging issue with timestep 1 command
+
+rate = 10
 print('rate ', rate)
 
 lpbcdict = dict()
