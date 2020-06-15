@@ -1290,8 +1290,6 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         if phasor_target is None and self.VangTarg_relative == 'initialize':
             print('No target received from SPBC by bus ' + str(self.busId))
-            if self.pauseCount != 0:
-                self.pauseCount += 1
             return #don't need to return a status, when there isnt one to report
         else:
             if phasor_target is None:
@@ -1336,6 +1334,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if Vmeas_all_phases == 0:
                 # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
                 print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round. ~~~')
+                if self.pauseCount != 0:
+                    self.pauseCount += 1
                 return
             #these are used by the LQR controller
             self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases, nameVang='self.Vang_notRelative')

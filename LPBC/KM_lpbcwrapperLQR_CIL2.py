@@ -132,17 +132,17 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #DOBC parameters
             #The disturance observer cancels the affect of the other loads on the system (internal loop to the LQR's outer loop)
-            cancelDists = 1 #setting this to 0 turns the disturbance cancelation off
+            cancelDists = 0 #setting this to 0 turns the disturbance cancelation off
             lpAlpha = .1 # low pass filter alpha for the disturbance estimator, larger alpha changes the disturbance estimate faster but is more noise sensitive
             # lpAlpha = .5
 
             #REIE parameters
-            est_Zeffk = 0 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
+            est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
             # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
             lam = .95
             # lam = .5
-            GtInitScale = 1
-            # GtInitScale = 10
+            # GtInitScale = 1
+            GtInitScale = 10
             controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
 
             if est_Zeffk:
@@ -300,7 +300,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 0
+        self.perturbPowerCommand = 1
         self.perturbScale = .1
 
         self.AveragePhasorMeasurements = 1 # =1: Take the average phasor meas, =0: take the most recent
@@ -1447,8 +1447,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #HHHERE for debugging
             # self.Pcmd_pu = np.zeros(3)
             # self.Qcmd_pu = np.zeros(3)
-            # self.Pcmd_pu = np.ones(3)*.2
-            # self.Qcmd_pu = np.ones(3)*.2
+            self.Pcmd_pu = np.ones(3)*.2 #HHHHERE
+            self.Qcmd_pu = np.ones(3)*.2
 
             if self.perturbPowerCommand:
                 self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
