@@ -1127,7 +1127,7 @@ inverterScaling = 500/1
 loadScaling = 350
 CILscaling = 10 #in VA
 
-rate = 10
+rate = 15
 
 lpbcdict = dict()
 for lpbcCounter, key in enumerate(lpbcidx):
