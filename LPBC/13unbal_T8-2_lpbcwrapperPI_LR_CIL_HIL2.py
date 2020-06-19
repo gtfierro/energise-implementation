@@ -85,6 +85,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             
             #3.3
 # =============================================================================
+            # 13 unbal T8
             alph = 0.45
             beta = 0.35
             kp_ang = [0.0034*alph,0.0034*alph,0.0034*alph]
