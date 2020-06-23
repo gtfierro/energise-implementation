@@ -442,96 +442,88 @@ def DSS_alltimesteps(feeder,alarm):
             # JP - added Hvec calc from Kyle's code
             Iangtemp = iline.Iang_NL*np.pi/180
             Itemp = iline.Imag_NL*(np.cos(Iangtemp)+1j*np.sin(Iangtemp))
-            Lpt1 = np.asarray(np.matmul(iline.Z,Itemp)) # 3x1 loss term (L)
+            Lpt1 = np.asarray(np.matmul(iline.Z,Itemp))
 
             iline.Lpu_real = np.real(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
             iline.Lpu_imag = np.imag(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
             Htemp = np.asarray(np.matmul(iline.Z,Itemp))/(iline.kVbase_phg*1000)
-            iline.Hvec = np.multiply(Htemp,np.conj(Htemp)) # H term
+            iline.Hvec = np.multiply(Htemp,np.conj(Htemp))
                     
-        for key,iline in feeder.transdict.items():
-            # Reset NL line currents
-            iline.Imag_NL[:,ts:ts+1] = np.zeros((3,1))
-            iline.Iang_NL[:,ts:ts+1] = np.zeros((3,1))
-            
-            # Pull bus voltages out of the DSS solution
-            name = iline.name
-            
-            for ph in iline.w0_phases:
-                if ph == 'a':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'a')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    if dummyvar == -1:
-                        print(f'ERROR CALLING DSS TRANSFORMER {iline.name}_{ph}')
-                    iline.Imag_NL[0,ts] = lineIs[-1]
-                    iline.Iang_NL[0,ts] = lineIs[-2]
-
-                if ph == 'b':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'b')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    if dummyvar == -1:
-                        print(f'ERROR CALLING DSS TRANSFORMER {iline.name}_{ph}')
-                    iline.Imag_NL[1,ts] = lineIs[-1]
-                    iline.Iang_NL[1,ts] = lineIs[-2]
-
-                if ph == 'c':
-                    dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'c')
-                    lineIs = dss.CktElement.CurrentsMagAng()
-                    if dummyvar == -1:
-                        print(f'ERROR CALLING DSS TRANSFORMER {iline.name}_{ph}')
-                    iline.Imag_NL[2,ts] = lineIs[-1]
-                    iline.Iang_NL[2,ts] = lineIs[-2]
+#         for key,iline in feeder.transdict.items():
+#             # Reset NL line currents
+#             iline.Imag_NL[:,ts:ts+1] = np.zeros((3,1))
+#             iline.Iang_NL[:,ts:ts+1] = np.zeros((3,1))
+#             
+#             # Pull bus voltages out of the DSS solution
+#             name = iline.name
+#             
+#             for ph in iline.w0_phases:
+#                 if ph == 'a':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'A')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[0,ts] = lineIs[0]
+#                     iline.Iang_NL[0,ts] = lineIs[1]
+# 
+#                 if ph == 'b':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'B')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[1,ts] = lineIs[0]
+#                     iline.Iang_NL[1,ts] = lineIs[1]
+# 
+#                 if ph == 'c':
+#                     dummyvar = dss.Circuit.SetActiveElement('Transformer.' + iline.name + 'C')
+#                     lineIs = dss.CktElement.CurrentsMagAng()
+#                     iline.Imag_NL[2,ts] = lineIs[0]
+#                     iline.Iang_NL[2,ts] = lineIs[1]
 
             # JP - added Hvec calc from Kyle's code
             # TODO transformers only have Z, not Zpu
-            Iangtemp = iline.Iang_NL*np.pi/180
-            Itemp = iline.Imag_NL*(np.cos(Iangtemp)+1j*np.sin(Iangtemp))
-            Ztemp = iline.Zpu * iline.w1_node.Zbase
-            # print(f'Ztemp, {Ztemp}')
-            # print(f'Itemp, {Itemp} \n')
-            Lpt1 = np.asarray(np.matmul(Ztemp,Itemp))
+            # Iangtemp = iline.Iang_NL*np.pi/180
+            # Itemp = iline.Imag_NL*(np.cos(Iangtemp)+1j*np.sin(Iangtemp))
+            # Lpt1 = np.asarray(np.matmul(iline.Z,Itemp))
             
-            iline.Lpu_real = np.real(np.multiply(Lpt1,np.conj(Itemp)))/(iline.w1_node.kVAbase*1000)
-            iline.Lpu_imag = np.imag(np.multiply(Lpt1,np.conj(Itemp)))/(iline.w1_node.kVAbase*1000)
-            Htemp = np.asarray(np.matmul(Ztemp,Itemp))/(iline.w1_node.kVbase_phg*1000)
-            iline.Hvec = np.multiply(Htemp,np.conj(Htemp))
+            # iline.Lpu_real = np.real(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
+            # iline.Lpu_imag = np.imag(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
+            
+            # Htemp = np.asarray(np.matmul(iline.Z,Itemp))/(iline.kVbase_phg*1000)
+            # iline.Hvec = np.multiply(Htemp,np.conj(Htemp))
                     
 #         for key,iline in feeder.switchdict.items():
 #             # Reset NL line currents
 #             iline.Imag_NL[:,ts:ts+1] = np.zeros((3,1))
 #             iline.Iang_NL[:,ts:ts+1] = np.zeros((3,1))
-            
+#             
 #             # Pull bus voltages out of the DSS solution
 #             name = iline.name
-           
+#            
 #             for ph in iline.phases_from:
 #                 if ph == 'a':
 #                     dummyvar = dss.Circuit.SetActiveElement('Line.' + iline.name + 'A')
 #                     lineIs = dss.CktElement.CurrentsMagAng()
 #                     iline.Imag_NL[0,ts] = lineIs[0]
 #                     iline.Iang_NL[0,ts] = lineIs[1]
-                    
+#                     
 #                 if ph == 'b':
 #                     dummyvar = dss.Circuit.SetActiveElement('Line.' + iline.name + 'B')
 #                     lineIs = dss.CktElement.CurrentsMagAng()
 #                     iline.Imag_NL[1,ts] = lineIs[0]
 #                     iline.Iang_NL[1,ts] = lineIs[1]
-                    
+#                     
 #                 if ph == 'c':
 #                     dummyvar = dss.Circuit.SetActiveElement('Line.' + iline.name + 'C')
 #                     lineIs = dss.CktElement.CurrentsMagAng()
 #                     iline.Imag_NL[2,ts] = lineIs[0]
 #                     iline.Iang_NL[2,ts] = lineIs[1]
-# #                     
-# #             # JP - added Hvec calc from Kyle's code
+#                     
+#             # JP - added Hvec calc from Kyle's code
 #             Iangtemp = iline.Iang_NL*np.pi/180
 #             Itemp = iline.Imag_NL*(np.cos(Iangtemp)+1j*np.sin(Iangtemp))
 #             Lpt1 = np.asarray(np.matmul(iline.Z,Itemp))
-            
-#             iline.Lpu_real = np.real(np.multiply(Lpt1,np.conj(Itemp)))/(iline.to_node.kVAbase*1000)
-#             iline.Lpu_imag = np.imag(np.multiply(Lpt1,np.conj(Itemp)))/(iline.to_node.kVAbase*1000)
-            
-#             Htemp = np.asarray(np.matmul(iline.Z,Itemp))/(iline.to_node.kVbase_phg*1000)
+#             
+#             iline.Lpu_real = np.real(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
+#             iline.Lpu_imag = np.imag(np.multiply(Lpt1,np.conj(Itemp)))/(iline.kVAbase*1000)
+#             
+#             Htemp = np.asarray(np.matmul(iline.Z,Itemp))/(iline.kVbase_phg*1000)
 #             iline.Hvec = np.multiply(Htemp,np.conj(Htemp))
 
     return

@@ -221,7 +221,6 @@ def cons_realpwrbalance(feeder):
                     power_out = power_out + iedgeout.P_linopt[:,ts:ts+1]
                     losses = losses + iedgeout.Lpu_real[:,ts:ts+1]
 
-
                 actuation = np.zeros((3,1), dtype=np.complex_)
                 for iact in inode.actuators:
                     actuation = (actuation + iact.Pgen[:,ts:ts+1])
@@ -421,34 +420,28 @@ def cons_Mageq(feeder):
             Q = iline.Q_linopt[:,ts:ts+1]
             #  JP added Hvec here
             Hvec = iline.Hvec
-# =============================================================================
-#             print(f'cons_Mageq debug: {key}')
-#             #print(f'vsqsend: {Vsqsend}')
-#             print(f'M: {M[0,0]}, N: {N[0,0]}')
-#             print('')
-# =============================================================================
             
             for idx in range(0,3):
                 if iline.phasevec[idx,0] !=0:
+                    # conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q)
                     conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q + Hvec[idx,0])
                     
     # Switches
-# =============================================================================
-#     for key, iline in feeder.switchdict.items():
-#         for ts in range(0,feeder.timesteps):
-#             M = cvx_buildM(iline,ts)
-#             N = cvx_buildN(iline,ts)
-#             Vsqsend = iline.from_node.Vmagsq_linopt[:,ts:ts+1]
-#             Vsqrec = iline.to_node.Vmagsq_linopt[:,ts:ts+1]
-#             P = iline.P_linopt[:,ts:ts+1]
-#             Q = iline.Q_linopt[:,ts:ts+1]
-#             # JP added Hvec here
-#             Hvec = iline.Hvec
-#             
-#             for idx in range(0,3):
-#                 if iline.phasevec[idx,0] !=0:
-#                     conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q + Hvec[idx,0])
-# =============================================================================
+    for key, iline in feeder.switchdict.items():
+        for ts in range(0,feeder.timesteps):
+            M = cvx_buildM(iline,ts)
+            N = cvx_buildN(iline,ts)
+            Vsqsend = iline.from_node.Vmagsq_linopt[:,ts:ts+1]
+            Vsqrec = iline.to_node.Vmagsq_linopt[:,ts:ts+1]
+            P = iline.P_linopt[:,ts:ts+1]
+            Q = iline.Q_linopt[:,ts:ts+1]
+            # JP added Hvec here
+            Hvec = iline.Hvec
+            
+            for idx in range(0,3):
+                if iline.phasevec[idx,0] !=0:
+                    conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q)
+                    # conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q + Hvec[idx,0])
                     
     # Transformers
     for key, iline in feeder.transdict.items():
@@ -464,8 +457,8 @@ def cons_Mageq(feeder):
             
             for idx in range(0,3):
                 if iline.phasevec[idx,0] !=0:
+                    conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q)
                     # conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q + Hvec[idx,0])
-                    conslist.append(Vsqsend[idx,0] == Vsqrec[idx,0] + 2*M[idx,:]*P - 2*N[idx,:]*Q+ Hvec[idx,0])
     return conslist
 
 
@@ -491,8 +484,10 @@ def cons_Angeq(feeder):
 
             for idx in range(0,3):
                 if iline.phasevec[idx,0] !=0:
-                    conslist.append(Vvec[idx,0]*(np.sin(Dang[idx,0]) + np.cos(Dang[idx,0]) * (Vangsend[idx,0]-Vangrec[idx,0]-Dang[idx,0])) == -N[idx,:]*P - M[idx,:]*Q)
+                    conslist.append(Vvec[idx,0]*(np.sin(Dang[idx,0]) + np.cos(Dang[idx,0])*(Vangsend[idx,0]-Vangrec[idx,0]-Dang[idx,0])) == -N[idx,:]*P - M[idx,:]*Q)
                     # conslist.append(Vvec[idx,0]*(Vangsend[idx,0]-Vangrec[idx,0]) == -N[idx,:]*P - M[idx,:]*Q)
+
+                    # conslist.append(Vvec[idx,0]*(Dang[idx,0] - (Vangsend[idx,0]-Vangrec[idx,0])*Dang[idx,0]*Dang[idx,0]/3/2) == -N[idx,:]*P - M[idx,:]*Q)
     # Switches
     for key, iline in feeder.switchdict.items():
         for ts in range(0,feeder.timesteps):
@@ -509,6 +504,8 @@ def cons_Angeq(feeder):
                 if iline.phasevec[idx,0] !=0:
                     conslist.append(Vvec[idx,0]*(np.sin(Dang[idx,0]) + np.cos(Dang[idx,0]) * (Vangsend[idx,0]-Vangrec[idx,0]-Dang[idx,0])) == -N[idx,:]*P - M[idx,:]*Q)        
                     # conslist.append(Vvec[idx,0]*(Vangsend[idx,0]-Vangrec[idx,0]) == -N[idx,:]*P - M[idx,:]*Q)
+
+                    # conslist.append(Vvec[idx,0]*(Dang[idx,0] - (Vangsend[idx,0]-Vangrec[idx,0])*Dang[idx,0]*Dang[idx,0]/3/2) == -N[idx,:]*P - M[idx,:]*Q)
     # Transformers
     for key, iline in feeder.transdict.items():
         for ts in range(0,feeder.timesteps):
@@ -524,8 +521,11 @@ def cons_Angeq(feeder):
 
             for idx in range(0,3):
                 if iline.phasevec[idx,0] !=0:
-                    conslist.append(Vvec[idx,0]*(np.sin(Dang[idx,0]) + np.cos(Dang[idx,0]) * (Vangsend[idx,0]-Vangrec[idx,0]-Dang[idx,0])) == -N[idx,:]*P - M[idx,:]*Q)        
+                    conslist.append(Vvec[idx,0]*(np.sin(Dang[idx,0]) + np.cos(Dang[idx,0]) * (Vangsend[idx,0]-Vangrec[idx,0]-Dang[idx,0])) == -N[idx,:]*P - M[idx,:]*Q)    
                     # conslist.append(Vvec[idx,0]*(Vangsend[idx,0]-Vangrec[idx,0]) == -N[idx,:]*P - M[idx,:]*Q)
+
+                    # conslist.append(Vvec[idx,0]*(Dang[idx,0] - (Vangsend[idx,0]-Vangrec[idx,0])*Dang[idx,0]*Dang[idx,0]/3/2) == -N[idx,:]*P - M[idx,:]*Q)
+                    # conslist.append(Vvec[idx,0]*np.sin(Dang[idx,0]) == -N[idx,:]*P - M[idx,:]*Q) # Doesn't solve, no Vaang_linopt used
     return conslist
 
 

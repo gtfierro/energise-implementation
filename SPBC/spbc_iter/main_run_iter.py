@@ -54,6 +54,7 @@ def lin_optimization(myfeeder, timesteps, enable_actuators, verbose=True,eps_rel
     #  phasor target settings:
     if lam1 > 0:
         target_key = '18'
+        target_key = '675'
         # Vmag_match = [.985]*3
         # Vang_match = [0 - np.radians(1),
         #  4/3*np.pi - np.radians(1), 2/3*np.pi - np.radians(1)] 
@@ -322,49 +323,215 @@ def spbc_iter_run(timestepcur):
         mag_errors_pu.append(np.average(NLvslinear_mag))
         ang_errors.append(np.average(NLvslinear_ang))
 
-        # print("ITERATION " + str(i) + "\n\n")
-        # print("Difference between linear and nonlinear voltages\n\n")
-        # print("maximum = " + str(np.amax(NLvslinear_mag)) + "V")
-        # print("average = " + str(np.average(NLvslinear_mag)) + "V")
-        # print("\n\n")
-        # print("Difference between linear and nonlinear angles\n\n")
-        # print("maximum = " + str(np.amax(NLvslinear_ang)) + " deg")
-        # print("average = " + str(np.average(NLvslinear_ang)) + " deg")
-        # print("\n\n")
+        print("ITERATION " + str(i) + "\n\n")
+        print("Difference between linear and nonlinear voltages\n\n")
+        print("maximum = " + str(np.amax(NLvslinear_mag)) + "V")
+        print("average = " + str(np.average(NLvslinear_mag)) + "V")
+        print("\n\n")
+        print("Difference between linear and nonlinear angles\n\n")
+        print("maximum = " + str(np.amax(NLvslinear_ang)) + " deg")
+        print("average = " + str(np.average(NLvslinear_ang)) + " deg")
+        print("\n\n")
+        
+    print(mag_errors_pu)
 
-    # # plot error curves
-    # plot_subject = "Modified 13 node"
-    # # plot_subject = "14 node"
-    # plot_objective = "Phasor target 632 nominal constrained"
+    # plot error curves
+    plot_subject = "Modified 13 node"
+    # plot_subject = "14 node"
+    plot_objective = "Phasor target 632 nominal constrained"
     
-    # plt.plot(list(range(num_iterations)), mag_errors_pu)
-    # plt.xlabel("Iterations")
-    # plt.ylabel("Avg voltage magnitude error (p.u.)")
+    plt.plot(list(range(num_iterations)), mag_errors_pu)
+    plt.xlabel("Iterations")
+    plt.ylabel("Avg voltage magnitude error (p.u.)")
     # plt.title(plot_subject + " with " + plot_objective)
-    # plt.xticks(list(range(num_iterations)))
-    # plt.tight_layout()
+    plt.xticks(list(range(num_iterations)))
+    plt.tight_layout()
     # plt.savefig("plots/" + plot_subject+"_"+plot_objective+"_Vmag.png")
-    # plt.show()
+    plt.show()
 
-    # plt.plot(list(range(num_iterations)), ang_errors)
-    # plt.xlabel("Iterations")
-    # plt.ylabel("Avg voltage angle error (deg)")
+    plt.plot(list(range(num_iterations)), ang_errors)
+    plt.xlabel("Iterations")
+    plt.ylabel("Avg voltage angle error (deg)")
     # plt.title(plot_subject + " with " + plot_objective)
-    # plt.xticks(list(range(num_iterations)))
-    # plt.tight_layout()
+    plt.xticks(list(range(num_iterations)))
+    plt.tight_layout()
     # plt.savefig("plots/" + plot_subject+"_"+plot_objective+"_Vang.png")
-    # plt.show()
+    plt.show()
 
-    # plt.plot(list(range(num_iterations)), obj_vals)
-    # plt.xlabel("Iterations")
-    # plt.ylabel("Optimzation objective value")
+    plt.plot(list(range(num_iterations)), obj_vals)
+    plt.xlabel("Iterations")
+    plt.ylabel("Optimzation objective value")
     # plt.title(plot_subject + " with " + plot_objective)
-    # plt.xticks(list(range(num_iterations)))
-    # plt.tight_layout()
+    plt.xticks(list(range(num_iterations)))
+    plt.tight_layout()
     # plt.savefig("plots/" + plot_subject+"_"+plot_objective+"_obj.png")
-    # plt.show()
+    plt.show()
 
     return subkVAbase, myfeeder, Vtargdict, act_keys
+
+def plot_results():
+    tsp = 0 # select timestep for convergence plot
+
+    # DSS_alltimesteps(myfeeder,1) 
+    plot = 1 #turn plot on/off
+    if plot == 1:
+        import matplotlib.pyplot as plt
+        # Plot lin result
+        print('Linear sln')
+        ph1 = []
+        ph2 = []
+        ph3 = []
+        busls = []
+        for key, bus in myfeeder.busdict.items():
+            busls.append(key)
+            if bus.Vmagsq_linopt[0,0].value > 0:
+                ph1.append(np.sqrt(bus.Vmagsq_linopt[0,0].value))
+            else:
+                ph1.append(0)
+            if bus.Vmagsq_linopt[1,0].value > 0:
+                ph2.append(np.sqrt(bus.Vmagsq_linopt[1,0].value))
+            else:
+                ph2.append(0)
+            if bus.Vmagsq_linopt[2,0].value > 0:
+                ph3.append(np.sqrt(bus.Vmagsq_linopt[2,0].value))
+            else:
+                ph3.append(0)
+        
+        
+        plt.plot(busls, ph1,'ro', label='ph1')
+        plt.plot(busls, ph2,'go', label='ph2')
+        plt.plot(busls, ph3,'bo', label='ph3')
+        plt.ylabel('Vmag [p.u.]')
+        plt.xlabel('Node')
+        plt.ylim((0.8, 1.1))
+        plt.legend()
+        plt.show()
+        
+        print('Nonlinear sln')
+        
+        # Plot NL actuation result
+        ph1 = list()
+        ph2 = list()
+        ph3 = list()
+        for key, bus in myfeeder.busdict.items():
+            ph1.append(bus.Vmag_NL[0,0]/(bus.kVbase_phg*1000))
+            ph2.append(bus.Vmag_NL[1,0]/(bus.kVbase_phg*1000))
+            ph3.append(bus.Vmag_NL[2,0]/(bus.kVbase_phg*1000))
+        
+        plt.plot(busls, ph1,'ro', label='ph1')
+        plt.plot(busls, ph2,'go', label='ph2')
+        plt.plot(busls, ph3,'bo', label='ph3')
+        plt.ylabel('Vmag [p.u.]')
+        plt.xlabel('Node')
+        plt.ylim((0.8, 1.1))
+        #plt.ylim((0, 2))
+        plt.legend()
+        plt.show()
+        
+        print('Vang linear')
+        
+        ph1 = list()
+        ph2 = list()
+        ph3 = list()
+        for key, bus in myfeeder.busdict.items():
+            if bus.Vang_linopt[0,0].value == 0:
+                ph1.append(-10)
+            else:
+                ph1.append(bus.Vang_linopt[0,0].value)
+            if bus.Vang_linopt[1,0].value == 0:
+                ph2.append(-10)
+            else:
+                ph2.append(bus.Vang_linopt[1,0].value)
+            if bus.Vang_linopt[2,0].value == 0:
+                ph3.append(-10)
+            else:
+                ph3.append(bus.Vang_linopt[2,0].value)
+        
+        plt.plot(ph1,'ro', label='ph1')
+        plt.plot(ph2,'go', label='ph2')
+        plt.plot(ph3,'bo', label='ph3')
+        plt.ylabel('Vang [rad]')
+        plt.xlabel('Node')
+        plt.ylim((-1, 6))
+        plt.legend()
+        plt.show()
+        
+        print('Vang nonlinear')
+        
+        ph1 = list()
+        ph2 = list()
+        ph3 = list()
+        for key, bus in myfeeder.busdict.items():
+            if bus.Vang_NL[0,0] == 0:
+                ph1.append(-10)
+            else:
+                ph1.append(bus.Vang_NL[0,0]*np.pi/180)
+            if bus.Vang_NL[1,0] == 0:
+                ph2.append(-10)
+            else:
+                ph2.append((bus.Vang_NL[1,0]*-2)*np.pi/180)
+            if bus.Vang_NL[2,0] == 0:
+                ph3.append(-10)
+            else:
+                ph3.append(bus.Vang_NL[2,0]*np.pi/180)
+        
+        plt.plot(ph1,'ro', label='ph1')
+        plt.plot(ph2,'go', label='ph2')
+        plt.plot(ph3,'bo', label='ph3')
+        plt.ylabel('Vang [rad]')
+        plt.xlabel('Node')
+        plt.ylim((-1, 6))
+        plt.legend()
+        plt.show()
+        
+        #plot difference
+        
+        print('Vmag convergence')
+        ph1 = list()
+        ph2 = list()
+        ph3 = list()
+        for key, bus in myfeeder.busdict.items():
+            if np.abs(bus.Vmag_NL[0,tsp]) and bus.kVbase_phg > 0:
+                ph1.append(100*np.abs((np.sqrt(bus.Vmagsq_linopt[0,tsp].value)-bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[0,tsp]/(bus.kVbase_phg*1000))))
+            if np.abs(bus.Vmag_NL[1,tsp]) > 0:
+                ph2.append(100*np.abs((np.sqrt(bus.Vmagsq_linopt[1,tsp].value)-bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[1,tsp]/(bus.kVbase_phg*1000))))
+            if np.abs(bus.Vmag_NL[2,tsp]) > 0:
+                ph3.append(100*np.abs((np.sqrt(bus.Vmagsq_linopt[2,tsp].value)-bus.Vmag_NL[2,tsp]/(bus.kVbase_phg*1000))/(bus.Vmag_NL[2,tsp]/(bus.kVbase_phg*1000))))
+        
+        plt.plot(busls, ph1,'ro', label='ph1')
+        plt.plot(busls, ph2,'go', label='ph2')
+        plt.plot(busls, ph3,'bo', label='ph3')
+        plt.ylabel('Vmag difference [%]')
+        plt.xlabel('Node')
+        plt.ylim((-.1, 3))
+        plt.legend()
+        plt.show()
+        
+        print('Vang convergence')
+        
+        ph1 = list()
+        ph2 = list()
+        ph3 = list()
+        for key, bus in myfeeder.busdict.items():
+            # % dif
+            #ph1.append(np.abs((bus.Vang_linopt[0,0].value-bus.Vang_NL[0,0]*np.pi/180)/(bus.Vang_NL[0,0]*np.pi/180)))
+            #ph2.append(np.abs((bus.Vang_linopt[1,0].value-(bus.Vang_NL[1,0]*-2)*np.pi/180)/((bus.Vang_NL[1,0]*-2)*np.pi/180)))
+            #ph3.append(np.abs((bus.Vang_linopt[2,0].value-bus.Vang_NL[2,0]*np.pi/180)/(bus.Vang_NL[2,0]*np.pi/180)))
+            #abs dif
+            ph1.append(np.abs((bus.Vang_linopt[0,tsp].value-bus.Vang_NL[0,tsp]*np.pi/180)))
+            ph2.append(np.abs((bus.Vang_linopt[1,tsp].value-(bus.Vang_NL[1,tsp]*-2)*np.pi/180)))
+            ph3.append(np.abs((bus.Vang_linopt[2,tsp].value-bus.Vang_NL[2,tsp]*np.pi/180)))
+            
+        plt.plot(ph1,'ro', label='ph1')
+        plt.plot(ph2,'go', label='ph2')
+        plt.plot(ph3,'bo', label='ph3')
+        plt.ylabel('Vang difference [rad]')
+        plt.xlabel('Node')
+        plt.ylim((-.1, 1))
+        plt.legend()
+        plt.show()
+
+    return
 
 # SETTINGS
 
@@ -375,16 +542,16 @@ def spbc_iter_run(timestepcur):
 #  loadpath = loadfolder + "001_phasor08_IEEE13_T12-3.xlsx"
 
 'IEEE13_BALANCED'
-# filepath = "IEEE13_bal/"
-# modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
-# loadfolder = "IEEE13_bal/"
-# loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
+filepath = "IEEE13_bal/"
+modelpath = filepath + "016_GB_IEEE13_balance_reform.xlsx"
+loadfolder = "IEEE13_bal/"
+loadpath = loadfolder + "016_GB_IEEE13_balance_norm03.xlsx"
 
 'UCB33'
-filepath = "UCB33/"
-modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
-loadfolder = "UCB33/"
-loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
+# filepath = "UCB33/"
+# modelpath = filepath + "005_GB_UCB33_opal_v3.xlsx"
+# loadfolder = "UCB33/"
+# loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
 
 'PL0001_v2'
 # filepath = "PL0001_v2/"
@@ -405,14 +572,14 @@ loadpath = loadfolder + "005_GB_UCB33_time_sigBuilder_Q_13_14_norm03.xlsx"
     
 # Specify substation kV, kVA bases, and the number of timesteps in the load data
 'IEEE13'
-# subkVbase_phg = 4.16/np.sqrt(3)
-# subkVAbase = 5000.
-# timesteps = 1
+subkVbase_phg = 4.16/np.sqrt(3)
+subkVAbase = 5000.
+timesteps = 1
 
 'UCB33'
-subkVbase_phg = 12.47/np.sqrt(3)
-subkVAbase = 3000.
-timesteps = 1
+# subkVbase_phg = 12.47/np.sqrt(3)
+# subkVAbase = 3000.
+# timesteps = 1
 
 'PL0001'
 # subkVbase_phg = 12.6/np.sqrt(3)
@@ -443,11 +610,12 @@ for node in PVnodes: # this sets all nodes the same, would have to manually chan
     PVforecast[node]['maridian'] = -120
     PVforecast[node]['PVfrac'] = 0.3
 
-act_init = {'18': {'a': 707, 'b': 707, 'c': 707},
+act_init = {#'18': {'a': 707, 'b': 707, 'c': 707},
     # '652': {'a': 200, 'b': 0, 'c':0},
     # '671': {'a': 100, 'b': 0, 'c':0},
     # '692': {'a': 200, 'b': 0, 'c':0}
+    '675': {'a': 707, 'b': 707, 'c': 707}
         }
 
-# subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(0)
+subkVAbase, myfeeder, Vtargdict, act_keys = spbc_iter_run(0)
     
