@@ -121,12 +121,13 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # ki_mag = [1*beta]
 
             #9.3
-            alph = 3.5
-            beta = 5.5
+            alph = 3
+            beta = 4.5
+            lam_i = 1.2
             kp_ang = [0.048*alph, 0.048*alph, 0.048*alph]
             ki_ang = [0.028*alph, 0.028*alph, 0.028*alph]
             kp_mag = [2*beta, 2*beta, 2*beta]
-            ki_mag = [0.6*beta, 0.6*beta, 0.6*beta]
+            ki_mag = [0.6*beta*lam_i, 0.6*beta*lam_i, 0.6*beta*lam_i]
             
             self.controller = PIcontroller(nphases, kp_ang, ki_ang, kp_mag, ki_mag)
         elif self.controllerType == 'LQR':
@@ -263,7 +264,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         IP = '131.243.41.14'
         PORT = 504
         self.client = ModbusClient(IP, port=PORT)
-        self.scalingPGE = (12.6/np.sqrt(3))/2.4
+        self.scalingPGE = 12.6/4.16
 
 
 

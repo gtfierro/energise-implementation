@@ -27,8 +27,8 @@ start_hour = 11             # [INPUT HERE]
 
 dummy_ref = True            # [INPUT HERE]
 constant_phasor = True      # [INPUT HERE]
-feederID =  'UCB33'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
-testID = 'T8.2' 
+feederID =  'PL0001'        # [INPUT HERE] 13bal, 13unbal, UCB33, PL0001
+testID = 'T9.3' 
 
 if dummy_ref == True:
     print('WARNING: constant_ref ON')
