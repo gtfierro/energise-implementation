@@ -111,9 +111,9 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-        # self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
+        self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
 
-        # self.controllerInitialized = 0 # For LQR: flag to set unaive before turning on controller
+        self.controllerInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
         self.ametek_phase_shift = 0 #in degrees
         self.actType = actType
@@ -1263,7 +1263,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
             print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
             print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
-            print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
+            # print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
             print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
             print('Vang_relative bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
             print('VangRef bus ' + str(self.busId) + ' : ' + str(self.VangRef))
@@ -1412,10 +1412,12 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Gt = self.controller.Gt
                 self.controllerInitialized = 1
             else:
+                VmagTarg_pu = np.ones(self.nphases)
+                VangTarg_notRelative = np.zeros(self.nphases)
                 if self.currentMeasExists:
-                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)
@@ -1571,7 +1573,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Vmag and Vang plots ')
 
-                    if self.saveZesterrorPlot and self.controllerType == 'LQR':
+                    if self.saveZesterrorPlot:
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
