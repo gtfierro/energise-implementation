@@ -18,7 +18,7 @@ class LQRcontroller:
         self.VangTarg = np.NaN
         self.timesteplength = timesteplength
         self.currentMeasExists = currentMeasExists
-        self.iteration_counter = 0
+        self.LQR_stepcounter = 0
 
         #Controller Parameters
         self.Qcost = np.asmatrix(Qcost)
@@ -29,6 +29,7 @@ class LQRcontroller:
         self.cancelDists = cancelDists
         self.lpAlpha = lpAlpha # low pass filter alpha, larger changes disturbance faster (more noise sensitive)
         self.linearizeplant = linearizeplant
+        self.DOBCcalc_in_LQRupdate = 0
 
         #Z estimator parameters
         self.est_Zeffk = est_Zeffk #boolean
@@ -44,7 +45,7 @@ class LQRcontroller:
         self.IcompPrevExists = 0
         if Gt is None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
-            # self.Gt = np.asmatrix(np.eye(self.nphases) + np.eye(self.nphases)*1j,dtype=np.complex_)*.01 #HHERE
+            # self.Gt = np.asmatrix(np.eye(self.nphases) + np.eye(self.nphases)*1j,dtype=np.complex_)*.01 #HERE
         else:
             self.Gt = Gt
 
@@ -67,15 +68,15 @@ class LQRcontroller:
 ####################################################
 
     def setV0(self,V0mag,V0ang):
-        self.V0mag = V0mag
-        self.V0ang = V0ang
-        self.V0 = np.hstack((V0mag,V0ang))
+        self.V0mag = np.asmatrix(V0mag)
+        self.V0ang = np.asmatrix(V0ang)
+        self.V0 = np.asmatrix(np.hstack((V0mag,V0ang)))
         return
 
 
     def setVtarget(self,VmagTarg,VangTarg):
-        self.VmagTarg = VmagTarg
-        self.VangTarg = VangTarg
+        self.VmagTarg = np.asmatrix(VmagTarg)
+        self.VangTarg = np.asmatrix(VangTarg)
         return
 
 
@@ -152,7 +153,7 @@ class LQRcontroller:
             # u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
         else:
             u_d_eff = self.pfEqns3phase(Vmag,Vang,self.Zeffkest)
-        # if self.iteration_counter != 1: #iteration_counter is 1 in the first call
+        # if self.LQR_stepcounter != 1: #LQR_stepcounter is 1 in the first call
         if self.distInitialized == 1:
             dm = u_d_eff - self.u
             self.d_est = (1-self.lpAlpha)*self.d_est + self.lpAlpha*dm
@@ -237,6 +238,24 @@ class LQRcontroller:
             self.Gt = self.Gt
         return self.Zeffkest, self.Gt
 
+
+    def setu(self,P_implemented,Q_implemented):
+        if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
+            self.u[0,:self.nphases] = P_implemented
+            self.PcommandPrev = P_implemented
+            print('&&&&&&&&&&&& self.PcommandPrev', self.PcommandPrev)
+        else:
+            print('&&&&&&&&&&&& P_implemented was None')
+        if Q_implemented is not None:
+            self.u[0,self.nphases:] = Q_implemented
+            self.QcommandPrev = Q_implemented
+            print('&&&&&&&&&&&& self.QcommandPrev', self.QcommandPrev)
+        else:
+            print('&&&&&&&&&&&& Q_implemented was None')
+        return
+
+
+
     '''
     Vcomp calc (needs to be base [0,0,0], and therefore ~[0,-120,120])
     state: diff bn V and Vtarg
@@ -268,11 +287,11 @@ class LQRcontroller:
             print('&&&&&&&&&&&& Q_implemented was None')
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
-        if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement is working as intended
+        if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement working as intended
             print('&&&&&&&&&&&& u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
             print('&&&&&&&&&&&& u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
 
-        self.iteration_counter += 1
+        # self.LQR_stepcounter += 1
         if sat_arrayP is None:
             sat_arrayP = np.ones(self.nphases)
         if sat_arrayQ is None:
@@ -319,7 +338,7 @@ class LQRcontroller:
                 self.IcompPrevExists = 0
 
         #update controller feedback matrix
-        if self.est_Zeffk == 1 and np.mod(self.iteration_counter-1,self.controllerUpdateCadence) == 0:
+        if self.est_Zeffk == 1 and np.mod(self.LQR_stepcounter-1,self.controllerUpdateCadence) == 0:
             self.B, self.Babbrev  = self.getB(self.Zeffkest)
             self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
 
@@ -331,7 +350,11 @@ class LQRcontroller:
 
         #DOBC
         if self.cancelDists:
-            self.d_est = self.updateDisturbance(Vmag,Vang,V0mag,V0ang,printDOBCterms)
+            if self.DOBCcalc_in_LQRupdate:
+                self.d_est = self.updateDisturbance(Vmag,Vang,V0mag,V0ang,printDOBCterms)
+            else:
+                if printDOBCterms:
+                    print('Not updating self.d_est in LQR step bc DOBCcalc_in_LQRupdate = 0')
 
         #Feedback Control input for next round
         if self.linearizeplant:

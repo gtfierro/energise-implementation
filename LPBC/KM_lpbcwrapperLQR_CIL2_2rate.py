@@ -23,7 +23,8 @@ from PIcontroller import *
 from LQRcontroller import *
 
 
-#HHERE check measurements and commands align with below
+#HHHERE 6/20/20 need to transfer teh initialization code to the HIL code, once I know it works
+
 '''
 Flexlab comands and measurements:
 PMU measures positive INTO the battery for both P and Q (inverter looks like an inductor for positive Q measurent)
@@ -161,6 +162,8 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
         else:
             error('error in controller type')
+
+        self.controllerInitialized = 0 # For LQR: flag to set unaive before turning on controller
 
         self.ametek_phase_shift = 0 #in degrees
         self.actType = actType
@@ -378,6 +381,18 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     (Still deciding whether the arbitrary is the first phase for a given controller. Could make it always phase A, but reference_phasors would always have to contain phase A.)
     V_ang_ref_firstPhase is special because it is chosen as angle = 0, and subtracted (sometimes implicitly) from all other angles.
     self.Vang_notRelative is named poorly (by me), just means that V_ang_ref_firstPhase is subtracted, rather than V_ang_ref[phase], so the angles will be relative to [0,0,0] rather than [0,-120,120]
+    '''
+    '''
+    HERE
+    create buffers for local and ref phasor measurements that have n_buffer measurements in them:
+    self.ref_local_buffer
+    each time a new meas comes in, you delete the oldest phasor measurements from the buffer and put in the newest phasor measurements
+    for each new local measurement, you check all the meassurements in self.ref_local_buffer, rather than just in ref_local.
+    Actually, it should be the other way around bc the ref measurements are the ones that are going to be delayed. So instead there should be:
+    self.ordered_local_buffer
+    Each time a ref measurement comes in, all of the measurements in self.ordered_local_buffer are checked for time-matches
+    (This will require switchign the order of the for loops in phasorV_calc)
+    (Same would have to be implemented in PhasorIcalc)
     '''
     def phasorV_calc(self, local_phasors, reference_phasors, nphases, plug_to_V_idx):
         # Initialize
@@ -1257,6 +1272,12 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         return log_actuation
 
     #step gets called every (rate) seconds starting with init in LPBCProcess within do_trigger/trigger/call_periodic (XBOSProcess) with:
+    '''
+    LPBC process has call_periodic built in, which runs the step function every self.rate seconds.
+    The second and third inputs (local and ref phasors) of step (within lpbc wrapper) are C37 frames.
+    https://github.com/gtfierro/xboswave/blob/master/python/examples/energise/lpbc.py
+    (example code is missing reference phasors)
+    '''
     #status = self.step(local_phasors, reference_phasors, phasor_targets)
     def step(self, local_phasors, reference_phasors, phasor_target): #HERE what happens when no PMU readings are given (Gabe), maybe step wont be called
         '''
@@ -1358,7 +1379,11 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
             Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_notRelative) + self.Vmag_pu*np.sin(self.Vang_notRelative)*1j
 
-            if self.stepCount < self.numStepsPerActuation:
+            #these are used for PI controller
+            self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
+            self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
+
+            if self.stepCount < self.numStepsPerActuation and self.controllerInitialized == 1:
                 self.stepCount += 1
                 if self.controllerType == 'LQR':
                     VmagMat = np.asmatrix(self.Vmag_pu) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
@@ -1371,86 +1396,120 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         V0angMat = np.asmatrix(self.VangRef)
                     printDOBCterms = 1
                     self.controller.updateDisturbance(VmagMat,VangMat,V0magMat,V0angMat,printDOBCterms)
-            elif self.pauseCount == 0:
-                #these are used for PI controller
-                self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
-                self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
+            elif self.pauseCount == 0: # self.pauseCount == 0 when a command hasnt been given yet
+                if self.controllerType == 'LQR' and self.controllerInitialized == 0:
+                    self.controller.setV0(self.VmagRef,self.VangRef)
+                    u_naive_t0 = self.controller.calc_u_naive(self.VmagTarg_relative_pu,self.VangTarg_relative)
+                    u_naive_t0_Pinj = np.asarray(u_naive_t0[0,0:nphases])[0]
+                    u_naive_t0_Qinj = np.asarray(u_naive_t0[0,nphases:2*nphases])[0]
+                    print('u_naive_t0_Pinj ', u_naive_t0_Pinj)
+                    print('u_naive_t0_Qinj ', u_naive_t0_Qinj)
 
-                #get current measurements, determine saturation if current measurements exist
-                if self.currentMeasExists:
-                    if len(local_phasors) >= self.nphases*2:
-                        if self.controllerType == 'LQR':
-                            if self.AveragePhasorMeasurements:
-                                self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-                                self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
-                                #HERE havent checked that the current measurements are legit yet
-                                self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
-                                #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
-                                self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
-                            else:
-                                #check if V_ang_ref_firstPhase and time_indexes exist
-                                if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
-                                    print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
-                                    self.Icomp_pu = [np.NaN]*self.nphases
-                                else:
-                                    self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                    if self.cancelDists == 1:
+                        VmagMat = np.asmatrix(self.Vmag_pu) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
+                        V0magMat = np.asmatrix(self.VmagRef_pu)
+                        if self.useRelativeMeas:
+                            VangMat = np.asmatrix(self.Vang_relative)
+                            V0angMat = np.asmatrix(np.zeros(self.nphases)) #havent checked this
+                        else:
+                            VangMat = np.asmatrix(self.Vang_notRelative)
+                            V0angMat = np.asmatrix(self.VangRef)
+                        printDOBCterms = 1
+                        d_est_t0 = self.controller.updateDisturbance(VmagMat,VangMat,V0magMat,V0angMat,printDOBCterms)
+                        d_est_Pinj = np.asarray(d_est_t0[0,0:nphases])[0]
+                        d_est_Qinj = np.asarray(d_est_t0[0,nphases:2*nphases])[0]
+                        print('d_est_Pinj: ', d_est_Pinj)
+                        print('d_est_Qinj: ', d_est_Qinj)
+
+                        #implement unaive power command and cancel disturbance
+                        self.Pcmd_pu = (u_naive_t0_Pinj - d_est_Pinj)
+                        self.Qcmd_pu = (u_naive_t0_Qinj - d_est_Qinj)
+                    else:
+                        #implement just unaive power command
+                        self.Pcmd_pu = u_naive_t0_Pinj
+                        self.Qcmd_pu = u_naive_t0_Qinj
+
+                    #setu got moved below
+
+                    Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
+                    Gt = self.controller.Gt
+                    self.controllerInitialized = 1
+                else:
+                    #get current measurements, determine saturation if current measurements exist
+                    if self.currentMeasExists:
+                        if len(local_phasors) >= self.nphases*2:
+                            if self.controllerType == 'LQR':
+                                if self.AveragePhasorMeasurements:
+                                    self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                                     self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
                                     #HERE havent checked that the current measurements are legit yet
                                     self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
                                     #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
                                     self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
-                        # calculate P/Q from actuators
-                        (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
-                        self.Pact_pu = self.Pact / self.localkVAbase
-                        self.Qact_pu = self.Qact / self.localkVAbase
+                                else:
+                                    #check if V_ang_ref_firstPhase and time_indexes exist
+                                    if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
+                                        print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
+                                        self.Icomp_pu = [np.NaN]*self.nphases
+                                    else:
+                                        self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
+                                        self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
+                                        #HERE havent checked that the current measurements are legit yet
+                                        self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
+                                        #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
+                                        self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
+                            # calculate P/Q from actuators
+                            (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
+                            self.Pact_pu = self.Pact / self.localkVAbase
+                            self.Qact_pu = self.Qact / self.localkVAbase
 
-                        self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-                    else:
-                        print('WARNING: self.currentMeasExists set to 1, but no/not enough current measurements given')
-                        self.Icomp_pu = [np.NaN]*self.nphases
-                else:
-                    self.Icomp_pu = [np.NaN]*self.nphases
-                    #havent built checkSaturationWoImeas yet
-                    self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
-
-                #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-                (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
-
-                #run control loop
-                #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-                #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-                print('self.sat_arrayP ' + str(self.sat_arrayP))
-                print('self.sat_arrayQ ' + str(self.sat_arrayQ))
-                if self.controllerType == 'PI':
-                    if any(np.isnan(self.phasor_error_mag_pu)) or any(np.isnan(self.phasor_error_ang)):
-                        print('GOT A NAN ERROR, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-                        controlStepTaken = 0
-                    else:
-                        controlStepTaken = 1
-                        (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-                elif self.controllerType == 'LQR':
-                    #below lines could use self.Vang_relative and self.VangTarg_relative instead, if controller is being run with relative measurements
-                    if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
-                        print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-                        controlStepTaken = 0
-                    elif any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)):
-                        print('GOT A NAN TARG, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-                        controlStepTaken = 0
-                    else:
-                        controlStepTaken = 1
-                        if self.currentMeasExists:
-                            if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-                                # need self.linearizeplant = 1 within LQR eqns, which is the default I think
-                                fakeVangRef = np.zeros(self.nphases)
-                                self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-                            else:
-                                self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                            self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
                         else:
-                            if self.useRelativeMeas:
-                                fakeVangRef = np.zeros(self.nphases)
-                                self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                            print('WARNING: self.currentMeasExists set to 1, but no/not enough current measurements given')
+                            self.Icomp_pu = [np.NaN]*self.nphases
+                    else:
+                        self.Icomp_pu = [np.NaN]*self.nphases
+                        #havent built checkSaturationWoImeas yet
+                        self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
+
+                    #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
+                    (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
+
+                    #run control loop
+                    #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
+                    #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
+                    print('self.sat_arrayP ' + str(self.sat_arrayP))
+                    print('self.sat_arrayQ ' + str(self.sat_arrayQ))
+                    if self.controllerType == 'PI':
+                        if any(np.isnan(self.phasor_error_mag_pu)) or any(np.isnan(self.phasor_error_ang)):
+                            print('GOT A NAN ERROR, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                            controlStepTaken = 0
+                        else:
+                            controlStepTaken = 1
+                            (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
+                    elif self.controllerType == 'LQR':
+                        #below lines could use self.Vang_relative and self.VangTarg_relative instead, if controller is being run with relative measurements
+                        if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
+                            print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                            controlStepTaken = 0
+                        elif any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)):
+                            print('GOT A NAN TARG, USING P AND Q COMMANDS FROM PREVIOUS STEP')
+                            controlStepTaken = 0
+                        else:
+                            controlStepTaken = 1
+                            if self.currentMeasExists:
+                                if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
+                                    # need self.linearizeplant = 1 within LQR eqns, which is the default I think
+                                    fakeVangRef = np.zeros(self.nphases)
+                                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                                else:
+                                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                             else:
-                                self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                                if self.useRelativeMeas:
+                                    fakeVangRef = np.zeros(self.nphases)
+                                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
+                                else:
+                                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
 
                 print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
                 print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
@@ -1514,26 +1573,32 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 else:
                     error('actType error')
 
-                # #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
-                # max_PU_power = self.ORT_max_VA/1000/self.network_kVAbase #HHERE
-                # if self.Pcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                #     used_Pcmd_pu = max_PU_power
-                # elif self.Pcmd_pu < -max_PU_power:
-                #     used_Pcmd_pu = -max_PU_power
-                # else:
-                #     used_Pcmd_pu = self.Pcmd_pu
-                # if self.Qcmd_pu > max_PU_power: # P and Q commands get compared with max_kVA indepenedently
-                #     used_Qcmd_pu = max_PU_power
-                # elif self.Qcmd_pu < -max_PU_power:
-                #     used_Qcmd_pu = -max_PU_power
-                # else:
-                #     used_Qcmd_pu = self.Qcmd_pu
-                # self.P_implemented_PU = used_Pcmd_pu
-                # self.Q_implemented_PU = used_Qcmd_pu
+                #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
+                used_Pcmd_pu = np.zeros(self.nphases)
+                used_Qcmd_pu = np.zeros(self.nphases)
+                for i in np.arange(nphases):
+                    if self.Pcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                        used_Pcmd_pu[i] = max_PU_power[i]
+                    elif self.Pcmd_pu[i] < -max_PU_power[i]:
+                        used_Pcmd_pu[i] = -max_PU_power[i]
+                    else:
+                        used_Pcmd_pu[i] = self.Pcmd_pu[i]
+                    if self.Qcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
+                        used_Qcmd_pu[i] = max_PU_power[i]
+                    elif self.Qcmd_pu[i] < -max_PU_power[i]:
+                        used_Qcmd_pu[i] = -max_PU_power[i]
+                    else:
+                        used_Qcmd_pu[i] = self.Qcmd_pu[i]
+                self.P_implemented_PU = used_Pcmd_pu
+                self.Q_implemented_PU = used_Qcmd_pu
                 print('self.P_implemented_PU ', self.P_implemented_PU)
                 print('self.Q_implemented_PU ', self.Q_implemented_PU)
                 #HERE self.P_implemented_PU could be self.Pact_PU, but self.Pact_PU requires a PMU current meas, so have to use an if statement to set self.P_implemented_PU with P_act
                 #(could get rid of self.P_implemented_PU and just keep self.Pact_PU)
+
+                #HHERE This may make passing the LQR P_implemented in LQRupdate, and even saving self.P_implemented in the warpper, redundant
+                if self.controllerType == 'LQR':
+                    self.controller.setu(self.P_implemented_PU, self.Q_implemented_PU) #record that a u command was implemented
 
                 self.Pact_kVA = self.Pact
                 self.Qact_kVA = self.Qact
@@ -1947,11 +2012,30 @@ Configuration:
 
 
 '''
-my note of how Gabe's code works:
+my note of how Gabe's lpbcprocess and xbosprocess code works:
 lpbcwrapper is an LPBCProcess which is an XBOSProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/process.py
-Which has a function call_periodic which calls trigger
+Which uses the asyncio python library and has a function call_periodic which calls trigger
 LPBCprocess has trigger which calls do_trigger which calls step with local_phasors, reference_phasors and phasor_targets
-Program runs until program is closed in terminal by the user (so it will keep trying to send comands after the simulation ends)
+Program runs until program is closed in terminal by the user (so it will keep trying to send commands after the simulation ends)
+
+LPBC process
+built in:
+Subscribing to reference PMU and local PMU (Local PMU shouldnt be a subscription, it should be locally available HERE)
+Subscribing to SPBC target
+call_periodic, which runs the step function every self.rate seconds.
+The second and third inputs (local and ref phasors) of step (within lpbc wrapper) are C37 frames
+https://github.com/gtfierro/xboswave/blob/master/python/examples/energise/lpbc.py
+(example code is missing reference phasors)
+
+SPBC process
+Built-in:
+Subscribing to reference PMU (should listen to all PMUs HERE)
+Subscribing to LPBC Statuses
+Add-on:
+call_periodic. does not have call periodic built in so if you would like the SPBC to send out new targets periodically, you need to include call_periodic in the instantiation.
+https://github.com/gtfierro/xboswave/blob/master/python/examples/energise/spbc.py
+
+subscribe_message is called every time a (subscribed) message arrives at the protobuf stub (client) using the Subscribe function that is automatically built in the grpc code which is generated by (Google’s) protobuf.
 
 
 from: https://github.com/Leocchu/energise-implementation/blob/master/LPBC/lpbc.txt

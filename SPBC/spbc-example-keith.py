@@ -46,7 +46,7 @@ if constant_phasor == True:
     #cons_Vang = [0-1,-120-1,120-1] # [INPUT HERE]
     cons_Vang = [0 - 3, -120 - 3, 120 - 3]
     # FOR T12 - all angles should be the same value since all on phase A.
-    cons_Vang = [0 - 3, -120 - 3, 120 - 3]
+    # cons_Vang = [0 - 3, -120 - 3, 120 - 3]
 
     ICDI_toggle = False
     varying_targ_toggle = False
