@@ -1201,42 +1201,43 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.iterstart = pytime.time()
 
 
-        if phasor_target is None and self.VangTarg_relative == 'initialize':
-            print('No target received from SPBC by bus ' + str(self.busId))
-            return #don't need to return a status, when there isnt one to report
-        else:
-            if phasor_target is None:
-                print('No target received by SPBC: Using last received target ' + str(self.busId))
-            else:
-                #get targets and bases from phasor_target, sent by the SPBC
-                #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
-                #VmagTarg is given as VmagTarg_relative_pu from the SPBC
-                #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
-                #and apparently the relative voltages come in pu
+        # if phasor_target is None and self.VangTarg_relative == 'initialize':
+        #     print('No target received from SPBC by bus ' + str(self.busId))
+        #     return #don't need to return a status, when there isnt one to report
+        # else:
+        #     if phasor_target is None:
+        #         print('No target received by SPBC: Using last received target ' + str(self.busId))
+        #     else:
+        #         #get targets and bases from phasor_target, sent by the SPBC
+        #         #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
+        #         #VmagTarg is given as VmagTarg_relative_pu from the SPBC
+        #         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
+        #         #and apparently the relative voltages come in pu
+        #
+        #         # (self.VmagTarg_relative_pu, self.VangTarg_relative, self.kVbase, self.network_kVAbase, self.status_phases) = self.targetExtraction(phasor_target)
+        #         # print('VmagTarg_relative_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_relative_pu))
+        #         # print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
 
-                # (self.VmagTarg_relative_pu, self.VangTarg_relative, self.kVbase, self.network_kVAbase, self.status_phases) = self.targetExtraction(phasor_target)
-                # print('VmagTarg_relative_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_relative_pu))
-                # print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
+        if True:
+            print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
+            print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
+            # print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
+            # print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
+            self.kVbase  = np.asarray(self.kVbase)
+            self.network_kVAbase = np.asarray(self.network_kVAbase)
+            #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
+            self.localkVbase = self.kVbase/self.localVratio
+            self.localkVAbase = self.network_kVAbase/self.localSratio #self.localkVAbase takes into account self.localSratio here
+            self.localIbase = self.localkVAbase/self.localkVbase
+            print('self.localSratio : ' + str(self.localSratio))
+            print('self.localkVAbase : ' + str(self.localkVAbase))
+            print('self.localkVbase : ' + str(self.localkVbase))
 
-                print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
-                print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
-                # print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
-                print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
-                self.kVbase  = np.asarray(self.kVbase)
-                self.network_kVAbase = np.asarray(self.network_kVAbase)
-                #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
-                self.localkVbase = self.kVbase/self.localVratio
-                self.localkVAbase = self.network_kVAbase/self.localSratio #self.localkVAbase takes into account self.localSratio here
-                self.localIbase = self.localkVAbase/self.localkVbase
-                print('self.localSratio : ' + str(self.localSratio))
-                print('self.localkVAbase : ' + str(self.localkVAbase))
-                print('self.localkVbase : ' + str(self.localkVbase))
-
-                if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
-                    Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
-                    print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
-                    Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
-                    self.ZeffkestinitHasNotBeenInitialized = 0
+            if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
+                Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
+                print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
+                Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
+                self.ZeffkestinitHasNotBeenInitialized = 0
 
             # calculate relative voltage phasor
             #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
