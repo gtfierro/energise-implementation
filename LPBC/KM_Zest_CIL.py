@@ -20,7 +20,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 # from PIcontroller import *
-# from LQRcontroller import *
+from LQRcontroller import *
 
 #HHHERE 6/20/20 need to transfer teh initialization code to the HIL code, once I know it works
 
