@@ -37,7 +37,7 @@ class LQRcontroller:
         self.dtItThreshold = 1e-4 # 1e-3 #could pass these thresholds in when you make the controller
         self.dtVtThreshold = 1e-4 # 1e-3
         self.powerThresholdForIcompEst = 1e-4 # 1e-3 #this is different than self.dtItThreshold. Idea is to prevent noisy Icom estiamtes when there isnt an S command. Downside is that you lose a useful measurement when S command goes to zero from a nonzero value. Could fix that case with an if statement, though.
-        if ZeffkinitInPU:
+        if ZeffkinitInPU: #HERE not sure about ZeffkinitInPU
             self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
             self.Zeffkest = np.asmatrix(Zeffkinit)
         else: #waits for setZeffandZeffkestinitWnewZbase to be called to set self.Zeffkestinit and self.Zeffkest

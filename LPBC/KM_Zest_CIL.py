@@ -20,7 +20,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 
 # from PIcontroller import *
-from LQRcontroller import *
+# from LQRcontroller import *
+from Zestimator import *
 
 #HHHERE 6/20/20 need to transfer teh initialization code to the HIL code, once I know it works
 
@@ -96,6 +97,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
 
         #REIE parameters
+        useRefNode = False
+        useNominalV = True
         est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
         # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
         lam = .95
@@ -111,7 +114,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-        self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
+        # self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
+        self.controller = Zestimator(busId,nphases,Zeffkinit,useRefNode,useNominalV,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
 
         self.controllerInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
@@ -1415,9 +1419,12 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 VmagTarg_pu = np.ones(self.nphases)
                 VangTarg_notRelative = np.zeros(self.nphases)
                 if self.currentMeasExists:
-                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    #here not sure why Vcomp is given
+                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.ZeffandLinUpdate(self.Vmag_pu, self.Vang_notRelative, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=VmagRef_pu, V0angArray=VangRef_pu, freq=None, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    # self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 else:
-                    self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.ZeffandLinUpdate(self.Vmag_pu, self.Vang_notRelative, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=VmagRef_pu, V0angArray=VangRef_pu, freq=None, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu)
+                    # self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)
