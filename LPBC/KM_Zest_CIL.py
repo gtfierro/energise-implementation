@@ -115,7 +115,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
         # self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
-        self.controller = Zestimator(busId,nphases,Zeffkinit,useRefNode,useNominalV,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
+        self.controller = Zestimator(busId,nphases,Zeffk_init,useRefNode,useNominalV,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
 
         self.controllerInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
