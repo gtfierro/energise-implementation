@@ -14,7 +14,7 @@ class Zestimator:
         self.V0 = np.NaN #np.hstack((self.V0mag,self.V0ang))
         self.VmagTarg = np.NaN
         self.VangTarg = np.NaN
-        self.timesteplength = timesteplength
+        # self.timesteplength = timesteplength
         self.currentMeasExists = currentMeasExists
         self.LQR_stepcounter = 0
 
