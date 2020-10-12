@@ -328,7 +328,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     VmagCount[phase] += 1
 
                 Vangi = local_packet['angle']
-                Vfreqi = local_packet['frequency']
+                Vfreqi = local_packet['freq']
                 if VangPrev[phase] is None:
                     print(f'VangPrev[{phase}] was None')
                     VangPrev[phase] = Vangi
