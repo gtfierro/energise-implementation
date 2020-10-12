@@ -1231,19 +1231,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
 
-        nphases = len(Vang)
-        if nphases == 1:
-            while abs(Vang_wrap) > np.radians(max_degrees):
-                if Vang_wrap > 0:
-                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                    Vang_wrap = Vang_wrap - np.radians(360.)
-                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
-                elif Vang_wrap < 0:
-                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                    Vang_wrap = Vang_wrap + np.radians(360.)
-                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
-            return Vang_wrap
-        else:
+        if isinstance(Vang, list):
+            nphases = len(Vang)
             for phase in range(nphases):
                 # if abs(Vang[phase]) > np.radians(max_degrees):
                 #     if Vang[phase] > 0:
@@ -1267,6 +1256,19 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
                         print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
                         # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+        elif isinstance(Vang, float):
+            while abs(Vang_wrap) > np.radians(max_degrees):
+                if Vang_wrap > 0:
+                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap = Vang_wrap - np.radians(360.)
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+                elif Vang_wrap < 0:
+                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap = Vang_wrap + np.radians(360.)
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+            return Vang_wrap
+        else:
+            print('ERROR Vang not list or float')
         return Vang_wrap
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
