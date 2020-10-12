@@ -175,7 +175,7 @@ class Zestimator:
         return Vang_wrap
 
 
-    def getLinWRef(self, Zeffkest, Vcomp, V0magArray, V0angArray):
+    def getLinWRef(self, Zeffk, Vcomp, V0magArray, V0angArray):
     # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
 
         assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
