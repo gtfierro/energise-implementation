@@ -329,8 +329,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                 Vangi = local_packet['angle']
                 Vfreqi = local_packet['freq']
-                print('&&&&&&&&&&phase ', phase)
-                print('&&&&&&&&&&&VangPrev[phase] ', VangPrev[phase])
                 if VangPrev[phase] is None:
                     print(f'VangPrev[{phase}] was None')
                     VangPrev[phase] = Vangi
@@ -339,10 +337,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     deltaVangCount += 1
                     deltaVangi_freqCompensation = (Vfreqi/self.nomFreq - 1)*2*np.pi/(self.measurementFreq/self.nomFreq)
                     deltaVangi_compensated = Vangi - deltaVangi_freqCompensation - VangPrev[phase] #HEREE
-                    deltaVangi_compensated = self.PhasorV_ang_wraparound(deltaVangi_compensated, self.nphases, nameVang='deltaVangi_compensated')
+                    deltaVangi_compensated = self.PhasorV_ang_wraparound(deltaVangi_compensated, nphases=1, nameVang='deltaVangi_compensated')
                     deltaVang_compensated_Sum[phase] += deltaVangi_compensated
                     deltaVangi_uncompensated = Vangi - VangPrev[phase]
-                    deltaVangi_uncompensated = self.PhasorV_ang_wraparound(deltaVangi_uncompensated, self.nphases, nameVang='deltaVangi_uncompensated')
+                    deltaVangi_uncompensated = self.PhasorV_ang_wraparound(deltaVangi_uncompensated, nphases=1, nameVang='deltaVangi_uncompensated')
                     deltaVang_uncompensated_Sum[phase] += deltaVangi_uncompensated
                     flag[phase] = 0
 
@@ -1206,55 +1204,69 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     #     status['q_max'] = list(Qmax_pu.ravel())
     #     return(status)
 
-    def PhasorV_ang_wraparound_1d(self, Vang):
-        # brings angles to less than +/- max_degrees
-        # max_degrees = 300.
-        max_degrees = 180. #this will bring angles to within +/- 180 degrees
-        Vang_wrap = Vang
-        # if abs(Vang) > np.radians(max_degrees):
-        #     if Vang > 0:
-        #         Vang_wrap = Vang - np.radians(360.)
-        #     elif Vang < 0:
-        #         Vang_wrap = Vang + np.radians(360.)
-        while abs(Vang_wrap) > np.radians(max_degrees):
-            if Vang_wrap > 0:
-                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                Vang_wrap = Vang_wrap - np.radians(360.)
-                print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
-            elif Vang_wrap < 0:
-                # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                Vang_wrap = Vang_wrap + np.radians(360.)
-                print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
-        return Vang_wrap
+    # def PhasorV_ang_wraparound_1d(self, Vang):
+    #     # brings angles to less than +/- max_degrees
+    #     # max_degrees = 300.
+    #     max_degrees = 180. #this will bring angles to within +/- 180 degrees
+    #     Vang_wrap = Vang
+    #     # if abs(Vang) > np.radians(max_degrees):
+    #     #     if Vang > 0:
+    #     #         Vang_wrap = Vang - np.radians(360.)
+    #     #     elif Vang < 0:
+    #     #         Vang_wrap = Vang + np.radians(360.)
+    #     while abs(Vang_wrap) > np.radians(max_degrees):
+    #         if Vang_wrap > 0:
+    #             # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+    #             Vang_wrap = Vang_wrap - np.radians(360.)
+    #             print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+    #         elif Vang_wrap < 0:
+    #             # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+    #             Vang_wrap = Vang_wrap + np.radians(360.)
+    #             print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+    #     return Vang_wrap
 
-    def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
+    def PhasorV_ang_wraparound(self, Vang, nphases=None, nameVang='(notgiven)'):
         # brings angles to less than +/- max_degrees
         # max_degrees = 300.
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
-        for phase in range(nphases):
-            # if abs(Vang[phase]) > np.radians(max_degrees):
-            #     if Vang[phase] > 0:
-            #         print(f'Vang[{phase}] = {Vang[phase]}')
-            #         Vang_wrap[phase] = Vang[phase] - np.radians(360.)
-            #         print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-            #         # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-            #     elif Vang[phase] < 0:
-            #         print(f'Vang[{phase}] = {Vang[phase]}')
-            #         Vang_wrap[phase] = Vang[phase] + np.radians(360.)
-            #         print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-            #         # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-            while abs(Vang_wrap[phase]) > np.radians(max_degrees):
-                if Vang_wrap[phase] > 0:
-                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                    Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
-                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                    # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
-                elif Vang_wrap[phase] < 0:
-                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
-                    Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
-                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
-                    # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+
+        nphases = len(Vang)
+        if nphases == 1:
+            while abs(Vang_wrap) > np.radians(max_degrees):
+                if Vang_wrap > 0:
+                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap = Vang_wrap - np.radians(360.)
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+                elif Vang_wrap < 0:
+                    # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap = Vang_wrap + np.radians(360.)
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+            return Vang_wrap
+        else:
+            for phase in range(nphases):
+                # if abs(Vang[phase]) > np.radians(max_degrees):
+                #     if Vang[phase] > 0:
+                #         print(f'Vang[{phase}] = {Vang[phase]}')
+                #         Vang_wrap[phase] = Vang[phase] - np.radians(360.)
+                #         print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                #         # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                #     elif Vang[phase] < 0:
+                #         print(f'Vang[{phase}] = {Vang[phase]}')
+                #         Vang_wrap[phase] = Vang[phase] + np.radians(360.)
+                #         print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                #         # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                while abs(Vang_wrap[phase]) > np.radians(max_degrees):
+                    if Vang_wrap[phase] > 0:
+                        print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                        Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
+                        print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                        # print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
+                    elif Vang_wrap[phase] < 0:
+                        print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                        Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
+                        print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                        # print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap[phase]}')
         return Vang_wrap
 
     def save_actuation_data(self, phases, P_cmd, Q_cmd, P_act, Q_act, P_PV, Batt_cmd, pf_ctrl):
