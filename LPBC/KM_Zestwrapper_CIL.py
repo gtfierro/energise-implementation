@@ -1427,7 +1427,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #     Zeffkest, Gt = self.controller.ZeffUpdateWoRef(self.Vmag_pu, self.Vang_with120degshifts, self.P_implemented_PU, self.Q_implemented_PU, self.freq, self.sat_arrayP, self.sat_arrayQ, Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                     # else:
                     Zeffkest, Gt = self.controller.ZeffUpdate(Vcomp_fict_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                Babbrev = self.controller.getLinWoRef(self, Zeffkest, self.Vmag_pu, self.P_implemented_PU, self.Q_implemented_PU)
+                Babbrev = self.controller.getLinWoRef(Zeffkest)
+                # Babbrev = self.controller.getLinWoRef(Zeffkest, self.Vmag_pu, self.P_implemented_PU, self.Q_implemented_PU)
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)

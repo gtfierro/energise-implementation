@@ -175,13 +175,8 @@ class Zestimator:
         return Vang_wrap
 
 
-    def getLinWRef(self, Zeffk, Vcomp, V0magArray, V0angArray):
+    def getLinWRef(self, Zeffk, Vcomp=None, V0magArray=None, V0angArray=None):
     # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
-
-        assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
-        V0mag = np.asmatrix(V0magArray)
-        V0ang = np.asmatrix(V0angArray)
-        self.setV0(V0mag,V0ang)
 
         #assumes injection-positive (rather than load (extraction)-positive)
         if self.useNominalVforPhi:
@@ -192,15 +187,23 @@ class Zestimator:
             NR = self.makeN(dimNR)
             Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
         else:
+            assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
+            V0mag = np.asmatrix(V0magArray)
+            V0ang = np.asmatrix(V0angArray)
+            self.setV0(V0mag,V0ang)
             #HEREE
-            pass
+            Babbrev = None
         return Babbrev
 
-    def getLinWoRef(self, Zeffkest, VmagArray, P_implemented_Array, Q_implementedArray):
+    def getLinWoRef(self, Zeffk, VmagArray=None, P_implemented_Array=None, Q_implementedArray=None):
         # if self.useNominalVforPhi:
+        alph = np.exp(-2/3*np.pi*1j)
+        Phir = np.asmatrix(np.diag([1, alph, alph**2]))
+        Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
+        dimNR = self.nphases*2
+        NR = self.makeN(dimNR)
+        Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
         # else:
-        #HEREE
-        Babbrev = None
         return Babbrev
 
     def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,IcompArray=None):
