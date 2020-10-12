@@ -57,6 +57,23 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.busId = busId
         self.timesteplength = timesteplength
 
+        #These are new #HEREE
+        # self.useRefNode = True
+        self.useRefNode = False
+        useNominalVforPhi = True
+        self.Vang_fict = 0
+        self.max_delta_ang = 20 #(degrees)
+        self.measurementFreq = 120 #how many measurements the PMU produces in a second
+        self.nomFreq = 60 #the nominal frequency used by PMUs for the synchrophasor measurements
+
+        self.baseP_pu = 0
+        self.baseQ_pu = 0
+        self.baseP_pu = .2
+        self.baseQ_pu = .2
+        # self.perturbPowerCommand = 0
+        # self.perturbScale = .1
+        self.perturbScale = .5
+
         '''
         Zestimation:
         current that is measured is based on localSbase, not networkSbase
@@ -104,22 +121,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # GtInitScale = 1
         GtInitScale = 10
         controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
-
-        #These are new #HEREE
-        self.useRefNode = True
-        useNominalVforPhi = True
-        self.Vang_fict = 0
-        self.max_delta_ang = 20 #(degrees)
-        self.measurementFreq = 120 #how many measurements the PMU produces in a second
-        self.nomFreq = 60 #the nominal frequency used by PMUs for the synchrophasor measurements
-
-        self.baseP_pu = 0
-        self.baseQ_pu = 0
-        self.baseP_pu = .2
-        self.baseQ_pu = .2
-        # self.perturbPowerCommand = 0
-        # self.perturbScale = .1
-        self.perturbScale = .5
 
         if est_Zeffk:
             Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
