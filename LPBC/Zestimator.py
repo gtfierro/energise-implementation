@@ -200,7 +200,8 @@ class Zestimator:
         # if self.useNominalVforPhi:
         # else:
         #HEREE
-        return self.Babbrev
+        Babbrev = None
+        return Babbrev
 
     def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,IcompArray=None):
         '''

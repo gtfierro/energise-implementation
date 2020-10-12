@@ -336,8 +336,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     deltaVangCount += 1
                     deltaVangi_freqCompensation = (Vfreqi/self.nomFreq - 1)*2*np.pi/(self.measurementFreq/self.nomFreq)
                     deltaVangi_compensated = Vangi - deltaVangi_freqCompensation - VangPrev[phase] #HEREE
+                    deltaVangi_compensated = self.PhasorV_ang_wraparound(deltaVangi_compensated, self.nphases, nameVang='deltaVangi_compensated')
                     deltaVang_compensated_Sum[phase] += deltaVangi_compensated
                     deltaVangi_uncompensated = Vangi - VangPrev[phase]
+                    deltaVangi_uncompensated = self.PhasorV_ang_wraparound(deltaVangi_uncompensated, self.nphases, nameVang='deltaVangi_uncompensated')
                     deltaVang_uncompensated_Sum[phase] += deltaVangi_uncompensated
                     flag[phase] = 0
 
@@ -1383,7 +1385,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     #     Zeffkest, Gt = self.controller.ZeffUpdateWRef(self.Vmag_pu, self.Vang_with120degshifts, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=self.VmagRef_pu, V0angArray=self.VangRef, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                     # else:
                     Zeffkest, Gt = self.controller.ZeffUpdate(Vcomp_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                Babbrev = self.controller.getLinWRef(self, Zeffkest, Vcomp_pu, self.VmagRef_pu, self.VangRef)
+                Babbrev = self.controller.getLinWRef(Zeffkest, Vcomp_pu, self.VmagRef_pu, self.VangRef)
                 # Babbrev = self.controller.getLinWRef(self, Zeffkest, self.Vmag_pu, self.Vang_with120degshifts, VmagRef_pu, self.VangRef)
 
             else:
@@ -1397,6 +1399,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Vmag_pu = self.Vmag / (self.localkVbase * 1000)
                 #this Vcomp uses the unaltered 60 Hz synchrophasor reference
                 self.Vang_fict = self.Vang_fict + deltaVang_compensated
+                self.Vang_fict = self.PhasorV_ang_wraparound(self.Vang_fict, self.nphases, nameVang='self.Vang_fict')
                 Vcomp_fict_pu = self.Vmag_pu*np.cos(self.Vang_fict) + self.Vmag_pu*np.sin(self.Vang_fict)*1j
 
                 if self.controllerInitialized == 0:
