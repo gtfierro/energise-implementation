@@ -1230,7 +1230,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # max_degrees = 300.
         max_degrees = 180. #this will bring angles to within +/- 180 degrees
         Vang_wrap = Vang
-
+        print('type(Vang) ', type(Vang))
         if isinstance(Vang, list):
             nphases = len(Vang)
             for phase in range(nphases):
