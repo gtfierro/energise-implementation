@@ -149,8 +149,11 @@ class LQRcontroller:
 
     def updateDisturbance(self,Vmag,Vang,V0mag,V0ang,printDOBCterms=0):
         if self.linearizeplant:
-            u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-np.hstack((V0mag,V0ang))).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
-            # u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-self.V0).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
+            VmagDiff = Vmag-V0mag
+            VangDiff = self.PhasorV_ang_wraparound(Vang-V0ang,self.nphases,'updateDisturbance')
+            u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((VmagDiff,VangDiff))).T).T
+            #HEREE switched below to above, havent tested yet
+            # u_d_eff = (np.linalg.pinv(self.Babbrev)*(np.hstack((Vmag,Vang))-np.hstack((V0mag,V0ang))).T).T # S~=Y*dV. dV is the difference from the substation (ref) voltage, V0
         else:
             u_d_eff = self.pfEqns3phase(Vmag,Vang,self.Zeffkest)
         # if self.LQR_stepcounter != 1: #LQR_stepcounter is 1 in the first call
@@ -255,6 +258,23 @@ class LQRcontroller:
         return
 
 
+    def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
+        # brings angles to less than +/- max_degrees
+        # max_degrees = 300.
+        max_degrees = 180. #this will bring angles to within +/- 180 degrees
+        Vang_wrap = Vang
+        for phase in range(nphases):
+            while abs(Vang_wrap[phase]) > np.radians(max_degrees):
+                if Vang_wrap[phase] > 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                elif Vang_wrap[phase] < 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+        return Vang_wrap
+
 
     '''
     Vcomp calc (needs to be base [0,0,0], and therefore ~[0,-120,120])
@@ -343,10 +363,16 @@ class LQRcontroller:
             self.K = self.updateController(self.A,self.B,self.Qcost,self.Rcost)
 
         #calculate new state
+        VangDiff = self.PhasorV_ang_wraparound(Vang-self.VangTarg,self.nphases,'LQRStateCalc')
         if self.allsaturated: #dont increment integrator states
-            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
+            self.state = np.hstack((Vmag-self.VmagTarg,VangDiff,self.state[0,self.nphases*2:self.nphases*4]))
         else: #increment integrator states
-            self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
+            self.state = np.hstack((Vmag-self.VmagTarg,VangDiff,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
+        #HEREE switched below to above, havent tested yet
+        # if self.allsaturated: #dont increment integrator states
+        #     self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.state[0,self.nphases*2:self.nphases*4]))
+        # else: #increment integrator states
+        #     self.state = np.hstack((Vmag-self.VmagTarg,Vang-self.VangTarg,self.timesteplength*self.state[0,0:self.nphases*2]+self.state[0,self.nphases*2:self.nphases*4]))
 
         #DOBC
         if self.cancelDists:

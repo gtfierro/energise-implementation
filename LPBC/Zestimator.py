@@ -6,7 +6,7 @@ from numpy.linalg import inv
 printZeffterms = 1
 
 class Zestimator:
-    def __init__(self,lpbcbus,nphases,Zeffkinit,useRefNode=False,useNominalV=False,currentMeasExists=1,lam=.99,Gt=None,controllerUpdateCadence=1,ZeffkinitInPU=1):
+    def __init__(self,lpbcbus,nphases,Zeffkinit,useRefNode=False,useNominalVforPhi=False,currentMeasExists=1,lam=.99,Gt=None,controllerUpdateCadence=1,ZeffkinitInPU=1):
         self.lpbcbus = lpbcbus
         self.nphases = nphases
         self.V0mag = np.NaN
@@ -40,7 +40,7 @@ class Zestimator:
             self.Gt = Gt
 
         self.useRefNode = useRefNode
-        self.useNominalV = useNominalV
+        self.useNominalVforPhi = useNominalVforPhi
 
         self.Babbrev = None #np.zeros((nphases,nphases))
 
@@ -119,9 +119,7 @@ class Zestimator:
         return Icomp
 
 
-    def updateZeff(self,Vcomp,Icomp=None):
-        dtVt = (Vcomp - self.VcompPrev).T #these are vertical vectors
-        dtIt = (Icomp - self.IcompPrev).T
+    def updateZeff(self,dtVt,dtIt): #not sure why I called it dtVt and dtIt
         if all(abs(dtIt) > self.dtItThreshold) and all(abs(dtVt) > self.dtVtThreshold):
             self.Gt = self.Gt/self.lam - (self.Gt*(dtIt*dtIt.H)*self.Gt)/(self.lam**2*(1 + dtIt.H*self.Gt*dtIt/self.lam))
             err = dtVt - self.Zeffkest*dtIt
@@ -159,24 +157,52 @@ class Zestimator:
         return self.Zeffkest, self.Gt
 
 
-    def getLinWRef(self, Zeffkest, Vcomp):
+    def PhasorV_ang_wraparound(self, Vang, nphases, nameVang='(notgiven)'):
+        # brings angles to less than +/- max_degrees
+        # max_degrees = 300.
+        max_degrees = 180. #this will bring angles to within +/- 180 degrees
+        Vang_wrap = Vang
+        for phase in range(nphases):
+            while abs(Vang_wrap[phase]) > np.radians(max_degrees):
+                if Vang_wrap[phase] > 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] - np.radians(360.)
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+                elif Vang_wrap[phase] < 0:
+                    print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
+                    Vang_wrap[phase] = Vang_wrap[phase] + np.radians(360.)
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {nameVang} phase {phase} to get {Vang_wrap[phase]}')
+        return Vang_wrap
+
+
+    def getLinWRef(self, Zeffkest, Vcomp, V0magArray, V0angArray):
+    # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
+
+        assert V0magArray != None and V0angArray != None, 'Need to give V0 if using ref node'
+        V0mag = np.asmatrix(V0magArray)
+        V0ang = np.asmatrix(V0angArray)
+        self.setV0(V0mag,V0ang)
+
         #assumes injection-positive (rather than load (extraction)-positive)
-        if self.useNominalV:
+        if self.useNominalVforPhi:
             alph = np.exp(-2/3*np.pi*1j)
             Phir = np.asmatrix(np.diag([1, alph, alph**2]))
             Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
             dimNR = self.nphases*2
             NR = self.makeN(dimNR)
             Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
-        # else:
+        else:
+            #HEREE
+            pass
         return Babbrev
 
-    def getLinWoRef(self, Zeffkest, Vcomp, freq):
-        # if self.useNominalV:
+    def getLinWoRef(self, Zeffkest, VmagArray, P_implemented_Array, Q_implementedArray):
+        # if self.useNominalVforPhi:
         # else:
+        #HEREE
         return self.Babbrev
 
-    def ZeffandLinUpdate(self,VmagArray,VangArray,P_implemented=None,Q_implemented=None,V0magArray=None,V0angArray=None,freq=None,sat_arrayP=None,sat_arrayQ=None,VcompArray=None,IcompArray=None):
+    def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,IcompArray=None):
         '''
         Uses reference node measurement
         uses matrix computations internally, but gets ndarrays in and passes ndarrays out
@@ -201,29 +227,26 @@ class Zestimator:
         if sat_arrayQ is None:
             sat_arrayQ = np.ones(self.nphases)
 
-        #Convert Vs to np.matrices
-        if VcompArray is not None:
-            Vcomp = np.asmatrix(VcompArray)
-        else:
-            Vcomp = np.asmatrix(VmagArray*np.cos(VangArray) + VmagArray*np.sin(VangArray)*1j) #Vang has to include the 120 deg shifts
-        Vmag = np.asmatrix(VmagArray) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
-        Vang = np.asmatrix(VangArray)
+        # #Convert Vs to np.matrices
+        # if VcompArray is not None:
+        #     Vcomp = np.asmatrix(VcompArray)
+        # else:
+        #     Vcomp = np.asmatrix(VmagArray*np.cos(VangArray) + VmagArray*np.sin(VangArray)*1j) #Vang has to include the 120 deg shifts
 
-        #check allsaturated and onesaturated
-        if np.sum(sat_arrayP) + np.sum(sat_arrayQ) > 0: #these are 1 if unsaturated
-            self.allsaturated = 0 #for turning off the integrator
-        else:
-            self.allsaturated = 1
         if np.sum(sat_arrayP) + np.sum(sat_arrayQ) < self.nphases*2: #these are 1 if unsaturated
             self.onesaturated = 1 #for turning off Zeffkest
+            print('&&&&&&&&&&&& One saturated, maybe turn off Zeffkest')
         else:
             self.onesaturated = 0
 
         #Estimate Zeff
+        Vcomp = np.asmatrix(VcompArray)
         Icomp = self.getIcomp(IcompArray, Vcomp) #Vcomp only necessary if self.currentMeasExists == 0
         if Icomp is not None:  #only run Zeffk est if you have a current measurement or a legit estimate
+            deltaV = (Vcomp - self.VcompPrev).T #these are vertical vectors
+            deltaI = (Icomp - self.IcompPrev).T
             if self.IcompPrevExists:
-                self.Zeffkest, self.Gt = self.updateZeff(Vcomp,Icomp)
+                self.Zeffkest, self.Gt = self.updateZeff(deltaV,deltaI)
             self.IcompPrev = Icomp.copy()
             self.VcompPrev = Vcomp.copy()
             self.IcompPrevExists = 1
@@ -232,16 +255,8 @@ class Zestimator:
             print('Icomp is None')
             self.IcompPrevExists = 0
 
-        if self.useRefNode:
-            assert V0mag != None and V0ang != None, 'Need to give V0 if using ref node'
-            V0mag = np.asmatrix(V0magArray)
-            V0ang = np.asmatrix(V0angArray)
-            self.setV0(V0mag,V0ang)
-            # self.Babbrev = getLinWRef(self, Zeffkest, Vcomp)
-            self.Babbrev = None
-        else:
-            assert freq != None, 'Need to give freq if not using ref node'
-            # self.Babbrev = getLinWoRef(self, Zeffkest, Vcomp, freq)
-            self.Babbrev = None
+        return self.Zeffkest, self.Gt
 
-        return self.Zeffkest, self.Gt, self.Babbrev
+    # def ZeffUpdateWoRef(self,):
+    # def ZeffUpdateUsingDeltaVandDeltaI(self,): #how do you compute dIcomp
+    #     return self.Zeffkest, self.Gt

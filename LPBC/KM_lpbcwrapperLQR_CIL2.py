@@ -1372,6 +1372,7 @@ class lpbcwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             #these are used for PI controller
             self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
+            self.phasor_error_ang = self.PhasorV_ang_wraparound(self.phasor_error_ang, self.nphases, nameVang='self.phasor_error_ang') #HEREE
             self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
 
             if self.controllerType == 'LQR' and self.controllerInitialized == 0:

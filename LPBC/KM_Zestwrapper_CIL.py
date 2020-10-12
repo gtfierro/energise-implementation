@@ -23,9 +23,12 @@ logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
 # from LQRcontroller import *
 from Zestimator import *
 
-#HHHERE 6/20/20 need to transfer teh initialization code to the HIL code, once I know it works
 
 '''
+Zestimator Assumptions:
+- P and Q commands are implemented for the entire time during which the estimation is max_degrees.
+    (this will create issues if the P and Q commands arent recieved immediately)
+
 Flexlab comands and measurements:
 PMU measures positive INTO the battery for both P and Q (inverter looks like an inductor for positive Q measurent)
 Inverter Pmax limiting is ambigious to direction
@@ -46,7 +49,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, baseP_pu=0, baseQ_pu=0):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -54,8 +57,13 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.busId = busId
         self.timesteplength = timesteplength
 
-        self.baseP_pu = baseP_pu
-        self.baseQ_pu = baseQ_pu
+        self.baseP_pu = 0
+        self.baseQ_pu = 0
+        self.baseP_pu = .2
+        self.baseQ_pu = .2
+        # self.perturbPowerCommand = 0
+        # self.perturbScale = .1
+        self.perturbScale = .5
 
         '''
         Zestimation:
@@ -97,8 +105,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
 
         #REIE parameters
-        useRefNode = False
-        useNominalV = True
         est_Zeffk = 1 #if this is set to 1 the effective impedance will be estimated online and used to update the LQR controller (by changing the network (plant) model)
         # lam = .99 # 0 < lam < 1, smaller lam changes state faster (more noise sensitive)
         lam = .95
@@ -106,6 +112,14 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # GtInitScale = 1
         GtInitScale = 10
         controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
+        self.useRefNode = True
+        useNominalVforPhi = True
+
+        #HEREE
+        self.Vang_fict = 0
+        self.max_delta_ang = 20 #(degrees)
+        self.measurementFreq = 120
+        self.nomFreq = 60
 
         if est_Zeffk:
             Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
@@ -115,7 +129,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
         # self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
-        self.controller = Zestimator(busId,nphases,Zeffk_init,useRefNode,useNominalV,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
+        self.controller = Zestimator(busId,nphases,Zeffk_init,self.useRefNode,useNominalVforPhi,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
 
         self.controllerInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
@@ -138,8 +152,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Qact_pu = np.zeros(nphases)
 
         #all angles should be in radians
-        self.Vang_notRelative = np.asarray([np.NaN]*nphases) #The notRelative angles are created by subtracting the angle timestamp for the FIRST phase from ALL the phases, which will give angles seperated by ~120degrees.
-        self.Vang_relative = np.asarray([np.NaN]*nphases) #relative angles have the reference angle (timestamp) for each phase subtracted for each phase, which will NOT give angles seperated by ~120degrees.
+        self.Vang_with120degshifts = np.asarray([np.NaN]*nphases) #The notRelative angles are created by subtracting the angle timestamp for the FIRST phase from ALL the phases, which will give angles seperated by ~120degrees.
+        self.Vang_without120degshifts = np.asarray([np.NaN]*nphases) #relative angles have the reference angle (timestamp) for each phase subtracted for each phase, which will NOT give angles seperated by ~120degrees.
         self.Vmag = np.zeros(nphases)
         self.Vmag_pu = np.zeros(nphases)
         self.Vmag_relative = np.zeros(nphases)
@@ -214,6 +228,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.ref_time_index = [np.NaN]*nphases
 
         self.nPhasorReadings = 120 #120 is 1 seconds-worth of 120 hz measurements  # number of time measurements that phasorV_calc looks into the past to find a match
+        # important for this to be << than the actuation rate (period), since the phasor commands dont occur instantaneously
         self.pmuTimeWindow = 2000000 #in ns, 2000000 is 2 ms #allowable time window for phasor measurements to be considered concurrent
 
         # https config
@@ -264,12 +279,92 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.P_implemented_PU = None #to account for commands hitting the upper limits of an actuator
         self.Q_implemented_PU = None
 
-        self.perturbPowerCommand = 0
-        self.perturbScale = .1
-
         self.AveragePhasorMeasurements = 1 # =1: Take the average phasor meas, =0: take the most recent
 
 
+    def phasorV_localMeas(local_phasors, nphases, plug_to_V_idx):
+        # Initialize
+        #ordered_local is the PMU meas data sets from the local PMU. First dim is phase, second is dataWindowLength.
+        # ordered_local = [None] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+        ordered_local = [0] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
+        flag = [1] * nphases #used to check if a delta angle was found
+        Vmeas_all_phases = 1
+        # Extract latest nPhasorReadings readings from local and ref uPMUs, and put local in phase-order (ref is assumed to be in phase-order)
+        for plug in range(nphases): #this will just read the voltage measurements cause its nphases long, even if local_phasors also has current measurements
+            if len(local_phasors[plug]) > self.nPhasorReadings:
+                dataWindowLength = self.nPhasorReadings
+            else:
+                dataWindowLength = len(local_phasors[plug])
+            phase_idx = plug_to_V_idx[plug]
+            ordered_local[phase_idx] = local_phasors[plug][-dataWindowLength:] #this orders local in A,B,C phase order (ref is assumed ot be in A,B,C order)
+
+        Vmag = np.asarray([np.NaN]*nphases)
+        deltaVang_compensated = np.asarray([np.NaN]*nphases)
+        deltaVang_uncompensated = np.asarray([np.NaN]*nphases)
+
+        VmagSum = np.zeros(nphases)
+        VmagCount = np.zeros(nphases)
+        deltaVangCount = np.zeros(nphases)
+        deltaVang_compensated_Sum = np.zeros(nphases)
+        deltaVang_uncompensated_Sum = np.zeros(nphases)
+
+        # first = [1] * nphases #used to init delta_Vang calc
+        VangPrev = [None] * nphases
+
+        for phase in range(nphases):
+            # loops through every ordered_local uPMU reading
+            for local_packet in ordered_local[phase]:
+                Vmagi = local_packet['magnitude']
+                Vmagi = Vmagi * self.VmagScaling
+                if Vmagi is None:
+                    print('Vmagi is None')
+                elif np.isnan(Vmagi):
+                    print('Vmagi is NaN')
+                elif Vmagi == 0:
+                    print('Vmagi is 0')
+                else:
+                    VmagSum[phase] += Vmagi
+                    VmagCount[phase] += 1
+
+                Vangi = local_packet['angle']
+                Vfreqi = local_packet['frequency']
+                if VangPrev[phase] is None:
+                    print(f'VangPrev[{phase}] was None')
+                    VangPrev[phase] = Vangi
+                    print(f'VangPrev[{phase}] is {VangPrev[phase]} now')
+                else:
+                    deltaVangCount += 1
+                    deltaVangi_freqCompensation = (Vfreqi/self.nomFreq - 1)*2*np.pi/(self.measurementFreq/self.nomFreq)
+                    deltaVangi_compensated = Vangi - deltaVangi_freqCompensation - VangPrev[phase] #HEREE
+                    deltaVang_compensated_Sum[phase] += deltaVangi_compensated
+                    deltaVangi_uncompensated = Vangi - VangPrev[phase]
+                    deltaVang_uncompensated_Sum[phase] += deltaVangi_uncompensated
+                    flag[phase] = 0
+
+            Vmag[phase] = VmagSum[phase]/VmagCount[phase]
+
+            if flag[phase] == 1:
+                print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
+                Vmeas_all_phases = 0
+            else:
+                deltaVang_compensated[phase] = deltaVang_compensated_Sum[phase]/deltaVangCount[phase]
+                deltaVang_uncompensated[phase] = deltaVang_uncompensated_Sum[phase]/deltaVangCount[phase]
+
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print('len(local_phasors[plug]) ', len(local_phasors[plug])) #this is the number of phasor measurements delivered. often it is 120*rate (number of seconds)
+
+        print('VmagCount ', VmagCount)
+        print('Vmag ', Vmag)
+
+        print('deltaVangCount ', deltaVangCount)
+        print('deltaVang_compensated ', deltaVang_compensated)
+        print('deltaVang_uncompensated ', deltaVang_uncompensated)
+
+        print('Vfreqi ', Vfreqi) #may want to print these for more timesteps or each phase if something is weird
+        print('deltaVangi_freqCompensation ', deltaVangi_freqCompensation)
+        print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+
+        return deltaVang_compensated, deltaVang_uncompensated, Vmag, dataWindowLength, Vmeas_all_phases
 
     '''
     Think this is how the PMUs send data:
@@ -278,7 +373,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
     The angle measurement that comes from the PMU has an arbitrary refernce. To get meaningful angle measurements, you have to decide on a reference.
     (Still deciding whether the arbitrary is the first phase for a given controller. Could make it always phase A, but reference_phasors would always have to contain phase A.)
     V_ang_ref_firstPhase is special because it is chosen as angle = 0, and subtracted (sometimes implicitly) from all other angles.
-    self.Vang_notRelative is named poorly (by me), just means that V_ang_ref_firstPhase is subtracted, rather than V_ang_ref[phase], so the angles will be relative to [0,0,0] rather than [0,-120,120]
+    self.Vang_with120degshifts is named poorly (by me), just means that V_ang_ref_firstPhase is subtracted, rather than V_ang_ref[phase], so the angles will be relative to [0,0,0] rather than [0,-120,120]
     '''
     '''
     HERE
@@ -366,20 +461,20 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
 
-        Vang_notRelative = np.asarray([np.NaN]*nphases)
-        Vang_relative = np.asarray([np.NaN]*nphases)
+        Vang_with120degshifts = np.asarray([np.NaN]*nphases)
+        Vang_without120degshifts = np.asarray([np.NaN]*nphases)
         VangRef = np.asarray([np.NaN]*nphases)
         # V_ang_ref_firstPhase = [np.NaN]
         V_ang_ref_firstPhase = np.asarray([np.NaN]*nphases) #using nphase-long version for back-compatibility, they should all be the same
 
         VangCount = np.zeros(nphases)
-        Vang_notRelativeSum = np.zeros(nphases)
-        # Vang_notRelativeCount = np.zeros(nphases)
-        Vang_relativeSum = np.zeros(nphases)
-        # Vang_relativeCount = np.zeros(nphases)
-        VangRefSum = np.zeros(nphases)
+        Vang_with120degshifts_Sum = np.zeros(nphases)
+        # Vang_with120degshifts_Count = np.zeros(nphases)
+        Vang_without120degshifts_Sum = np.zeros(nphases)
+        # Vang_without120degshifts_Count = np.zeros(nphases)
+        VangRef_Sum = np.zeros(nphases)
         # VangRefCount = np.zeros(nphases)
-        V_ang_ref_firstPhaseSum = np.zeros(nphases)
+        V_ang_ref_firstPhase_Sum  = np.zeros(nphases)
         # V_ang_ref_firstPhaseCount = np.zeros(nphases)
 
         #5/28/20 sets the first phase as the local base angle timestamp even if this phase is B or C
@@ -411,13 +506,13 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                         # V_ang_ref_firstPhase = ref[0][ref_time_index[phase]]['angle'] #this can be thought of as the local base angle timestamp
                         # if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
-                        V_ang_ref_firstPhaseSum[phase] += V_ang_ref_firstPhaseTemp #because each phase (of the current meas) needs a V_ang_ref_firstPhase
+                        V_ang_ref_firstPhase_Sum [phase] += V_ang_ref_firstPhaseTemp #because each phase (of the current meas) needs a V_ang_ref_firstPhase
                         if V_ang_ref_firstPhaseTemp == np.NaN or V_ang_ref_firstPhaseTemp == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
 
-                        Vang_relativeSum[phase] += np.radians(V_ang_local - V_ang_ref)
-                        Vang_notRelativeSum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
-                        VangRefSum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
+                        Vang_without120degshifts_Sum[phase] += np.radians(V_ang_local - V_ang_ref)
+                        Vang_with120degshifts_Sum[phase] += np.radians(V_ang_local - V_ang_ref_firstPhaseTemp)
+                        VangRef_Sum[phase] += np.radians(V_ang_ref - V_ang_ref_firstPhaseTemp)
                         VangCount[phase] += 1
                         if refAngleUsedVec[i] == 1 and phase == 0: #debug
                             print(f'WARNING, this ref angle {i} was already used')
@@ -437,18 +532,18 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
             else:
-                Vang_notRelative[phase] = Vang_notRelativeSum[phase]/VangCount[phase]
-                Vang_relative[phase] = Vang_relativeSum[phase]/VangCount[phase]
-                VangRef[phase] = VangRefSum[phase]/VangCount[phase]
-                V_ang_ref_firstPhase[phase] = V_ang_ref_firstPhaseSum[phase]/VangCount[phase]
+                Vang_with120degshifts[phase] = Vang_with120degshifts_Sum[phase]/VangCount[phase]
+                Vang_without120degshifts[phase] = Vang_without120degshifts_Sum[phase]/VangCount[phase]
+                VangRef[phase] = VangRef_Sum[phase]/VangCount[phase]
+                V_ang_ref_firstPhase[phase] = V_ang_ref_firstPhase_Sum [phase]/VangCount[phase]
 
-        # print('Vang_notRelative ', Vang_notRelative)
-        # print('Vang_relative ', Vang_relative)
+        # print('Vang_with120degshifts ', Vang_with120degshifts)
+        # print('Vang_without120degshifts ', Vang_without120degshifts)
         # print('VangRef ', VangRef)
         # print('V_ang_ref_firstPhase ', V_ang_ref_firstPhase)
         print('VangCount ', VangCount)
         # print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-        return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        return (Vang_with120degshifts,VangRef,Vang_without120degshifts,Vmag,VmagRef,Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
     # older version that didnt take average of angles
@@ -473,8 +568,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #HERE small chance theres a problem here w copying a mutable data type and not using .copy()
 
         #this was creating issues when intitial phasor reading wasnt correct
-        # if self.Vang_relative == 'initialize':
-        #     self.Vang_relative = np.zeros(nphases)
+        # if self.Vang_without120degshifts == 'initialize':
+        #     self.Vang_without120degshifts = np.zeros(nphases)
         #     # loops through every phase with actuation
         #     for phase in range(nphases): #phases descrived by a,b,c ordering, but not necessarily a,b,c, all angles are base zero (ie not base -2pi/3 for phase B) bec they are relative angles
         #         # Initialize: Extract measurements from most recent timestamps only for first iteration
@@ -482,7 +577,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #         V_ang_local = ordered_local[phase][-1]['angle'] - self.ametek_phase_shift
         #         V_mag_ref = ref[phase][-1]['magnitude']
         #         V_ang_ref = ref[phase][-1]['angle']
-        #         self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+        #         self.Vang_without120degshifts[phase] = np.radians(V_ang_local - V_ang_ref)
         #         self.Vmag[phase] = V_mag_local
         #         self.VmagRef[phase] = V_mag_ref
         #         self.Vmag_relative[phase] = V_mag_local - V_mag_ref
@@ -529,9 +624,9 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         local_time_index = [np.NaN]*nphases
         ref_time_index = [np.NaN]*nphases
         #below isnt needed if you switch back to using self. values
-        Vang_notRelative = np.asarray([np.NaN]*nphases)
+        Vang_with120degshifts = np.asarray([np.NaN]*nphases)
         VangRef = np.asarray([np.NaN]*nphases)
-        Vang_relative = np.asarray([np.NaN]*nphases)
+        Vang_without120degshifts = np.asarray([np.NaN]*nphases)
         # Vmag = np.asarray([np.NaN]*nphases)
         # VmagRef = np.asarray([np.NaN]*nphases)
         # Vmag_relative = np.asarray([np.NaN]*nphases)
@@ -571,10 +666,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if V_ang_ref_firstPhase == np.NaN or V_ang_ref_firstPhase == None: #(could put in a better check here, eg is the angle in a reasonable range)
                             print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
 
-                        Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
-                        Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+                        Vang_without120degshifts[phase] = np.radians(V_ang_local - V_ang_ref)
+                        Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
                         VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
-                        # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+                        # Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
                         # VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
                         flag[phase] = 0
                         break
@@ -583,7 +678,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if flag[phase] == 1:
                 print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
                 Vmeas_all_phases = 0
-        return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        return (Vang_with120degshifts,VangRef,Vang_without120degshifts,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
         # #alternative to find a timestamp at which all voltages are aligned, rather than finding presumably different time steps for each phase
@@ -632,22 +727,22 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #                     print('WARNING: issue getting a nonRelative voltage angle. This will mess up the LQR controller.')
         #
         #                 # calculates relative phasors
-        #                 # self.Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+        #                 # self.Vang_without120degshifts[phase] = np.radians(V_ang_local - V_ang_ref)
         #                 # self.Vmag[phase] = V_mag_local
         #                 # self.VmagRef[phase] = V_mag_ref
         #                 # self.Vmag_relative[phase] = V_mag_local - V_mag_ref
-        #                 # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
-        #                 # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_relative, gives self.Vang_notRelative. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
-        #                 # # self.Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+        #                 # self.Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+        #                 # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase]) #this is the angle that, when added to self.Vang_without120degshifts, gives self.Vang_with120degshifts. Will always be zero for the first phase, and close to [0, -120, 120] for a 3 phase node.
+        #                 # # self.Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
         #                 # # self.VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
         #                 #uncomment above and change the return statement if you want the default to be to use the previous V measurment when V measurements are not successfully calculated for each phase
-        #                 Vang_relative[phase] = np.radians(V_ang_local - V_ang_ref)
+        #                 Vang_without120degshifts[phase] = np.radians(V_ang_local - V_ang_ref)
         #                 Vmag[phase] = V_mag_local
         #                 VmagRef[phase] = V_mag_ref
         #                 Vmag_relative[phase] = V_mag_local - V_mag_ref
-        #                 Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
+        #                 Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase[phase])
         #                 VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase[phase])
-        #                 # Vang_notRelative[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
+        #                 # Vang_with120degshifts[phase] = np.radians(V_ang_local - V_ang_ref_firstPhase)
         #                 # VangRef[phase] = np.radians(V_ang_ref - V_ang_ref_firstPhase)
         #             flag = 0
         #             break
@@ -657,8 +752,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #     print('No timestamp found bus ' + str(self.busId) + ' phase ' + str(phase))
         #     Vmeas_all_phases = 0
         #     #self. vars are assigned and returned so that if a match isnt found, it returns the previous match
-        # # return (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
-        # return (Vang_notRelative,VangRef,Vang_relative,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        # # return (self.Vang_with120degshifts,self.VangRef,self.Vang_without120degshifts,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
+        # return (Vang_with120degshifts,VangRef,Vang_without120degshifts,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
 
     def phasorI_calc(self, dataWindowLength, local_phasors, reference_phasors, nphases, plug_to_V_idx):
@@ -1222,7 +1317,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #         # print('VmagTarg_relative_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_relative_pu))
         #         # print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
 
-        if True:
+        if True: #relic from lpbcwrapper
             print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
             print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
             # print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
@@ -1243,193 +1338,87 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
                 self.ZeffkestinitHasNotBeenInitialized = 0
 
-            # calculate relative voltage phasor
-            #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
-            #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
-            if self.AveragePhasorMeasurements:
-                (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            else:
-                (self.Vang_notRelative,self.VangRef,self.Vang_relative,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-
-            # if any(np.isnan(self.Vang_relative)):
-            if Vmeas_all_phases == 0:
-                # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
-                print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round. ~~~')
-                return
-            #these are used by the LQR controller
-            self.Vang_notRelative = self.PhasorV_ang_wraparound(self.Vang_notRelative, self.nphases, nameVang='self.Vang_notRelative')
-            self.Vang_relative = self.PhasorV_ang_wraparound(self.Vang_relative, self.nphases, nameVang='self.Vang_relative')
-            self.VangRef = self.PhasorV_ang_wraparound(self.VangRef, self.nphases, nameVang='self.VangRef')
-            self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
-            self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
-            self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
-            # self.VangTarg_notRelative = self.VangTarg_relative + self.VangRef
-            # self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
-            print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
-            print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
-            # print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
-            print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
-            print('Vang_relative bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
-            print('VangRef bus ' + str(self.busId) + ' : ' + str(self.VangRef))
-            print('Vang_notRelative bus ' + str(self.busId) + ' : ' + str(self.Vang_notRelative))
-            # print('self.VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
-            # print('self.VangTarg_notRelative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_notRelative))
-            #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
-            Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_notRelative) + self.Vmag_pu*np.sin(self.Vang_notRelative)*1j
-
-
-            #these are used for PI controller
-            # self.phasor_error_ang = self.VangTarg_relative - self.Vang_relative
-            # self.phasor_error_mag_pu = self.VmagTarg_relative_pu - self.Vmag_relative_pu
-
-            # if self.controllerInitialized == 0:
-            # # if self.controllerType == 'LQR' and self.controllerInitialized == 0:
-            #     # self.controller.setV0(self.VmagRef,self.VangRef)
-            #     # u_naive_t0 = self.controller.calc_u_naive(self.VmagTarg_relative_pu,self.VangTarg_relative)
-            #     # u_naive_t0_Pinj = np.asarray(u_naive_t0[0,0:nphases])[0]
-            #     # u_naive_t0_Qinj = np.asarray(u_naive_t0[0,nphases:2*nphases])[0]
-            #     # print('u_naive_t0_Pinj ', u_naive_t0_Pinj)
-            #     # print('u_naive_t0_Qinj ', u_naive_t0_Qinj)
-            #     #
-            #     # if self.cancelDists == 1:
-            #     #     VmagMat = np.asmatrix(self.Vmag_pu) #come in as 1-d arrays, asmatrix makes them single-row matrices (vectors)
-            #     #     V0magMat = np.asmatrix(self.VmagRef_pu)
-            #     #     if self.useRelativeMeas:
-            #     #         VangMat = np.asmatrix(self.Vang_relative)
-            #     #         V0angMat = np.asmatrix(np.zeros(self.nphases)) #havent checked this
-            #     #     else:
-            #     #         VangMat = np.asmatrix(self.Vang_notRelative)
-            #     #         V0angMat = np.asmatrix(self.VangRef)
-            #     #     printDOBCterms = 1
-            #     #     d_est_t0 = self.controller.updateDisturbance(VmagMat,VangMat,V0magMat,V0angMat,printDOBCterms)
-            #     #     d_est_Pinj = np.asarray(d_est_t0[0,0:nphases])[0]
-            #     #     d_est_Qinj = np.asarray(d_est_t0[0,nphases:2*nphases])[0]
-            #     #     print('d_est_Pinj: ', d_est_Pinj)
-            #     #     print('d_est_Qinj: ', d_est_Qinj)
-            #     #
-            #     #     #implement unaive power command and cancel disturbance
-            #     #     self.Pcmd_pu = (u_naive_t0_Pinj - d_est_Pinj)
-            #     #     self.Qcmd_pu = (u_naive_t0_Qinj - d_est_Qinj)
-            #     # else:
-            #     #     #implement just unaive power command
-            #     #     self.Pcmd_pu = u_naive_t0_Pinj
-            #     #     self.Qcmd_pu = u_naive_t0_Qinj
-            #
-            #     # dont think setu is necessary
-            #     #setu is necessary if the next action is just a disturbance calc rather than a full LQRupdate
-            #     # self.controller.setu(self.Pcmd_pu,self.Qcmd_pu)
-            #     # self.controller.setu(P_implemented,Q_implemented) #record that a u command was implemented
-            #
-            #     Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
-            #     Gt = self.controller.Gt
-            #     self.controllerInitialized = 1
-            #
-            #     # if self.controllerType == 'LQR':
-            #     #     self.ZeffkErrorHist[iter] = np.linalg.norm(self.ZeffkTru*self.Zeffk_init_mult - self.ZeffkTru)
-            #     #     self.GtMagHist[iter] = np.linalg.norm(self.controller.Gt)
-            #     # self.VmagHist[:,iter] = self.Vmag_pu
-            #     # self.VangHist[:,iter] = self.Vang_relative
-            #     # print('SAVING measurements for plotting')
-            #     # return
-            # else:
-            #     #get current measurements, determine saturation if current measurements exist
-            #     if self.currentMeasExists:
-            #         if len(local_phasors) >= self.nphases*2:
-            #             if self.controllerType == 'LQR':
-            #                 if self.AveragePhasorMeasurements:
-            #                     self.Iang_notRelative, self.Imag = self.phasorI_calc(dataWindowLength, local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
-            #                     self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
-            #                     #HERE havent checked that the current measurements are legit yet
-            #                     self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
-            #                     #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
-            #                     self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
-            #                 else:
-            #                     #check if V_ang_ref_firstPhase and time_indexes exist
-            #                     if any(np.isnan(V_ang_ref_firstPhase)) or any(np.isnan(ref_time_index)) or any(np.isnan(local_time_index)):
-            #                         print('WARNING got a NaN V_ang_ref_firstPhase or ref_time_index or local_time_index')
-            #                         self.Icomp_pu = [np.NaN]*self.nphases
-            #                     else:
-            #                         self.Iang_notRelative, self.Imag = self.old_phasorI_calc(local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, local_phasors, self.nphases, self.plug_to_V_idx)
-            #                         self.Icomp = self.Imag*np.cos(self.Iang_notRelative) + self.Imag*np.sin(self.Iang_notRelative)*1j #shoudlnt need to unwrap currents
-            #                         #HERE havent checked that the current measurements are legit yet
-            #                         self.Icomp_pu = self.Icomp / self.localIbase #self.localIbase takes into account Sratio
-            #                         #see comment above where Zeff is made. dividing by self.localIbase is eq to dividing by networkIbase then multuplying by Sratio, which gives the correct pu current for estimating the correct PU Zeff (that relates pu power injections to pu voltage)
-            #                         self.Icomp_pu = -self.Icomp_pu #HERE in Flexlab current is positive flowing out of the Network, but want current to be positive into the network for Z estimation
-            #             # calculate P/Q from actuators
-            #             (self.Pact, self.Qact) = self.PQ_solver(local_phasors, self.nphases,self.plug_to_V_idx)  #HHERE 5/28/20: is this an issue: this is positive out of the network, which is backwards of Pcmd and Qcmd, bc thats how PMU 123 is set up in the flexlab
-            #             self.Pact_pu = self.Pact / self.localkVAbase
-            #             self.Qact_pu = self.Qact / self.localkVAbase
-            #
-            #             self.sat_arrayP, self.sat_arrayQ = self.checkSaturation(self.nphases, self.Pact, self.Qact, self.Pcmd_kVA, self.Qcmd_kVA, self.P_PV)  # returns vectors that are one where unsaturated and zero where saturated, will be unsaturated with initial Pcmd = Qcmd = 0
-            #         else:
-            #             print('WARNING: self.currentMeasExists set to 1, but no/not enough current measurements given')
-            #             self.Icomp_pu = [np.NaN]*self.nphases
-            #     else:
-            #         self.Icomp_pu = [np.NaN]*self.nphases
-            #         #havent built checkSaturationWoImeas yet
-            #         self.sat_arrayP, self.sat_arrayQ = self.checkSaturationWoImeas(self.nphases, Vcomp_pu, self.Pcmd_kVA, self.Qcmd_kVA)
-            #
-            #     #HERE [CHANGED] sign negations on Pact and Qact bc of dicrepancy between Pact convention and Pcmd convention
-            #     (self.ICDI_sigP, self.ICDI_sigQ, self.Pmax_pu, self.Qmax_pu) = self.determineICDI(self.nphases, self.sat_arrayP, self.sat_arrayQ, -self.Pact_pu, -self.Qact_pu) #this and the line above have hardcoded variables for Flexlab tests
-            #
-            #     #run control loop
-            #     #print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
-            #     #print('self.phasor_error_ang ' + str(self.phasor_error_ang))
-            #     print('self.sat_arrayP ' + str(self.sat_arrayP))
-            #     print('self.sat_arrayQ ' + str(self.sat_arrayQ))
-            #     if self.controllerType == 'PI':
-            #         if any(np.isnan(self.phasor_error_mag_pu)) or any(np.isnan(self.phasor_error_ang)):
-            #             print('GOT A NAN ERROR, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-            #             controlStepTaken = 0
-            #         else:
-            #             controlStepTaken = 1
-            #             (self.Pcmd_pu,self.Qcmd_pu) = self.controller.PIiteration(self.nphases,self.phasor_error_mag_pu, self.phasor_error_ang, self.sat_arrayP, self.sat_arrayQ)
-            #     elif self.controllerType == 'LQR':
-            #         #below lines could use self.Vang_relative and self.VangTarg_relative instead, if controller is being run with relative measurements
-            #         if any(np.isnan(self.Vmag_pu)) or any(np.isnan(self.Vang_notRelative)) or any(np.isnan(self.VmagRef_pu)) or any(np.isnan(self.VangRef)): #used when phasorV_calc makes default measurements NaN rather than previous meas
-            #             print('GOT A NAN MEAS, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-            #             controlStepTaken = 0
-            #         elif any(np.isnan(self.VmagTarg_pu)) or any(np.isnan(self.VangTarg_notRelative)):
-            #             print('GOT A NAN TARG, USING P AND Q COMMANDS FROM PREVIOUS STEP')
-            #             controlStepTaken = 0
-            #         else:
-            #             controlStepTaken = 1
-            #             if self.currentMeasExists:
-            #                 if self.useRelativeMeas: #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
-            #                     # need self.linearizeplant = 1 within LQR eqns, which is the default I think
-            #                     fakeVangRef = np.zeros(self.nphases)
-            #                     self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-            #                 else:
-            #                     self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
-            #             else:
-            #                 if self.useRelativeMeas:
-            #                     fakeVangRef = np.zeros(self.nphases)
-            #                     self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_relative, self.VmagTarg_pu, self.VangTarg_relative, self.VmagRef_pu, fakeVangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, VcompArray=Vcomp_pu) #Vcomp_pu is still not relative, so the Zestimator can work
-            #                 else:
-            #                     # print('!!!!!!!!!!!!!! P_implemented_PU ', self.P_implemented_PU)
-            #                     # print('!!!!!!!!!!!!!! Q_implemented_PU ', self.Q_implemented_PU)
-            #                     self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, self.VmagTarg_pu, self.VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-
-
-            if self.controllerInitialized == 0:
-                Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
-                Gt = self.controller.Gt
-                self.controllerInitialized = 1
-            else:
-                VmagTarg_pu = np.ones(self.nphases)
-                VangTarg_notRelative = np.zeros(self.nphases)
-                if self.currentMeasExists:
-                    #here not sure why Vcomp is given
-                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.ZeffandLinUpdate(self.Vmag_pu, self.Vang_notRelative, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=VmagRef_pu, V0angArray=VangRef_pu, freq=None, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
-                    # self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+            if self.useRefNode:
+                # calculate relative voltage phasor
+                #the correct PMUs for voltage and current (ie uPMUP123 and uPMU123) are linked in the configuration phase, so local_phasors are what you want (already)
+                #values are ordered as: A,B,C according to availability, using self.plug_to_phase_map
+                if self.AveragePhasorMeasurements:
+                    (self.Vang_with120degshifts,self.VangRef,self.Vang_without120degshifts,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                 else:
-                    self.Pcmd_pu, self.Qcmd_pu, Zeffkest, Gt = self.controller.ZeffandLinUpdate(self.Vmag_pu, self.Vang_notRelative, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=VmagRef_pu, V0angArray=VangRef_pu, freq=None, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu)
-                    # self.Pcmd_pu,self.Qcmd_pu, Zeffkest, Gt = self.controller.LQRupdate(self.Vmag_pu, self.Vang_notRelative, VmagTarg_pu, VangTarg_notRelative, self.VmagRef_pu, self.VangRef, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                    (self.Vang_with120degshifts,self.VangRef,self.Vang_without120degshifts,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+
+                # if any(np.isnan(self.Vang_without120degshifts)):
+                if Vmeas_all_phases == 0:
+                    # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
+                    print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round. ~~~')
+                    return
+                #these are used by the LQR controller
+                self.Vang_with120degshifts = self.PhasorV_ang_wraparound(self.Vang_with120degshifts, self.nphases, nameVang='self.Vang_with120degshifts')
+                self.Vang_without120degshifts = self.PhasorV_ang_wraparound(self.Vang_without120degshifts, self.nphases, nameVang='self.Vang_without120degshifts')
+                self.VangRef = self.PhasorV_ang_wraparound(self.VangRef, self.nphases, nameVang='self.VangRef')
+                self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
+                self.Vmag_relative_pu = self.Vmag_relative / (self.localkVbase * 1000) #this and the VmagTarg_relative_pu line divides Vmag_ref by self.localkVbase which may create an issue bc Vref != 1.0pu, but thats okay
+                self.VmagRef_pu = self.VmagRef / (self.localkVbase * 1000)
+                # self.VangTarg_notRelative = self.VangTarg_relative + self.VangRef
+                # self.VmagTarg_pu = self.VmagTarg_relative_pu + self.VmagRef_pu #VmagTarg is given as VmagTarg_relative_pu rn from the SPBC
+                print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
+                print('VmagRef_pu bus ' + str(self.busId) + ' : ' + str(self.VmagRef_pu))
+                # print('VmagTarg_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_pu))
+                print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
+                print('Vang_without120degshifts bus ' + str(self.busId) + ' : ' + str(self.Vang_without120degshifts))
+                print('VangRef bus ' + str(self.busId) + ' : ' + str(self.VangRef))
+                print('Vang_with120degshifts bus ' + str(self.busId) + ' : ' + str(self.Vang_with120degshifts))
+                # print('self.VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
+                # print('self.VangTarg_notRelative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_notRelative))
+                #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
+                Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_with120degshifts) + self.Vmag_pu*np.sin(self.Vang_with120degshifts)*1j
+
+                if self.controllerInitialized == 0:
+                    Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
+                    Gt = self.controller.Gt
+                    self.controllerInitialized = 1
+                else:
+                    # if self.currentMeasExists:
+                    #     #here not sure why Vcomp is given
+                    #     Zeffkest, Gt = self.controller.ZeffUpdateWRef(self.Vmag_pu, self.Vang_with120degshifts, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=self.VmagRef_pu, V0angArray=self.VangRef, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    # else:
+                    Zeffkest, Gt = self.controller.ZeffUpdate(Vcomp_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                Babbrev = self.controller.getLinWRef(self, Zeffkest, Vcomp_pu, self.VmagRef_pu, self.VangRef)
+                # Babbrev = self.controller.getLinWRef(self, Zeffkest, self.Vmag_pu, self.Vang_with120degshifts, VmagRef_pu, self.VangRef)
+
+            else:
+                deltaVang_compensated, deltaVang_uncompensated, Vmag, dataWindowLength, Vmeas_all_phases = self.phasorV_localMeas(local_phasors, self.nphases, self.plug_to_V_idx)
+
+                if Vmeas_all_phases == 0:
+                    # print('Every phase has not received a relative phasor measurement yet, bus ' + str(self.busId))
+                    print(f'~~~ Didnt receive a measurement for each phase of bus {self.busId}, not running the controller this round. ~~~')
+                    return
+
+                self.Vmag_pu = self.Vmag / (self.localkVbase * 1000)
+                #this Vcomp uses the unaltered 60 Hz synchrophasor reference
+                self.Vang_fict = self.Vang_fict + deltaVang_compensated
+                Vcomp_fict_pu = self.Vmag_pu*np.cos(self.Vang_fict) + self.Vmag_pu*np.sin(self.Vang_fict)*1j
+
+                if self.controllerInitialized == 0:
+                    Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
+                    Gt = self.controller.Gt
+                    self.controllerInitialized = 1
+                else:
+                    # if self.currentMeasExists:
+                    #     #here not sure why Vcomp is given
+                    #     Zeffkest, Gt = self.controller.ZeffUpdateWoRef(self.Vmag_pu, self.Vang_with120degshifts, self.P_implemented_PU, self.Q_implemented_PU, self.freq, self.sat_arrayP, self.sat_arrayQ, Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
+                    # else:
+                    Zeffkest, Gt = self.controller.ZeffUpdate(Vcomp_fict_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
+                Babbrev = self.controller.getLinWoRef(self, Zeffkest, self.Vmag_pu, self.P_implemented_PU, self.Q_implemented_PU)
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)
-            self.Pcmd_pu = np.ones(self.nphases)*self.baseP_pu
-            self.Qcmd_pu = np.ones(self.nphases)*self.baseQ_pu
+            self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseP_pu
+            self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseQ_pu
+
+            # if self.perturbPowerCommand: #used to create signal for Z estimation
+            #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
+            #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
 
             print('Pcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Pcmd_pu))
             print('Qcmd_pu bus ' + str(self.busId) + ' : ' + str(self.Qcmd_pu))
@@ -1443,10 +1432,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #according to the network-wide kVAbase (that was used to calculate the Zbase that was used to build the controller), then there shouldn’t be any problems.
             # The Sratio multiplication should not mess up the I estimation from S command (for Z estimation) bc the Sratio multiplication is canceled out when the Base is divided by the Sratio.
             #(Zest should use self.network_kVAbase not self.localkVAbase)
-
-            if self.perturbPowerCommand: #used to create signal for Z estimation
-                self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
-                self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
 
             # self.localkVAbase = self.network_kVAbase/self.localSratio, so this assumes that the power injections will later get multiplied by self.localSratio
             self.Pcmd_kVA = self.Pcmd_pu * self.localkVAbase #these are positive for power injections, not extractions
@@ -1466,7 +1451,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     '''
                     print('********')
                     print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
-                    print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang_relative))
+                    print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang_without120degshifts))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
                     # result, self.P_implemented_PU, self.Q_implemented_PU = self.modbustoOpal(self.nphases, self.Pcmd_kVA, self.Qcmd_kVA, self.ORT_max_VA,self.localSratio, self.client)
@@ -1541,7 +1526,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
                         self.GtMagHist[iter] = np.linalg.norm(Gt)
                     self.VmagHist[:,iter] = self.Vmag_pu
-                    self.VangHist[:,iter] = self.Vang_relative
+                    self.VangHist[:,iter] = self.Vang_without120degshifts
                     print('SAVING measurements for plotting')
                 elif iter == self.HistLength:
                     print('$$$$$$$$$$$$$$$$$$$$$$ SAVING plots $$$$$$$$$$$$$$$$$$$$$$')
@@ -1887,13 +1872,12 @@ for lpbcCounter, key in enumerate(lpbcidx):
     cfg['spbc'] = SPBCname
     timesteplength = cfg['rate']
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
-    currentMeasExists = 0 #HHHERE delete this -- set to 0 in order to run Zest in CIL test
+
+    #Zest Parameters
+    currentMeasExists = 0 #HHHERE delete this (?)-- set to 0 in order to run Zest in CIL test
     localVratio = 1
-    baseP_pu=0
-    baseQ_pu=0
-    # baseP_pu=0.2
-    # baseQ_pu=0.2
-    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, localVratio, ORT_max_kVA, VmagScaling, baseP_pu, baseQ_pu) #Every LPBC will have its own step that it calls on its own
+
+    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess
