@@ -39,7 +39,7 @@ class Zestimator:
         else:
             self.Gt = Gt
 
-        self.useRefNode = useRefNode
+        self.useRefNode = useRefNode #HEREE this isnt used
         self.useNominalVforPhi = useNominalVforPhi
 
         self.Babbrev = None #np.zeros((nphases,nphases))
@@ -178,7 +178,7 @@ class Zestimator:
     def getLinWRef(self, Zeffkest, Vcomp, V0magArray, V0angArray):
     # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
 
-        assert V0magArray != None and V0angArray != None, 'Need to give V0 if using ref node'
+        assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
         V0mag = np.asmatrix(V0magArray)
         V0ang = np.asmatrix(V0angArray)
         self.setV0(V0mag,V0ang)
