@@ -283,7 +283,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.AveragePhasorMeasurements = 1 # =1: Take the average phasor meas, =0: take the most recent
 
 
-    def phasorV_localMeas(local_phasors, nphases, plug_to_V_idx):
+    def phasorV_localMeas(self, local_phasors, nphases, plug_to_V_idx):
         # Initialize
         #ordered_local is the PMU meas data sets from the local PMU. First dim is phase, second is dataWindowLength.
         # ordered_local = [None] * nphases # makes a list nphases-long, similar to np.zeros(nphases), but a list
