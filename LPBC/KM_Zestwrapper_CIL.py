@@ -1669,7 +1669,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         for phase in np.arange(self.estimator.nphases):
                             Vangs = self.VangHist[phase,:]
                             plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
-                        plt.plot(self.VangTarg_relative[0]*np.ones(self.HistLength),'-', label='node: ' + key + ', phase A target')
                         # plt.title('Network: 13 node feeder with constant load')
                         plt.ylabel('Vang [rad]')
                         plt.xlabel('Timestep')
