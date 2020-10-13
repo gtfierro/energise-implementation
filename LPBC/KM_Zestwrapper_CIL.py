@@ -80,16 +80,16 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         so the current measurement used to estimate Z should use localSbase
         (current meas has not accounted for inverter offset hack to reduce oscillations)
         '''
-        self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
-        self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
-        if self.usingNonpuZeff:
-            ZeffkinitInPU = 0
-            Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
-            # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
-            #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
-        else:
-            ZeffkinitInPU = 1
-            Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
+        # self.usingNonpuZeff = 0 #setting this to 0 loads the saved pu Zeffk, to 1 loads the non pu Zeffk and waits for the first SPBC target to set the pu Zeffk
+        # self.ZeffkestinitHasNotBeenInitialized = 1 #only useful if self.usingNonpuZeff = 1, necessary bc KVA base is not received until first packet is received from the SPBC
+        # if self.usingNonpuZeff:
+        #     ZeffkinitInPU = 0
+        #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
+        #     # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
+        #     #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/notPU' + '/Zeffk_bus' + str(busId) + '.csv' #alternative
+        # else:
+        #     ZeffkinitInPU = 1
+        Zeffkpath = 'networkImpedanceModels/Zeffks/' + str(testcase) + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
             # if testcase == 'manual': #HERE for debugging, assumes 13bal is used
             #     Zeffkpath = 'networkImpedanceModels/Zeffks/' + '13bal' + '/PU' + '/Zeffk_bus' + str(busId) + '.csv'
         Zeffk_df = pd.read_csv(Zeffkpath, index_col=0) #index_col=0 bc of how Im saving the df (should have done index = false)
@@ -99,8 +99,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #for logging Zeff estimation error
         # self.ZeffkError = []
         # self.GtMag = []
-        if self.usingNonpuZeff == 0:
-            self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
+        # if self.usingNonpuZeff == 0:
+        self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
         #for testing the Zeffestimator
@@ -130,7 +130,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
         # self.controller = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
-        self.controller = Zestimator(busId,nphases,Zeffk_init,self.useRefNode,useNominalVforPhi,currentMeasExists,lam,Gt,controllerUpdateCadence,ZeffkinitInPU)
+        self.controller = Zestimator(busId,nphases,Zeffk_init,self.useRefNode,useNominalVforPhi,currentMeasExists,lam,Gt,controllerUpdateCadence)
 
         self.controllerInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
@@ -1323,32 +1323,13 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             print(f'time since last iteration {iterstart-self.iterstart}')
         self.iterstart = pytime.time()
 
-
-        # if phasor_target is None and self.VangTarg_relative == 'initialize':
-        #     print('No target received from SPBC by bus ' + str(self.busId))
-        #     return #don't need to return a status, when there isnt one to report
-        # else:
-        #     if phasor_target is None:
-        #         print('No target received by SPBC: Using last received target ' + str(self.busId))
-        #     else:
-        #         #get targets and bases from phasor_target, sent by the SPBC
-        #         #values are ordered as: A,B,C according to availability, using the names given to the targets (by the SPBC)
-        #         #VmagTarg is given as VmagTarg_relative_pu from the SPBC
-        #         #5/28/20 SPBC (only) sends relative magnitude and angle targets (relative to the nominal reference, though SPBC does get the actual ref voltage, so that could be used later)
-        #         #and apparently the relative voltages come in pu
-        #
-        #         # (self.VmagTarg_relative_pu, self.VangTarg_relative, self.kVbase, self.network_kVAbase, self.status_phases) = self.targetExtraction(phasor_target)
-        #         # print('VmagTarg_relative_pu bus ' + str(self.busId) + ' : ' + str(self.VmagTarg_relative_pu))
-        #         # print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
-
         if True: #relic from lpbcwrapper
-
             #HEREE
-            if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
-                Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
-                print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
-                Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
-                self.ZeffkestinitHasNotBeenInitialized = 0
+            # if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
+            #     Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
+            #     print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
+            #     Zeffkestinit, self.ZeffkTru = self.controller.setZeffandZeffkestinitWnewZbase(Zbase, self.Zeffk_init_mult)
+            #     self.ZeffkestinitHasNotBeenInitialized = 0
 
             if self.useRefNode:
                 # calculate relative voltage phasor

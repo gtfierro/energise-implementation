@@ -6,7 +6,7 @@ from numpy.linalg import inv
 printZeffterms = 1
 
 class Zestimator:
-    def __init__(self,lpbcbus,nphases,Zeffkinit,useRefNode=False,useNominalVforPhi=False,currentMeasExists=1,lam=.99,Gt=None,controllerUpdateCadence=1,ZeffkinitInPU=1):
+    def __init__(self,lpbcbus,nphases,Zeffkinit,useRefNode=False,useNominalVforPhi=False,currentMeasExists=1,lam=.99,Gt=None,controllerUpdateCadence=1):
         self.lpbcbus = lpbcbus
         self.nphases = nphases
         self.V0mag = np.NaN
@@ -27,11 +27,11 @@ class Zestimator:
         self.dtItThreshold = 1e-4 # 1e-3 #could pass these thresholds in when you make the controller
         self.dtVtThreshold = 1e-4 # 1e-3
         self.powerThresholdForIcompEst = 1e-4 # 1e-3 #this is different than self.dtItThreshold. Idea is to prevent noisy Icom estiamtes when there isnt an S command. Downside is that you lose a useful measurement when S command goes to zero from a nonzero value. Could fix that case with an if statement, though.
-        if ZeffkinitInPU:
-            self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
-            self.Zeffkest = np.asmatrix(Zeffkinit)
-        else: #waits for setZeffandZeffkestinitWnewZbase to be called to set self.Zeffkestinit and self.Zeffkest
-            self.ZeffkestinitNonPu = np.asmatrix(Zeffkinit)
+        # if ZeffkinitInPU:
+        self.Zeffkestinit = np.asmatrix(Zeffkinit) #Zeffkinit comes in as a complex-valued array
+        self.Zeffkest = np.asmatrix(Zeffkinit)
+        # else: #waits for setZeffandZeffkestinitWnewZbase to be called to set self.Zeffkestinit and self.Zeffkest
+        #     self.ZeffkestinitNonPu = np.asmatrix(Zeffkinit)
         self.IcompPrevExists = 0
         if Gt is None: #done bc its bad to initialize a variable to a mutable type https://opensource.com/article/17/6/3-things-i-did-wrong-learning-python
             self.Gt = np.asmatrix(np.eye(self.nphases))*.01
