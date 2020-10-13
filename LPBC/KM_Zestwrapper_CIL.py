@@ -1757,6 +1757,7 @@ for key in lpbcidx:
     #act_idxs assumes that, for each lpbc with multiple actuators, the actuators are dispatched in A, B, C order
     #also, for each lpbc, there is not more than one actuator on a given phase
     act_idxs = np.nonzero(acts_to_phase_dict[key])[0] #nonzero entries of acts_to_phase_dict[key] are defined as turning on actuators 1, 2, 3, [0] bc np.nonzero() is weird
+    print(',,,,,,,,,, act_idxs ', act_idxs)
     nphases = len(act_idxs)
 
     #In case referenec plugs are not in the connected in the correct A,B,C order:
