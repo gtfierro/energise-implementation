@@ -1657,9 +1657,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         #magnitude
                         for phase in np.arange(self.estimator.nphases):
                             plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
-                        print('phase ', phase)
-                        print('self.VmagTarg_pu[phase] ', self.VmagTarg_pu[phase])
-                        plt.plot(self.VmagTarg_pu[phase]*np.ones(self.HistLength),'-', label='node: ' + key + ', target')
+                        # print('phase ', phase)
                         # plt.title('Network: 13 node feeder with constant load')
                         plt.ylabel('p.u. Vmag')
                         plt.xlabel('Timestep')
