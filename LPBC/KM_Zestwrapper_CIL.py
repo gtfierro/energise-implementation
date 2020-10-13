@@ -1898,7 +1898,7 @@ for lpbcCounter, key in enumerate(lpbcidx):
     currentMeasExists = 0 #HHHERE delete this (?)-- set to 0 in order to run Zest in CIL test
     localVratio = 1
 
-    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess
