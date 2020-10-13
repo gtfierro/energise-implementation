@@ -1149,8 +1149,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             if q < 0:
                 sign_vec.append(0)
         if nphases == 3:
-            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[
-            3] + 2 ** 1 * sign_vec[4] + 2 ** 0 * sign_vec[5]
+            print('sign_vec ', sign_vec)
+            sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1] + 2 ** 3 * sign_vec[2] + 2 ** 2 * sign_vec[3] + 2 ** 1 * sign_vec[4] + 2 ** 0 * sign_vec[5]
         # TODO modbus only: manually change phase actuation on modbus here for sign base if needed on different phase
         elif nphases == 1:
             sign_base = 2 ** 5 * sign_vec[0] + 2 ** 4 * sign_vec[1]
