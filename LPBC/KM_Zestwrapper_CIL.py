@@ -1579,7 +1579,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
-            return status
+            return #status
 
 
 '''
