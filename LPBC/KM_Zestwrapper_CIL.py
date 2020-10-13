@@ -1365,7 +1365,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 # print('self.VangTarg_notRelative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_notRelative))
                 #this is here so that Relative angles can be used as LQR inputs (but with a non-relative Vcomp)
                 Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_with120degshifts) + self.Vmag_pu*np.sin(self.Vang_with120degshifts)*1j
-
+                Vang = self.Vang_without120degshifts
                 if self.controllerInitialized == 0:
                     Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
                     Gt = self.controller.Gt
@@ -1392,6 +1392,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.Vang_fict = self.Vang_fict + deltaVang_compensated
                 self.Vang_fict = self.PhasorV_ang_wraparound(self.Vang_fict, self.nphases, nameVang='self.Vang_fict')
                 Vcomp_fict_pu = self.Vmag_pu*np.cos(self.Vang_fict) + self.Vmag_pu*np.sin(self.Vang_fict)*1j
+                Vang = self.Vang_fict
 
                 if self.controllerInitialized == 0:
                     Zeffkest = self.ZeffkTru*self.Zeffk_init_mult
@@ -1444,7 +1445,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     print('inverter command receipt bus ' + str(self.busId) + ' : ' + str(self.commandReceipt))
                     '''
                     print('********')
-                    print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_relative_pu))
+                    print('Vmag_relative_pu bus ' + str(self.busId) + ' : ' + str(Vang))
                     print('Vang bus ' + str(self.busId) + ' : ' + str(self.Vang_without120degshifts))
                     print('self.phasor_error_mag_pu ' + str(self.phasor_error_mag_pu))
                     print('self.phasor_error_ang ' + str(self.phasor_error_ang))
