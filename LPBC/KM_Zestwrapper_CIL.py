@@ -69,11 +69,11 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.baseP_pu = 0
         self.baseQ_pu = 0
-        self.baseP_pu = .2
-        self.baseQ_pu = .2
+        self.baseP_pu = .1
+        self.baseQ_pu = .1
         # self.perturbPowerCommand = 0
         # self.perturbScale = .1
-        self.perturbScale = .5
+        self.perturbScale = .1
 
         '''
         Zestimation:
