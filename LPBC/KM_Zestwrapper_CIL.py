@@ -138,6 +138,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.actType = actType
 
         self.nphases = nphases
+        print(',,,,,,,,,,, self.nphases ',self.nphases)
         self.iteration_counter = 0
 
         self.Pcmd_kVA = np.zeros(nphases)
@@ -1434,7 +1435,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Qcmd_pu = np.zeros(self.nphases)
             self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseP_pu
             self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseQ_pu
-
+            print(',,,,,,,,, self.perturbScale ', self.perturbScale)
+            print(',,,,,,,,, self.baseP_pu ', self.baseP_pu)
             # if self.perturbPowerCommand: #used to create signal for Z estimation
             #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
             #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
@@ -1757,7 +1759,6 @@ for key in lpbcidx:
     #act_idxs assumes that, for each lpbc with multiple actuators, the actuators are dispatched in A, B, C order
     #also, for each lpbc, there is not more than one actuator on a given phase
     act_idxs = np.nonzero(acts_to_phase_dict[key])[0] #nonzero entries of acts_to_phase_dict[key] are defined as turning on actuators 1, 2, 3, [0] bc np.nonzero() is weird
-    print(',,,,,,,,,, act_idxs ', act_idxs)
     nphases = len(act_idxs)
 
     #In case referenec plugs are not in the connected in the correct A,B,C order:
