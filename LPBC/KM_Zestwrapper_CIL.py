@@ -139,7 +139,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.actType = actType
 
         self.nphases = nphases
-        print(',,,,,,,,,,, self.nphases ',self.nphases)
         self.iteration_counter = 0
 
         self.Pcmd_kVA = np.zeros(nphases)
@@ -1342,11 +1341,11 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 if Vang_wrap > 0:
                     # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                     Vang_wrap = Vang_wrap - np.radians(360.)
-                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+                    print(f'SUBTRACTING 2pi radians in PhasorV_ang_wraparound from {Vang} to get {Vang_wrap}')
                 elif Vang_wrap < 0:
                     # print(f'Vang_wrap[{phase}] = {Vang_wrap[phase]}')
                     Vang_wrap = Vang_wrap + np.radians(360.)
-                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from phase {phase} to get {Vang_wrap}')
+                    print(f'ADDING 2pi radians in PhasorV_ang_wraparound from {Vang} to get {Vang_wrap}')
         else: #elif isinstance(Vang, np.ndarray):
             nphases = len(Vang)
             for phase in range(nphases):
