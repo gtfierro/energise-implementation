@@ -344,6 +344,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 elif Vangi == 0:
                     print('Vangi is 0')
                 else:
+                    Vangi = np.radians(Vangi)
                     VangSum[phase] += self.PhasorV_ang_wraparound(Vangi, nphases=1, nameVang='Vangi')
                     VangCount[phase] += 1
                     # flag[phase] = 0
