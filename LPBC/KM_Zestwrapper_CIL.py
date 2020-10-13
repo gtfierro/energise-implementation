@@ -174,7 +174,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # # self.VmagTarg_pu = np.zeros(nphases) #rn SPBC sends targets in relative_pu, so these aren't needed
         # # self.VmagTarg_relative = np.zeros(nphases)
         # self.VmagTarg_relative_pu = np.zeros(nphases)
-        # self.status_phases = []
+        self.status_phases = plug_to_phase_idx #no idea if this is correct, just did it to avoid an error
 
         self.localVratio = localVratio #!= 1 if Ametek voltage ratio needs to be taken into account (ie PMU123 not PMUP123 used for the voltage)
         self.localSratio = localSratio #ratio between actual power and power in Opal siulation, eg 500/3.3
