@@ -1512,7 +1512,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #record data and save plots
             # iter = self.iteration_counter - 1
             iter = self.controlStepsTaken_counter
-            if controlStepTaken == 1:
+            # if controlStepTaken == 1:
+            if True:
                 self.controlStepsTaken_counter += 1
                 print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
                 if iter < self.HistLength:
