@@ -1517,9 +1517,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 self.controlStepsTaken_counter += 1
                 print('self.controlStepsTaken_counter ', self.controlStepsTaken_counter)
                 if iter < self.HistLength:
-                    if self.controllerType == 'LQR':
-                        self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
-                        self.GtMagHist[iter] = np.linalg.norm(Gt)
+                    self.ZeffkErrorHist[iter] = np.linalg.norm(Zeffkest-self.ZeffkTru) #frob norm is default
+                    self.GtMagHist[iter] = np.linalg.norm(Gt)
                     self.VmagHist[:,iter] = self.Vmag_pu
                     self.VangHist[:,iter] = self.Vang_without120degshifts
                     print('SAVING measurements for plotting')
