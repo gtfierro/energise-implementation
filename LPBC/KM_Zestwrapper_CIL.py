@@ -49,7 +49,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -176,14 +176,20 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.VmagTarg_relative_pu = np.zeros(nphases)
         # self.status_phases = []
 
-        self.kVbase = np.NaN #received from SPBC #intialized the first time a phasor_target packet comes from the SPBC, control loop isnt run until a packet is received
         self.localVratio = localVratio #!= 1 if Ametek voltage ratio needs to be taken into account (ie PMU123 not PMUP123 used for the voltage)
-        self.localkVbase = np.NaN # = self.kVbase/self.localVratio
-        self.network_kVAbase = np.NaN #received from SPBC
         self.localSratio = localSratio #ratio between actual power and power in Opal siulation, eg 500/3.3
-        self.localkVAbase = np.NaN # = self.network_kVAbase/self.localSratio
-        self.localIbase = np.NaN # = self.network_kVAbase/self.localkVbase
         self.ORT_max_VA = ORT_max_kVA * 1000
+        #HEREE
+        self.kVbase  = np.asarray(kVbase)
+        self.network_kVAbase = np.asarray(network_kVAbase)
+        self.localkVbase = self.kVbase/self.localVratio
+        self.localkVAbase = self.network_kVAbase/self.localSratio #self.localkVAbase takes into account self.localSratio here
+        self.localIbase = self.localkVAbase/self.localkVbase
+        print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
+        print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
+        print('self.localSratio : ' + str(self.localSratio))
+        print('self.localkVAbase : ' + str(self.localkVAbase))
+        print('self.localkVbase : ' + str(self.localkVbase))
 
         # self.plug_to_phase_map = plug_to_phase_map #3-entry vector that maps PMU channels to the true phases (SPBC commands should be given in terms of the true phases)
         self.plug_to_phase_idx = plug_to_phase_idx
@@ -1336,20 +1342,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #         # print('VangTarg_relative bus ' + str(self.busId) + ' : ' + str(self.VangTarg_relative))
 
         if True: #relic from lpbcwrapper
-            print('kVbase bus ' + str(self.busId) + ' : ' + str(self.kVbase))
-            print('network_kVAbase bus ' + str(self.busId) + ' : ' + str(self.network_kVAbase))
-            # print('calculated Zbase bus ' + str(self.busId) + ' : ' + str(1000*self.kVbase*self.kVbase/self.network_kVAbase))
-            # print('status_phases bus ' + str(self.busId) + ' : ' + str(self.status_phases))
-            self.kVbase  = np.asarray(self.kVbase)
-            self.network_kVAbase = np.asarray(self.network_kVAbase)
-            #phasor_target is (perLPBC) data packet from SPBC that contains channels (will be phases once fixed), V, delta, kvbase and kvabase
-            self.localkVbase = self.kVbase/self.localVratio
-            self.localkVAbase = self.network_kVAbase/self.localSratio #self.localkVAbase takes into account self.localSratio here
-            self.localIbase = self.localkVAbase/self.localkVbase
-            print('self.localSratio : ' + str(self.localSratio))
-            print('self.localkVAbase : ' + str(self.localkVAbase))
-            print('self.localkVbase : ' + str(self.localkVbase))
 
+            #HEREE
             if self.usingNonpuZeff and self.ZeffkestinitHasNotBeenInitialized:
                 Zbase = 1000*self.kVbase*self.kVbase/self.network_kVAbase #setup.py uses subkVbase_phg*subkVbase_phg*1000/subkVAbase to calc Zbase, so this is correct
                 print(f'SETTING Zeffkestinit with Zbase ({Zbase}) calculated using network_kVAbase ({self.network_kVAbase}) received from SPBC')
@@ -1435,8 +1429,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Qcmd_pu = np.zeros(self.nphases)
             self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseP_pu
             self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseQ_pu
-            print(',,,,,,,,, self.perturbScale ', self.perturbScale)
-            print(',,,,,,,,, self.baseP_pu ', self.baseP_pu)
             # if self.perturbPowerCommand: #used to create signal for Z estimation
             #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
             #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
@@ -1698,6 +1690,8 @@ if testcase == '13bal':
     inverterScaling = 500/3.3
     loadScaling = 350
     CILscaling = 10 #in VA
+    kVbase = np.ones(3)*(4.16/np.sqrt(3))
+    kVAbase = np.ones(3)*5000/3
 elif testcase == '13unb':
     # lpbcidx = ['671','680']
     # key = '671'
@@ -1716,6 +1710,8 @@ elif testcase == '13unb':
     inverterScaling = 500/3.3
     loadScaling = 350
     CILscaling = 10 #in VA
+    kVbase = np.ones(3)*(4.16/np.sqrt(3))
+    kVAbase = np.ones(3)*5000/3
 elif testcase == '33':
     testNumber = '8.1'
     lpbcidx = ['6'] #for 33
@@ -1727,6 +1723,8 @@ elif testcase == '33':
     inverterScaling = 500/3.3
     loadScaling = 350
     CILscaling = 10 #in VA
+    kVbase = np.ones(3)*(12.47/np.sqrt(3))
+    kVAbase = np.ones(3)*3000/3
 elif testcase == 'PL0001':
     testNumber = '9.3'
     lpbcidx = ['N_300063911']
@@ -1738,6 +1736,8 @@ elif testcase == 'PL0001':
     inverterScaling = 1000/1
     loadScaling = 350
     CILscaling = 20 #in VA
+    kVbase = np.ones(3)*(12.6/np.sqrt(3))
+    kVAbase = np.ones(3)*1500/3
 elif testcase == 'manual':
     print('MOVED TESTS TO ACTUAL TEST CASES')
 
@@ -1894,11 +1894,11 @@ for lpbcCounter, key in enumerate(lpbcidx):
     timesteplength = cfg['rate']
     cfg['testcase'] = testcase #6/3/20 put this in so the wrapper plotter can use the name to save the plot for a given testcase
 
-    #Zest Parameters
+    #Zest Parameters (from LPBC)
     currentMeasExists = 0 #HHHERE delete this (?)-- set to 0 in order to run Zest in CIL test
     localVratio = 1
 
-    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 run_loop() #defined in XBOSProcess
