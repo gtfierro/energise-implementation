@@ -206,7 +206,7 @@ class Zestimator:
         # else:
         return Babbrev
 
-    def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,IcompArray=None):
+    def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,deltaVangReliable=True,IcompArray=None):
         '''
         Uses reference node measurement
         uses matrix computations internally, but gets ndarrays in and passes ndarrays out
@@ -249,7 +249,7 @@ class Zestimator:
         if Icomp is not None:  #only run Zeffk est if you have a current measurement or a legit estimate
             deltaV = (Vcomp - self.VcompPrev).T #these are vertical vectors
             deltaI = (Icomp - self.IcompPrev).T
-            if self.IcompPrevExists:
+            if self.IcompPrevExists and deltaVangReliable:
                 self.Zeffkest, self.Gt = self.updateZeff(deltaV,deltaI)
             self.IcompPrev = Icomp.copy()
             self.VcompPrev = Vcomp.copy()
