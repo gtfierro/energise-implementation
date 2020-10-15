@@ -75,6 +75,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.perturbPowerCommand = 0
         # self.perturbScale = .1
         self.perturbScale = 1
+        # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
         Zestimation:
@@ -1438,6 +1439,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     (self.Vang_with120degshifts,self.VangRef,self.Vang_without120degshifts,self.Vmag,self.VmagRef,self.Vmag_relative, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
                 else:
                     (self.Vang_with120degshifts,self.VangRef,self.Vang_without120degshifts,self.Vmag,self.VmagRef,self.Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) = self.old_phasorV_calc(local_phasors, reference_phasors, self.nphases, self.plug_to_V_idx)
+                deltaVangReliable = Vmeas_all_phases
 
                 # if any(np.isnan(self.Vang_without120degshifts)):
                 if Vmeas_all_phases == 0:
@@ -1526,8 +1528,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)
-            self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseP_pu
-            self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale)*self.baseQ_pu
+            self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
+            self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseQ_pu
             # if self.perturbPowerCommand: #used to create signal for Z estimation
             #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
             #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
