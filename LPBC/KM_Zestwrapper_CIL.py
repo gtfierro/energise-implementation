@@ -58,7 +58,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.timesteplength = timesteplength
 
         #These are new #HEREE
-        self.useRefNodeforVcalc = True
+        # self.useRefNodeforVcalc = True
         self.useRefNodeforVcalc = False
         useV0forVth = False
         useNominalVforPsi = True
