@@ -6,20 +6,14 @@ from numpy.linalg import inv
 printZeffterms = 1
 
 class Zestimator:
-    def __init__(self,lpbcbus,nphases,Zeffkinit,useRefNode=False,useNominalVforPhi=False,currentMeasExists=1,lam=.99,Gt=None,controllerUpdateCadence=1):
+    def __init__(self,lpbcbus,nphases,Zeffkinit,useNominalVforPsi=False,useV0forVth=False,currentMeasExists=1,lam=.99,Gt=None):
         self.lpbcbus = lpbcbus
         self.nphases = nphases
         self.V0mag = np.NaN
         self.V0ang = np.NaN
         self.V0 = np.NaN #np.hstack((self.V0mag,self.V0ang))
-        self.VmagTarg = np.NaN
-        self.VangTarg = np.NaN
         # self.timesteplength = timesteplength
         self.currentMeasExists = currentMeasExists
-        self.LQR_stepcounter = 0
-
-        #Controller Parameters
-        self.controllerUpdateCadence = controllerUpdateCadence
 
         #Z estimator parameters
         # self.est_Zeffk = est_Zeffk #boolean
@@ -39,8 +33,8 @@ class Zestimator:
         else:
             self.Gt = Gt
 
-        self.useRefNode = useRefNode #HEREE this isnt used
-        self.useNominalVforPhi = useNominalVforPhi
+        self.useNominalVforPsi = useNominalVforPsi
+        self.useV0forVth = useV0forVth
 
         self.Babbrev = None #np.zeros((nphases,nphases))
 
@@ -179,7 +173,7 @@ class Zestimator:
     # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
 
         #assumes injection-positive (rather than load (extraction)-positive)
-        if self.useNominalVforPhi:
+        if self.useNominalVforPsi:
             alph = np.exp(-2/3*np.pi*1j)
             Phir = np.asmatrix(np.diag([1, alph, alph**2]))
             Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
@@ -196,7 +190,7 @@ class Zestimator:
         return Babbrev
 
     def getLinWoRef(self, Zeffk, VmagArray=None, P_implemented_Array=None, Q_implementedArray=None):
-        # if self.useNominalVforPhi:
+        # if self.useNominalVforPsi:
         alph = np.exp(-2/3*np.pi*1j)
         Phir = np.asmatrix(np.diag([1, alph, alph**2]))
         Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
