@@ -73,8 +73,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.baseP_pu = .1
         self.baseQ_pu = .1
         # self.perturbPowerCommand = 0
-        # self.perturbScale = .1
-        self.perturbScale = 1
+        self.perturbScale = .1
+        # self.perturbScale = 1
 
         '''
         Zestimation:
@@ -103,6 +103,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.GtMag = []
         # if self.usingNonpuZeff == 0:
         self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
+        print(f'ZeffkTru (PU) bus {busId}: ', self.ZeffkTru)
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
         #for testing the Zeffestimator
@@ -110,7 +111,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.Zeffk_init_mult = 2
         # self.Zeffk_init_mult = 1
         Zeffk_init = Zeffk_init*self.Zeffk_init_mult
-        # print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
+        print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
+        print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
         ######################## LQR Controller Parameters #######################
         #General controller parameters
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
