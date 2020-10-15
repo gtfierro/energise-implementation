@@ -58,8 +58,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.timesteplength = timesteplength
 
         #These are new #HEREE
-        # self.useRefNodeforVcalc = True
-        self.useRefNodeforVcalc = False
+        self.useRefNodeforVcalc = True
+        # self.useRefNodeforVcalc = False
         useV0forVth = False
         useNominalVforPsi = True
         # self.Vang_fict = None #not using these any more
@@ -73,8 +73,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.baseP_pu = .1
         self.baseQ_pu = .1
         # self.perturbPowerCommand = 0
-        self.perturbScale = .1
-        # self.perturbScale = 1
+        # self.perturbScale = .1
+        self.perturbScale = 1
 
         '''
         Zestimation:
