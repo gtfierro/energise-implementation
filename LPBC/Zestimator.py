@@ -126,12 +126,12 @@ class Zestimator:
                 print(f'Gt {self.Gt}')
                 print(f'err {err}')
                 print(f'Zeffkest : {self.Zeffkest}')
-            for p in np.arange(self.nphases):
-                if np.real(self.Zeffkest[p,p]) < 0:
-                    self.Zeffkest = self.Zeffkestinit
-                    self.Gt = self.Gt*.1
-                    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                    print('reseting impedance estimator, reducing the size of Gt')
+            # for p in np.arange(self.nphases):
+            #     if np.real(self.Zeffkest[p,p]) < 0:
+            #         self.Zeffkest = self.Zeffkestinit
+            #         self.Gt = self.Gt*.1
+            #         print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            #         print('reseting impedance estimator, reducing the size of Gt')
         else:
             if printZeffterms:
                 print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')

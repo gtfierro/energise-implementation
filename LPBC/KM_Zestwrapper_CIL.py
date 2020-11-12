@@ -78,7 +78,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.baseP_pu = 1
         self.baseQ_pu = self.baseP_pu
-        self.perturbScale = .005
+        # self.perturbScale = .005
         self.perturbScale = .01
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
@@ -119,7 +119,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Zeffk_init_mult = 1
             # self.Zeffk_init_mult = 1.25
             # self.Zeffk_init_mult = 1.5
-            # self.Zeffk_init_mult = 2
+            self.Zeffk_init_mult = 2
         else:
             self.Zeffk_init_mult = Zeffk_init_mult
         Zeffk_init = Zeffk_init*self.Zeffk_init_mult
