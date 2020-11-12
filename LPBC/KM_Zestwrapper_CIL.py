@@ -115,7 +115,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
         # self.ZerrorFileName = ''
-        self.ZerrorFileName = f'r = {self.Zeffk_init_mult}'
+        self.ZerrorFileName = f'λ = {self.Zeffk_init_mult}'
         ######################## LQR Controller Parameters #######################
         #General controller parameters
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
@@ -1698,7 +1698,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         plt.legend()
                         plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
 
-                        # HEREE
                         stack = np.vstack((self.ZeffkErrorHist,self.GtMagHist))
                         if self.saveVmagandangPlot:
                             for phase in np.arange(self.estimator.nphases):
@@ -1712,7 +1711,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             # this assumes the phases are a then b then c, which isnt necessarily true
                         else:
                             Zerr_df = pd.DataFrame(stack.T, columns=['Zth Estimation Error', 'Gt'])
-                        Zerr_df.to_csv(f'{self.ZerrorFileName}.csv')
+                        Zerr_df.to_csv(os.path.join(resultsPATH, f'{self.ZerrorFileName}.csv'))
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
