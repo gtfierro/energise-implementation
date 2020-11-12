@@ -1475,8 +1475,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 #     Zeffkest, Gt = self.estimator.ZeffUpdateWRef(self.Vmag_pu, self.Vang_with120degshifts, self.P_implemented_PU, self.Q_implemented_PU, V0magArray=self.VmagRef_pu, V0angArray=self.VangRef, sat_arrayP=self.sat_arrayP, sat_arrayQ=self.sat_arrayQ, VcompArray=Vcomp_pu, IcompArray=self.Icomp_pu) #all Vangs must be in radians
                 # else:
                 Zeffkest, Gt = self.estimator.ZeffUpdate(Vcomp_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ)
-                Babbrev = self.estimator.getLinWRef(Zeffkest, Vcomp_pu, self.VmagRef_pu, self.VangRef)
-                # Babbrev = self.estimator.getLinWRef(self, Zeffkest, self.Vmag_pu, self.Vang_with120degshifts, VmagRef_pu, self.VangRef)
+                # Babbrev = self.estimator.getLinWRef(Zeffkest, Vcomp_pu, self.VmagRef_pu, self.VangRef)
+                # # Babbrev = self.estimator.getLinWRef(self, Zeffkest, self.Vmag_pu, self.Vang_with120degshifts, VmagRef_pu, self.VangRef)
 
             else:
                 #HEREE
@@ -1494,7 +1494,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Zeffkest, Gt = self.estimator.ZeffUpdate(Vcomp_pu, self.P_implemented_PU, self.Q_implemented_PU, self.sat_arrayP, self.sat_arrayQ, deltaVangReliable)
                 # deltaVangReliable is given to ZeffUpdate so that ZeffUpdate can update VompPrev and IcompPrev even if Zeff isnt updated
 
-                Babbrev = self.estimator.getLinWoRef(Zeffkest)
+                # Babbrev = self.estimator.getLinWoRef(Zeffkest)
 
                 # #OLD VERSION: This wouldnt work as is--see note in commented out phasorV_localMeas description
                 # #also, would need to initialize self.Vang_fict in the first round
