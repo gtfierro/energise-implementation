@@ -79,7 +79,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.baseP_pu = 1
         self.baseQ_pu = self.baseP_pu
         self.perturbScale = .005
-        self.perturbScale = .05
+        self.perturbScale = .01
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
@@ -292,7 +292,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         self.HistLength = 101
-        self.HistLength = 25
+        self.HistLength = 10
         # self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
