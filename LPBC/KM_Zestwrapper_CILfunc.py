@@ -1611,7 +1611,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             #Hack to get self.P_implemented_PU and self.Q_implemented_PU (assumes max_kVA is implemented correctly by self.modbustoOpal, self.httptoLoads or self.httptoInverters + self.modbustoOpal_quadrant combo)
             used_Pcmd_pu = np.zeros(self.nphases)
             used_Qcmd_pu = np.zeros(self.nphases)
-            for i in np.arange(nphases):
+            for i in np.arange(self.nphases):
                 if self.Pcmd_pu[i] > max_PU_power[i]: # P and Q commands get compared with max_kVA indepenedently
                     used_Pcmd_pu[i] = max_PU_power[i]
                 elif self.Pcmd_pu[i] < -max_PU_power[i]:
