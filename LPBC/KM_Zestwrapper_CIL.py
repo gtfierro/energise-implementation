@@ -49,7 +49,7 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None'):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -68,13 +68,17 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.nomFreq = 60 #the nominal frequency used by PMUs for the synchrophasor measurements
         self.freqTol = self.nomFreq*.001 #arbitrary
 
-        self.baseP_pu = 0
-        self.baseQ_pu = 0
-        self.baseP_pu = .1
-        self.baseQ_pu = .1
-        # self.perturbPowerCommand = 0
-        # self.perturbScale = .1
-        self.perturbScale = 1
+        # self.baseP_pu = 0
+        # self.baseQ_pu = 0
+        # self.baseP_pu = .1
+        # self.baseQ_pu = .1
+        # # self.perturbPowerCommand = 0
+        # # self.perturbScale = .1
+        # self.perturbScale = 1
+
+        self.baseP_pu = 1
+        self.baseQ_pu = self.baseP_pu
+        self.perturbScale = .005
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
@@ -108,9 +112,15 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
         #for testing the Zeffestimator
-        self.Zeffk_init_mult = .5
-        # self.Zeffk_init_mult = 2
-        # self.Zeffk_init_mult = 1
+        if Zeffk_init_mult == 'None':
+            self.Zeffk_init_mult = .5
+            # self.Zeffk_init_mult = .75
+            # self.Zeffk_init_mult = 1
+            # self.Zeffk_init_mult = 1.25
+            # self.Zeffk_init_mult = 1.5
+            # self.Zeffk_init_mult = 2
+        else:
+            self.Zeffk_init_mult = Zeffk_init_mult
         Zeffk_init = Zeffk_init*self.Zeffk_init_mult
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
@@ -125,10 +135,12 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         lam = .95
         # lam = .5
         # GtInitScale = 1
-        GtInitScale = 100
+        # GtInitScale = 100
+        GtInitScale = 1000
         controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
 
-        Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
+        # Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
+        Gt = np.asmatrix(np.eye(3))*GtInitScale
 
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
@@ -1530,8 +1542,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             # self.Pcmd_pu = np.zeros(self.nphases)
             # self.Qcmd_pu = np.zeros(self.nphases)
-            self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
-            self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseQ_pu
+            # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
+            # self.Qcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseQ_pu
+            self.Pcmd_pu = (np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
+            self.Qcmd_pu = (np.random.randn(self.nphases)*self.perturbScale) * self.baseQ_pu
             # if self.perturbPowerCommand: #used to create signal for Z estimation
             #     self.Pcmd_pu = self.Pcmd_pu + np.random.randn(self.nphases) * self.perturbScale
             #     self.Qcmd_pu = self.Qcmd_pu + np.random.randn(self.nphases) * self.perturbScale
@@ -2015,6 +2029,9 @@ for lpbcCounter, key in enumerate(lpbcidx):
     currentMeasExists = 0 #HHHERE delete this (?)-- set to 0 in order to run Zest in CIL test
     localVratio = 1
 
+    # Zeffk_init_mult = .5
+
+    # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult) #Every LPBC will have its own step that it calls on its own
     lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
