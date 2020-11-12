@@ -79,6 +79,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.baseP_pu = 1
         self.baseQ_pu = self.baseP_pu
         self.perturbScale = .005
+        self.perturbScale = .05
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
@@ -135,8 +136,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         lam = .95
         # lam = .5
         # GtInitScale = 1
-        # GtInitScale = 100
-        GtInitScale = 1000
+        GtInitScale = 100
+        # GtInitScale = 1000
         controllerUpdateCadence = 1 #this is the cadence (of timesteps) with which K is updated
 
         # Gt = np.asmatrix(np.eye(3))*(1+1j)*GtInitScale
