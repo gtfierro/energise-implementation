@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 
 #HERE have to put the file names and path in manually
 #The file names will also be the names in the legend
-path = 
-fileNames = ['λ = .5']
+resultsPATH = os.path.join(current_directory, 'simulationPlots')
+resultsPATH = os.path.join(resultsPATH, f'feeder:13_bus:675')
+fileNames = ['r = .5']
 
 for i in np.arange(len(fileNames)):
     Z_df = pd.read_csv(fileNames[i], index_col=0)
