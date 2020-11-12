@@ -169,36 +169,36 @@ class Zestimator:
         return Vang_wrap
 
 
-    def getLinWRef(self, Zeffk, Vcomp=None, V0magArray=None, V0angArray=None):
-    # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
-
-        #assumes injection-positive (rather than load (extraction)-positive)
-        if self.useNominalVforPsi:
-            alph = np.exp(-2/3*np.pi*1j)
-            Phir = np.asmatrix(np.diag([1, alph, alph**2]))
-            Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
-            dimNR = self.nphases*2
-            NR = self.makeN(dimNR)
-            Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
-        else:
-            assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
-            V0mag = np.asmatrix(V0magArray)
-            V0ang = np.asmatrix(V0angArray)
-            self.setV0(V0mag,V0ang)
-            #HEREE
-            Babbrev = None
-        return Babbrev
-
-    def getLinWoRef(self, Zeffk, VmagArray=None, P_implemented_Array=None, Q_implementedArray=None):
-        # if self.useNominalVforPsi:
-        alph = np.exp(-2/3*np.pi*1j)
-        Phir = np.asmatrix(np.diag([1, alph, alph**2]))
-        Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
-        dimNR = self.nphases*2
-        NR = self.makeN(dimNR)
-        Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
-        # else:
-        return Babbrev
+    # def getLinWRef(self, Zeffk, Vcomp=None, V0magArray=None, V0angArray=None):
+    # # def getLinWRef(self, Zeffkest, VmagArray, VangArray, V0magArray, V0angArray):
+    #
+    #     #assumes injection-positive (rather than load (extraction)-positive)
+    #     if self.useNominalVforPsi:
+    #         alph = np.exp(-2/3*np.pi*1j)
+    #         Phir = np.asmatrix(np.diag([1, alph, alph**2]))
+    #         Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
+    #         dimNR = self.nphases*2
+    #         NR = self.makeN(dimNR)
+    #         Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
+    #     else:
+    #         assert all(V0magArray != None) and all(V0angArray != None), 'Need to give V0 if using ref node'
+    #         V0mag = np.asmatrix(V0magArray)
+    #         V0ang = np.asmatrix(V0angArray)
+    #         self.setV0(V0mag,V0ang)
+    #         #HEREE
+    #         Babbrev = None
+    #     return Babbrev
+    #
+    # def getLinWoRef(self, Zeffk, VmagArray=None, P_implemented_Array=None, Q_implementedArray=None):
+    #     # if self.useNominalVforPsi:
+    #     alph = np.exp(-2/3*np.pi*1j)
+    #     Phir = np.asmatrix(np.diag([1, alph, alph**2]))
+    #     Phirinv = np.asmatrix(np.diag([1, alph**2, alph]))
+    #     dimNR = self.nphases*2
+    #     NR = self.makeN(dimNR)
+    #     Babbrev = self.pointybracket(Phirinv*Zeffk*Phir)*NR
+    #     # else:
+    #     return Babbrev
 
     def ZeffUpdate(self,VcompArray,P_implemented=None,Q_implemented=None,sat_arrayP=None,sat_arrayQ=None,deltaVangReliable=True,IcompArray=None):
         '''
@@ -206,18 +206,19 @@ class Zestimator:
         uses matrix computations internally, but gets ndarrays in and passes ndarrays out
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
-        if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
-            # self.u[0,:self.nphases] = P_implemented
+        if np.any(P_implemented is None): #before any P is implemented P_implemented = none and self.u = 0
+            print('&&&&&&&&&&&& P_implemented was None, Exiting Zeffupdate')
+            return self.Zeffkest, self.Gt
+        else:
             self.PcommandPrev = P_implemented
             print('&&&&&&&&&&&& self.PcommandPrev', self.PcommandPrev)
+        if np.any(Q_implemented is None):
+            print('&&&&&&&&&&&& Q_implemented was None, Exiting Zeffupdate')
+            return self.Zeffkest, self.Gt
         else:
-            print('&&&&&&&&&&&& P_implemented was None')
-        if Q_implemented is not None:
-            # self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
             print('&&&&&&&&&&&& self.QcommandPrev', self.QcommandPrev)
-        else:
-            print('&&&&&&&&&&&& Q_implemented was None')
+
 
         # self.LQR_stepcounter += 1
         if sat_arrayP is None:

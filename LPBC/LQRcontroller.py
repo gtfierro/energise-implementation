@@ -293,21 +293,21 @@ class LQRcontroller:
         all vectors are row vectors so they can be converted back into 1-d arrays easily
         '''
         ubefore = self.u
-        if P_implemented is not None: #before any P is implemented P_implemented = none and self.u = 0
+        if np.any(P_implemented is None): #before any P is implemented P_implemented = none and self.u = 0
+            print('&&&&&&&&&&&& P_implemented was None')
+        else:
             self.u[0,:self.nphases] = P_implemented
             self.PcommandPrev = P_implemented
             print('&&&&&&&&&&&& self.PcommandPrev', self.PcommandPrev)
+        if np.any(Q_implemented is None):
+            print('&&&&&&&&&&&& Q_implemented was None')
         else:
-            print('&&&&&&&&&&&& P_implemented was None')
-        if Q_implemented is not None:
             self.u[0,self.nphases:] = Q_implemented
             self.QcommandPrev = Q_implemented
             print('&&&&&&&&&&&& self.QcommandPrev', self.QcommandPrev)
-        else:
-            print('&&&&&&&&&&&& Q_implemented was None')
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
         # print('DEBUGGGGGGGGG np.asarray(self.u)[0] ', np.asarray(self.u)[0])
-        if any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement working as intended
+        if np.any(np.asarray(ubefore)[0] != np.asarray(self.u)[0]): #HHERE get this if statement working as intended
             print('&&&&&&&&&&&& u before being assinged P_implemented in LQRupdate &&&&&&&&&&&& ', ubefore)
             print('&&&&&&&&&&&& u after being assinged P_implemented in LQRupdate `&&&&&&&&&&&& ', self.u)
 
