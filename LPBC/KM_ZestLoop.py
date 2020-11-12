@@ -10,6 +10,7 @@ Zeffk_init_mults = [.75, 1.25]
 for i in np.arange(len(Zeffk_init_mults)):
     buildZestimators(Zeffk_init_mults[i],  HistLength)
 
+    loop = asyncio.get_event_loop()
     loop.run_forever()
     # await asyncio.sleep(caution * stepLength * HistLength)
     asyncio.sleep(caution * stepLength * HistLength)
