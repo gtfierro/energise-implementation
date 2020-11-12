@@ -56,6 +56,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(f'Building LPBC for performance node {busId}')
         self.busId = busId
         self.timesteplength = timesteplength
+        self.rate = cfg['rate']
 
         #These are new #HEREE
         self.useRefNodeforVcalc = True
@@ -1644,7 +1645,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
             print(f'~~~ STEP FINISH - iter length: {iterend-iterstart}, epoch: {pytime.time()} ~~~')
             print('')
-            if (iterend-iterstart) > rate:
+            if (iterend-iterstart) > self.rate:
                 print('WARNING: LOOP LENGTH LARGER THAN RATE - INCREASE SIZE OF RATE')
                 print('')
 
