@@ -3,8 +3,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-#HERE have to put the file names in manually
+#HERE have to put the file names and path in manually
 #The file names will also be the names in the legend
+path = 
 fileNames = ['λ = .5']
 
 for i in np.arange(len(fileNames)):
