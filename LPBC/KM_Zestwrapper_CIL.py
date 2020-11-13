@@ -136,7 +136,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Zeffkinit = Zeffk_init*Zeffk_init_mult
         self.Zeffk_init_mult = Zeffk_init_mult
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
-        print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
+        print(f'Zeffk_init (PU) bus {busId}: ', self.Zeffkinit)
         # self.initErrString = ''
         self.initErrString = f'eps={self.Zeffk_init_mult}'
         ######################## LQR Controller Parameters #######################
@@ -158,7 +158,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         assert nphases == 3, 'LQR controller has only been set up for 3 phases at the moment'
         # self.useRelativeMeas = 0 #default is 0. setting to 1 runs LQR with relative V measurements rather than nonRelative V measurements (still uses relative Vcomp)
         # self.estimator = LQRcontroller(busId,nphases,timesteplength,Qcost,Rcost,Zeffk_init,est_Zeffk,cancelDists,currentMeasExists,lpAlpha,lam,Gt,controllerUpdateCadence,linearizeplant,ZeffkinitInPU)
-        self.estimator = Zestimator(busId,nphases,Zeffk_init,useNominalVforPsi,useV0forVth,currentMeasExists,lam,Gt)
+        self.estimator = Zestimator(busId,nphases,self.Zeffk_init,useNominalVforPsi,useV0forVth,currentMeasExists,lam,Gt)
 
         # self.estimatorInitialized = 0 # For LQR: flag to initialize Zest (and set unaive before turning on controller)
 
