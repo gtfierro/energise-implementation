@@ -1,7 +1,7 @@
 
-import asyncio
+# import asyncio
 
-from KM_Zestwrapper_CILfunc import *
+# from KM_Zestwrapper_CILfunc import *
 
 import numpy as np
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
@@ -146,8 +146,6 @@ def main_flexlab_CIL():
     sim_start_keith(dfsw_in,dfsw_out,test_ID,sim_length_min)
 
     # sim_start_pause_stop(sim_length_min)
-
-
 
 
 
