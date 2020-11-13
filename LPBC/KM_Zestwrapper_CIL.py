@@ -2065,8 +2065,9 @@ for lpbcCounter, key in enumerate(lpbcidx):
     config = configparser.ConfigParser()
     # config.read('KM_Zest_params.cfg', encoding='utf-8-sig')
     config.read('KM_Zest_params.cfg')
-    Zeffk_init_mult = config.get('parameters','initParam')
+    Zeffk_init_mult = float(config.get('parameters','initParam'))
     print('YYYYYYYYYYYYYYYYY Zeffk_init_mult ', Zeffk_init_mult)
+    print('YYYYYYYYYYYYYYYYY type(Zeffk_init_mult) ', type(Zeffk_init_mult))
 
     # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, loop) #Every LPBC will have its own step that it calls on its own
     lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult) #Every LPBC will have its own step that it calls on its own
