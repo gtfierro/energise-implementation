@@ -115,7 +115,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(f'ZeffkTru (PU) bus {busId}: ', self.ZeffkTru)
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
-        self.Zeffkintermed = self.ZeffkTru
+        self.Zeffkintermed = self.ZeffkTru.copy()
 
         #for testing the Zeffestimator
         Zeffk_init_mult = 'uniRandom'
@@ -128,7 +128,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # Zeffk_init_mult = 2
             self.Zeffkinit = Zeffk_init*Zeffk_init_mult
         elif Zeffk_init_mult == 'uniRandom':
-            self.Zeffkinit = self.ZeffkTru
+            self.Zeffkinit = self.ZeffkTru.copy()
             for i in np.arange(nphases):
                 for k in np.arange(nphases):
                     self.Zeffkinit[i,k] = Zeffk_init[i,k]*2*np.random.uniform()
