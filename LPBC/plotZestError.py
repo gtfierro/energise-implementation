@@ -21,7 +21,7 @@ labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r
 
 plotZest = 1
 plotVmag = 1
-plotVmag_noPerturbToo = 1
+plotVmag_noPerturbToo = 0
 VmagIndex = 1
 
 if plotZest:
