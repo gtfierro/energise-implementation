@@ -64,9 +64,9 @@ if plotVmag:
         nodeNames = ['Va Magnitude', 'Vb Magnitude', 'Vc Magnitude']
         Z_df = pd.read_csv(os.path.join(resultsPATH, f'ZestData_noPerturb.csv'), index_col=0)
         Z_array = Z_df[['Va Magnitude', 'Vb Magnitude', 'Vc Magnitude']].to_numpy()
-        plt.plot(Z_array[:,0], label='phase A')
-        plt.plot(Z_array[:,1], label='phase B')
-        plt.plot(Z_array[:,2], label='phase C')
+        plt.plot(Z_array[:,0], '--', color='red', label='phase A')
+        plt.plot(Z_array[:,1], '--', color='blue', label='phase B')
+        plt.plot(Z_array[:,2], '--', color='orange', label='phase C')
             # if i == 0:
             #     plt.plot(Z_array, label='phase A') # this uses the filename for the legend
             # elif i == 1:

@@ -1710,7 +1710,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
-                        print(f'Zeffk_intermed (PU) bus {self.busId}: ', self.Zeffk_intermed)
+                        print(f'Zeffk_intermed (PU) bus {self.busId}: ', self.Zeffkintermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
                         Zeststack = np.vstack((Zeffkinit, self.Zeffk_intermed, Zeffkest))
                         Zest_df = pd.DataFrame(Zeststack)
@@ -1746,7 +1746,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
-                    loop.stop()    
+                    # loop.stop()
                     sys.exit()
             return #status
 
