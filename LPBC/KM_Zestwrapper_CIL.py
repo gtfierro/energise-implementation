@@ -1745,6 +1745,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Zerr_df.to_csv(os.path.join(resultsPATH, f'ZestData_{self.initErrString}.csv'))
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
+
+                    loop.stop()    
                     sys.exit()
             return #status
 
