@@ -142,7 +142,8 @@ def main_flexlab_CIL():
 
     #set_switches(dfsw_in,dfsw_out,test_ID)
 
-    sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+    # sim_start_stop(dfsw_in,dfsw_out,test_ID,sim_length_min)
+    sim_start_keith(dfsw_in,dfsw_out,test_ID,sim_length_min)
 
     # sim_start_pause_stop(sim_length_min)
 
