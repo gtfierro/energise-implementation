@@ -1750,7 +1750,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
                     if self.loop != 'None':
                         self.loop.stop() #this should stop the xbosprocess
-                    sys.exit()
+                        self.loop.close()
+                    sys.exit(0)
             return #status
 
 
