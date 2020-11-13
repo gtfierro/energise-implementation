@@ -126,13 +126,14 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # Zeffk_init_mult = 1.25
             # Zeffk_init_mult = 1.5
             # Zeffk_init_mult = 2
-            Zeffk_init = Zeffk_init*Zeffk_init_mult
+            self.Zeffkinit = Zeffk_init*Zeffk_init_mult
         elif Zeffk_init_mult == 'uniRandom':
+            self.Zeffkinit = self.ZeffkTru
             for i in np.arange(nphases):
                 for k in np.arange(nphases):
-                    Zeffk_init[i,k] = Zeffk_init[i,k]*2*np.random.uniform()
+                    self.Zeffkinit[i,k] = Zeffk_init[i,k]*2*np.random.uniform()
         else:
-            Zeffk_init = Zeffk_init*Zeffk_init_mult
+            self.Zeffkinit = Zeffk_init*Zeffk_init_mult
         self.Zeffk_init_mult = Zeffk_init_mult
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
@@ -1709,12 +1710,11 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     if self.saveZesterrorPlot:
                         print('<<<<<<<<<<<<<<<<<<<<<<<<<<,')
                         print('self.initErrString ', self.initErrString)
-                        Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
-                        print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
+                        print(f'Zeffk_init (PU) bus {self.busId}: ', self.Zeffkinit)
                         print(f'Zeffk_intermed (PU) bus {self.busId}: ', self.Zeffkintermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
-                        Zeststack = np.vstack((Zeffkinit, self.Zeffkintermed, Zeffkest))
+                        Zeststack = np.vstack((self.Zeffkinit, self.Zeffkintermed, Zeffkest))
                         Zest_df = pd.DataFrame(Zeststack)
                         Zest_df.to_csv(os.path.join(resultsPATH, f'Zestimates_{self.initErrString}.csv'))
 

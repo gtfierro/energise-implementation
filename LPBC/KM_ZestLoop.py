@@ -9,6 +9,10 @@ from pymodbus.client.sync import ModbusTcpClient as ModbusClient
 import pandas as pd
 from ORT_modbus_energise import *
 
+
+#THIS DIDNT WORK, USING THE BASH LOOP METHOD
+
+
 def CIL_debug():
     IP = '131.243.41.14'
     PORT = 504
