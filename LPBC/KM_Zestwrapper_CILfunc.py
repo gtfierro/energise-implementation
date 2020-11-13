@@ -1709,13 +1709,13 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         plt.ylabel('Frobenius Norm Zeff Estimation Error')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, f'ZestError_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'ZestError_{self.initErrString}.png')); plt.clf(); plt.cla(); plt.close()
 
                         plt.plot(self.GtMagHist,'-', label='node: ' + self.busId)
                         plt.ylabel('Frobenius Norm of Gt')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, f'Gt_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'Gt_{self.initErrString}.png')); plt.clf(); plt.cla(); plt.close()
 
                         stack = np.vstack((self.ZeffkErrorHist,self.GtMagHist))
                         if self.saveVmagandangPlot:
