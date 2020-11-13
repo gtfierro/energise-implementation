@@ -119,7 +119,9 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Zeffkintermed = self.ZeffkTru.copy()
 
         #for testing the Zeffestimator
-        # Zeffk_init_mult = 'uniRandom'
+        if Zeffk_init_mult < 0:
+            simNum = -Zeffk_init_mult
+            Zeffk_init_mult = 'uniRandom'
         if Zeffk_init_mult == 'None':
             Zeffk_init_mult = .5
             # Zeffk_init_mult = .75
@@ -139,8 +141,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print('self.Zeffk_init_mult ', self.Zeffk_init_mult)
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', self.Zeff_kinit)
-        # self.initErrString = ''
-        self.initErrString = f'eps={self.Zeffk_init_mult}'
+        if Zeffk_init_mult == 'uniRandom':
+            self.initErrString = f'eps=uniRandom{simNum}'
+        else:
+            self.initErrString = f'eps={self.Zeffk_init_mult}'
         ######################## LQR Controller Parameters #######################
         #General controller parameters
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
@@ -306,8 +310,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         self.HistLength = 101
-        self.HistLength = 10
-        self.HistLength = 3
+        # self.HistLength = 10
+        # self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
