@@ -295,7 +295,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         self.HistLength = 101
         # self.HistLength = 10
-        # self.HistLength = 3
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1699,6 +1699,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('SAVED Vmag and Vang plots ')
 
                     if self.saveZesterrorPlot:
+                        print('<<<<<<<<<<<<<<<<<<<<<<<<<<,')
+                        print('self.initErrString ', self.initErrString)
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
@@ -1708,13 +1710,13 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         plt.ylabel('Frobenius Norm Zeff Estimation Error')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, f'ZestError_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'ZestError_{self.initErrString}.png')); plt.clf(); plt.cla(); plt.close()
 
                         plt.plot(self.GtMagHist,'-', label='node: ' + self.busId)
                         plt.ylabel('Frobenius Norm of Gt')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, f'Gt_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'Gt_{self.initErrString}.png')); plt.clf(); plt.cla(); plt.close()
 
                         stack = np.vstack((self.ZeffkErrorHist,self.GtMagHist))
                         if self.saveVmagandangPlot:
