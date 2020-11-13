@@ -112,6 +112,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(f'ZeffkTru (PU) bus {busId}: ', self.ZeffkTru)
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
+        self.Zeffkintermed = self.ZeffkTru
+
         #for testing the Zeffestimator
         if Zeffk_init_mult == 'None':
             self.Zeffk_init_mult = .5
@@ -293,7 +295,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         self.HistLength = 101
         self.HistLength = 10
-        # self.HistLength = 3
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1661,6 +1663,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                     self.VmagHist[:,iter] = self.Vmag_pu
                     self.VangHist[:,iter] = self.Vang_without120degshifts
                     print('SAVING measurements for plotting')
+                    if iter == np.ceil(self.HistLength/2):
+                        self.Zeffkintermed = Zeffkest
                 elif iter == self.HistLength:
                     print('$$$$$$$$$$$$$$$$$$$$$$ SAVING plots $$$$$$$$$$$$$$$$$$$$$$')
                     if self.saveVmagandangPlot or self.saveZesterrorPlot:
@@ -1699,6 +1703,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
+                        print(f'Zeffk_intermediate (PU) bus {self.busId}: ', self.Zeffkintermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
                         plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
                         # plt.title('Zeff Estimation Error')
