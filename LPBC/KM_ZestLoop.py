@@ -153,7 +153,7 @@ def main_flexlab_CIL():
 
 # caution = 2
 # stepLength = 10 #this is rate in Zestwrapper in seconds
-HistLength = 3
+HistLength = 1
 # Zeffk_init_mults = [.5, .75, 1.25, 1.5, 2]
 Zeffk_init_mults = [.75, 1.25]
 Zeffk_init_mults = [.75]
