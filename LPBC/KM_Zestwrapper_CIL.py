@@ -807,7 +807,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Vmeas_all_phases = 0
         return (Vang_with120degshifts,VangRef,Vang_without120degshifts,Vmag,VmagRef,Vmag_relative, local_time_index, ref_time_index, V_ang_ref_firstPhase, dataWindowLength, Vmeas_all_phases) #returns the self. variables bc in case a match isnt found, they're already initialized
 
-
         # #alternative to find a timestamp at which all voltages are aligned, rather than finding presumably different time steps for each phase
         # #decided not to implement this bc its less flexible than the option above, which appears to be working well at the moment
         # # loops through every ordered_local uPMU reading starting from most recent
