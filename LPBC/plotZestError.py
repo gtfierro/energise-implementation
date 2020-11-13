@@ -9,10 +9,11 @@ import os
 current_directory = os.getcwd()
 resultsPATH = os.path.join(current_directory, 'simulationPlots')
 resultsPATH = os.path.join(resultsPATH, f'feeder:13bal_bus:675')
-fileNames = ['ZestDataλ=0.5.csv', 'ZestDataλ=2.csv']
+fileNames = ['ZestData_λ=0.5', 'ZestData_λ=2']
 labelNames = ['λ = 0.5', 'λ = 2']
 
 for i in np.arange(len(fileNames)):
+    print('fileNames[i] ', fileNames[i])
     Z_df = pd.read_csv(os.path.join(resultsPATH, f'{fileNames[i]}.csv'), index_col=0)
     Z_array = Z_df[['Zth Estimation Error']].to_numpy()
     plt.plot(Z_array, label=labelNames[i]) # this uses the filename for the legend
