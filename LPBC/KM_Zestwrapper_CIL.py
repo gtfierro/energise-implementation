@@ -1712,7 +1712,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
                         print(f'Zeffk_intermed (PU) bus {self.busId}: ', self.Zeffkintermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
-                        Zeststack = np.vstack((Zeffkinit, self.Zeffk_intermed, Zeffkest))
+                        Zeststack = np.vstack((Zeffkinit, self.Zeffkintermed, Zeffkest))
                         Zest_df = pd.DataFrame(Zeststack)
                         Zest_df.to_csv(os.path.join(resultsPATH, f'Zestimates_{self.initErrString}.csv'))
 
