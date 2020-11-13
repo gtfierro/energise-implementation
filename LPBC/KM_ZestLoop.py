@@ -163,13 +163,14 @@ Zeffk_init_mults = [.75]
 
 for i in np.arange(len(Zeffk_init_mults)):
     CIL_debug() #initialize the HIL
-    time.sleep(8)
+    # time.sleep(5)
     main_flexlab_CIL() #Run the HIL
-    time.sleep(8)
+    # time.sleep(5)
 
     buildZestimators(Zeffk_init_mults[i],  HistLength)
 
     loop = asyncio.get_event_loop()
+    print('got loop, running DEGC process')
     loop.run_forever()
     # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     # # await asyncio.sleep(caution * stepLength * HistLength)
