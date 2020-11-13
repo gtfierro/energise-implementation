@@ -1675,6 +1675,30 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if not os.path.exists(resultsPATH):
                             os.makedirs(resultsPATH)
 
+                    if self.saveVmagandangPlot:
+                        #magnitude
+                        for phase in np.arange(self.estimator.nphases):
+                            plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
+                        # print('phase ', phase)
+                        # plt.title('Network: 13 node feeder with constant load')
+                        plt.ylabel('p.u. Vmag')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
+
+                        #angle
+                        print('self.VangHist ', self.VangHist)
+                        for phase in np.arange(self.estimator.nphases):
+                            Vangs = self.VangHist[phase,:]
+                            plt.plot(Vangs, label='node: ' + self.busId + ', ph: ' + str(phase))
+                        # plt.title('Network: 13 node feeder with constant load')
+                        plt.ylabel('Vang [rad]')
+                        plt.xlabel('Timestep')
+                        plt.legend()
+                        plt.savefig(os.path.join(resultsPATH, 'Vang')); plt.clf(); plt.cla(); plt.close()
+                        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                        print('SAVED Vmag and Vang plots ')
+
                     if self.saveZesterrorPlot:
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
