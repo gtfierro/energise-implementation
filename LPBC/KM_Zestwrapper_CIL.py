@@ -16,6 +16,7 @@ import logging
 import requests
 from requests_futures.sessions import FuturesSession
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+import configparser
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
@@ -2060,9 +2061,14 @@ for lpbcCounter, key in enumerate(lpbcidx):
     # Zeffk_init_mult = .5
     # Zeffk_init_mult = 2
 
+    config = configparser.ConfigParser()
+    config.read('cfgtest.cfg', encoding='utf-8-sig')
+    Zeffk_init_mult = config.get('parameters','initParam')
+    print('YYYYYYYYYYYYYYYYY Zeffk_init_mult ', Zeffk_init_mult)
+
     # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, loop) #Every LPBC will have its own step that it calls on its own
-    # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult) #Every LPBC will have its own step that it calls on its own
-    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult) #Every LPBC will have its own step that it calls on its own
+    # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
 # loop.run_forever()
