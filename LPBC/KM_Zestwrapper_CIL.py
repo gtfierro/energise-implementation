@@ -50,10 +50,10 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None', loop='None'):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None')#, loop='None'):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
-        self.loop = loop
+        # self.loop = loop
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print(f'Building LPBC for performance node {busId}')
         self.busId = busId
@@ -81,8 +81,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.baseP_pu = 1
         self.baseQ_pu = self.baseP_pu
         # self.perturbScale = .005
-        # self.perturbScale = .01
-        self.perturbScale = 0
+        self.perturbScale = .01
+        # self.perturbScale = 0
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
@@ -303,8 +303,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         self.HistLength = 101
-        # self.HistLength = 10
-        self.HistLength = 3
+        self.HistLength = 10
+        # self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -2003,8 +2003,7 @@ cfg_file_template = config_from_file('template.toml') #config_from_file defined 
 # Sratio divides the network kVA
 # Sratio=10 divides the networkkVAbase by 10, so when the PU power commands are multiplied by kVA base they will implicitly be divided by 10, which cancels out the factor of 10 that the switch matrix scaling contributes.
 
-#HEREE
-loop = asyncio.get_event_loop()
+# loop = asyncio.get_event_loop()
 
 rate = 10
 print('rate ', rate)
@@ -2058,17 +2057,17 @@ for lpbcCounter, key in enumerate(lpbcidx):
     currentMeasExists = 0 #HHHERE delete this (?)-- set to 0 in order to run Zest in CIL test
     localVratio = 1
 
-    Zeffk_init_mult = .5
-    Zeffk_init_mult = 2
+    # Zeffk_init_mult = .5
+    # Zeffk_init_mult = 2
 
-    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, loop) #Every LPBC will have its own step that it calls on its own
+    # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, loop) #Every LPBC will have its own step that it calls on its own
     # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult) #Every LPBC will have its own step that it calls on its own
-    # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
+    lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
     #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
-loop.run_forever()
+# loop.run_forever()
 
-# run_loop() #defined in XBOSProcess
+run_loop() #defined in XBOSProcess
 
 
 
