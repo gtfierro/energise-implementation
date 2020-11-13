@@ -49,9 +49,11 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None', HistLength='None'):
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None', HistLength='None', loop='None'): #shoudl None be in quotes?
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
+        self.loop = loop
+        print('self.loop ', self.loop)
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print(f'Building LPBC for performance node {busId}')
         self.busId = busId
@@ -1732,7 +1734,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
-                    loop.stop() #this should stop the xbosprocess
+                    if self.loop != 'None':
+                        self.loop.stop() #this should stop the xbosprocess
 
             return #status
 
@@ -1801,7 +1804,7 @@ Tells each LPBC whether it sends commands to loads or inverters
 
 '''
 
-def buildZestimators(Zeffk_init_mult, HistLength):
+def buildZestimators(loop, Zeffk_init_mult, HistLength):
     SPBCname = 'spbc-jasper-1'
     # SPBCname = 'spbc-example-jasper'
 
@@ -2036,7 +2039,7 @@ def buildZestimators(Zeffk_init_mult, HistLength):
 
         # Zeffk_init_mult = .5
 
-        lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, HistLength) #Every LPBC will have its own step that it calls on its own
+        lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, HistLength, loop) #Every LPBC will have its own step that it calls on its own
         # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
         #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
