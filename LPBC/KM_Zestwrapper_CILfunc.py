@@ -1734,6 +1734,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
+                    print('@@@@@@@@@@@@@@@@@ ENDING DEGC LOOP')
                     if self.loop != 'None':
                         self.loop.stop() #this should stop the xbosprocess
 
