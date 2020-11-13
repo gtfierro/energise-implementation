@@ -178,6 +178,6 @@ for i in np.arange(len(Zeffk_init_mults)):
     # asyncio.sleep(caution * stepLength * HistLength)
     # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DONE SLEEPING')
     # loop.stop()
-    loop.close() #close DEGC process
+    # loop.close() #close DEGC process
 
     sim_stop() #stop HIL run
