@@ -7,13 +7,10 @@ function set_config(){
     sed -i "s/^\($1\s*=\s*\).*\$/\1$2/" $CONFIG
 }
 
-
-# for (( counter=2; counter>0; counter-- ))
-# for eps in 0.5 0.75 1.25 1.5 2
-array=(0.5 0.75)
-array=(1.5 2)
-# array=(-1 -2)
-array=(0.5)
+array=(0.5 0.75 1.25 1.5 2)
+# array=(-1 -2 -3 -4 -5)
+# array=(0.5)
+# array=(0.75 1.25 1.5 2)
 for eps in "${array[@]}"
 do
 set_config initParam $eps
