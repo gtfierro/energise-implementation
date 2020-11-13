@@ -9,8 +9,8 @@ import os
 current_directory = os.getcwd()
 resultsPATH = os.path.join(current_directory, 'simulationPlots')
 resultsPATH = os.path.join(resultsPATH, f'feeder:13bal_bus:675')
-fileNames = ['ZestData_λ=0.5', 'ZestData_λ=2']
-labelNames = ['λ = 0.5', 'λ = 2']
+fileNames = ['ZestData_λ=0.5',  'ZestData_λ=0.75', 'ZestData_λ=2']
+labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 2']
 
 for i in np.arange(len(fileNames)):
     print('fileNames[i] ', fileNames[i])

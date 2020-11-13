@@ -119,8 +119,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             self.Zeffk_init_mult = .5
             self.Zeffk_init_mult = .75
             # self.Zeffk_init_mult = 1
-            # self.Zeffk_init_mult = 1.25
-            self.Zeffk_init_mult = 1.5
+            self.Zeffk_init_mult = 1.25
+            # self.Zeffk_init_mult = 1.5
             # self.Zeffk_init_mult = 2
         # else:
         #     self.Zeffk_init_mult = Zeffk_init_mult
@@ -1686,7 +1686,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
 
                         #angle
-                        print('self.VangHist ', self.VangHist)
                         for phase in np.arange(self.estimator.nphases):
                             Vangs = self.VangHist[phase,:]
                             plt.plot(Vangs, label='node: ' + self.busId + ', ph: ' + str(phase))
