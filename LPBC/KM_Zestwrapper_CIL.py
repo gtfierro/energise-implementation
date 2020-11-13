@@ -2062,7 +2062,8 @@ for lpbcCounter, key in enumerate(lpbcidx):
     # Zeffk_init_mult = 2
 
     config = configparser.ConfigParser()
-    config.read('KM_Zest_params.cfg', encoding='utf-8-sig')
+    # config.read('KM_Zest_params.cfg', encoding='utf-8-sig')
+    config.read('KM_Zest_params.cfg')
     Zeffk_init_mult = config.get('parameters','initParam')
     print('YYYYYYYYYYYYYYYYY Zeffk_init_mult ', Zeffk_init_mult)
 
