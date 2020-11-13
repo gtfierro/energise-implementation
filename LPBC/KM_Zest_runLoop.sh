@@ -11,7 +11,7 @@ function set_config(){
 # for (( counter=2; counter>0; counter-- ))
 # for eps in 0.5 0.75 1.25 1.5 2
 array=(0.5 0.75)
-for eps in array
+for eps in "${array[@]}"
 do
 set_config initParam $eps
 printf "\n"
