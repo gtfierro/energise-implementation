@@ -128,7 +128,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
         # self.initErrString = ''
-        self.initErrString = f'eps={self.Zeffk_init_mult}'
+        self.initErrString = f'λ={self.Zeffk_init_mult}'
         ######################## LQR Controller Parameters #######################
         #General controller parameters
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
