@@ -7,10 +7,10 @@ import os
 #HERE have to put the file names and path in manually
 #The file names will also be the names in the legend
 current_directory = os.getcwd()
-resultsPATH = os.path.join(current_directory, 'simulationPlots')
-resultsPATH = os.path.join(resultsPATH, f'feeder:13bal_bus:675')
-fileNames = ['ZestData_λ=0.5',  'ZestData_λ=0.75', 'ZestData_λ=2']
-labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 2']
+simFolderPATH = os.path.join(current_directory, 'simulationPlots')
+# resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675')
+resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675_5runs_pertrub:p01_lam:p95_G:100']
+labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r'$\epsilon$ = 1.5', r'$\epsilon$ = 2']
 
 for i in np.arange(len(fileNames)):
     print('fileNames[i] ', fileNames[i])
