@@ -129,7 +129,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             Zeffk_init = Zeffk_init*self.Zeffk_init_mult
         elif Zeffk_init_mult == 'uniRandom':
             for i in np.arange(nphases):
-                for k in nphases:
+                for k in np.arange(nphases):
                     Zeffk_init[i,k] = Zeffk_init[i,k]*2*np.random.uniform()
         else:
             self.Zeffk_init_mult = Zeffk_init_mult
