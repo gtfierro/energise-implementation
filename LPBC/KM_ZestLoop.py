@@ -169,7 +169,7 @@ for i in np.arange(len(Zeffk_init_mults)):
     # time.sleep(5)
 
     loop = asyncio.get_event_loop()
-    buildZestimators(loop, Zeffk_init_mults[i],  HistLength)
+    buildZestimators(loop, i, Zeffk_init_mults[i],  HistLength)
 
     print('got loop, running DEGC process')
     loop.run_forever()
@@ -178,6 +178,6 @@ for i in np.arange(len(Zeffk_init_mults)):
     # asyncio.sleep(caution * stepLength * HistLength)
     # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DONE SLEEPING')
     # loop.stop()
-    # loop.close() #close DEGC process
+    loop.close() #close DEGC process
 
     sim_stop() #stop HIL run

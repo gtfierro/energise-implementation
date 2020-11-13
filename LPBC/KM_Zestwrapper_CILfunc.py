@@ -1805,7 +1805,7 @@ Tells each LPBC whether it sends commands to loads or inverters
 
 '''
 
-def buildZestimators(loop, Zeffk_init_mult, HistLength):
+def buildZestimators(loop, entityIndex, Zeffk_init_mult, HistLength):
     SPBCname = 'spbc-jasper-1'
     # SPBCname = 'spbc-example-jasper'
 
@@ -2001,7 +2001,8 @@ def buildZestimators(loop, Zeffk_init_mult, HistLength):
         cfg = cfg_file_template
         # namespace is the account that controls permissions
         cfg['name'] = key
-        cfg['entity'] = entitydict[lpbcCounter] #entity is like a key for each LPBC
+        cfg['entity'] = entitydict[entityIndex*nlpbc + lpbcCounter] #entity is like a key for each LPBC
+        # cfg['entity'] = entitydict[entityIndex]
         if actType == 'inverter':
             cfg['rate'] = rate
             cfg['local_channels'] = list(pmu123PChannels[pmu123P_plugs_dict[key]])
