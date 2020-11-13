@@ -15,7 +15,7 @@ simFolderPATH = os.path.join(current_directory, 'simulationPlots')
 # fileNames = ['ZestData_λ=0.5',  'ZestData_λ=0.75',  'ZestData_λ=1.25', 'ZestData_λ=1.5', 'ZestData_λ=2']
 # labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r'$\epsilon$ = 1.5', r'$\epsilon$ = 2']
 
-resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675')
+resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675_WOcaps_5runs_perturb:p01_lam:p95_G:100')
 fileNames = ['ZestData_eps=0.5',  'ZestData_eps=0.75',  'ZestData_eps=1.25', 'ZestData_eps=1.5', 'ZestData_eps=2.0']
 labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r'$\epsilon$ = 1.5', r'$\epsilon$ = 2']
 
