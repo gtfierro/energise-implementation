@@ -121,14 +121,14 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             # self.Zeffk_init_mult = 1
             # self.Zeffk_init_mult = 1.25
             # self.Zeffk_init_mult = 1.5
-            self.Zeffk_init_mult = 2
-        else:
-            self.Zeffk_init_mult = Zeffk_init_mult
+            # self.Zeffk_init_mult = 2
+        # else:
+        #     self.Zeffk_init_mult = Zeffk_init_mult
         Zeffk_init = Zeffk_init*self.Zeffk_init_mult
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
-        # self.ZerrorFileName = ''
-        self.ZerrorFileName = f'λ = {self.Zeffk_init_mult}'
+        # self.initErrString = ''
+        self.initErrString = f'λ={self.Zeffk_init_mult}'
         ######################## LQR Controller Parameters #######################
         #General controller parameters
         linearizeplant = 1 #determines how the (V-V0) voltage is converted into an eq power injection
@@ -1675,48 +1675,23 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         if not os.path.exists(resultsPATH):
                             os.makedirs(resultsPATH)
 
-                    if self.saveVmagandangPlot:
-                        #magnitude
-                        for phase in np.arange(self.estimator.nphases):
-                            plt.plot(self.VmagHist[phase,:], label='node: ' + self.busId + ', ph: ' + str(phase))
-                        # print('phase ', phase)
-                        # plt.title('Network: 13 node feeder with constant load')
-                        plt.ylabel('p.u. Vmag')
-                        plt.xlabel('Timestep')
-                        plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, 'Vmag')); plt.clf(); plt.cla(); plt.close()
-
-                        #angle
-                        print('self.VangHist ', self.VangHist)
-                        for phase in np.arange(self.estimator.nphases):
-                            Vangs = self.VangHist[phase,:]
-                            plt.plot(Vangs, label='node: ' + key + ', ph: ' + str(phase))
-                        # plt.title('Network: 13 node feeder with constant load')
-                        plt.ylabel('Vang [rad]')
-                        plt.xlabel('Timestep')
-                        plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, 'Vang')); plt.clf(); plt.cla(); plt.close()
-                        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-                        print('SAVED Vmag and Vang plots ')
-
                     if self.saveZesterrorPlot:
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
-                        print(f'Zeffk_intermediate (PU) bus {self.busId}: ', self.Zeffkintermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
                         plt.plot(self.ZeffkErrorHist,'-', label='node: ' + key)
                         # plt.title('Zeff Estimation Error')
                         plt.ylabel('Frobenius Norm Zeff Estimation Error')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, 'ZestError')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'ZestError_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
 
                         plt.plot(self.GtMagHist,'-', label='node: ' + key)
                         plt.ylabel('Frobenius Norm of Gt')
                         plt.xlabel('Timestep')
                         plt.legend()
-                        plt.savefig(os.path.join(resultsPATH, 'Gt')); plt.clf(); plt.cla(); plt.close()
+                        plt.savefig(os.path.join(resultsPATH, f'Gt_{self.initErrString}')); plt.clf(); plt.cla(); plt.close()
 
                         stack = np.vstack((self.ZeffkErrorHist,self.GtMagHist))
                         if self.saveVmagandangPlot:
@@ -1731,7 +1706,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                             # this assumes the phases are a then b then c, which isnt necessarily true
                         else:
                             Zerr_df = pd.DataFrame(stack.T, columns=['Zth Estimation Error', 'Gt'])
-                        Zerr_df.to_csv(os.path.join(resultsPATH, f'{self.ZerrorFileName}.csv'))
+                        Zerr_df.to_csv(os.path.join(resultsPATH, f'ZestData_{self.initErrString}.csv'))
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
