@@ -120,20 +120,20 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #for testing the Zeffestimator
         Zeffk_init_mult = 'uniRandom'
         if Zeffk_init_mult == 'None':
-            self.Zeffk_init_mult = .5
-            # self.Zeffk_init_mult = .75
-            # self.Zeffk_init_mult = 1
-            # self.Zeffk_init_mult = 1.25
-            # self.Zeffk_init_mult = 1.5
-            # self.Zeffk_init_mult = 2
-            Zeffk_init = Zeffk_init*self.Zeffk_init_mult
+            Zeffk_init_mult = .5
+            # Zeffk_init_mult = .75
+            # Zeffk_init_mult = 1
+            # Zeffk_init_mult = 1.25
+            # Zeffk_init_mult = 1.5
+            # Zeffk_init_mult = 2
+            Zeffk_init = Zeffk_init*Zeffk_init_mult
         elif Zeffk_init_mult == 'uniRandom':
             for i in np.arange(nphases):
                 for k in np.arange(nphases):
                     Zeffk_init[i,k] = Zeffk_init[i,k]*2*np.random.uniform()
         else:
-            self.Zeffk_init_mult = Zeffk_init_mult
-            Zeffk_init = Zeffk_init*self.Zeffk_init_mult
+            Zeffk_init = Zeffk_init*Zeffk_init_mult
+        self.Zeffk_init_mult = Zeffk_init_mult
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', Zeffk_init)
         # self.initErrString = ''
