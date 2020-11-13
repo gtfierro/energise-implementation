@@ -111,7 +111,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         # self.ZeffkError = []
         # self.GtMag = []
         # if self.usingNonpuZeff == 0:
-        self.ZeffkTru = Zeffk_init #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
+        self.ZeffkTru = Zeffk_init.copy() #self.ZeffkTru is an attribute of lpbcwrapper rather than the LQR controller bc the LQR doesnt know ZeffkTru (wrapper wouldnt either, in actual implementations)
         print(f'ZeffkTru (PU) bus {busId}: ', self.ZeffkTru)
         #else wait till Zbase is  #HERE will assigning a self. later create an error?
 
