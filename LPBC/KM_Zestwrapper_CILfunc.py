@@ -49,7 +49,8 @@ modbus is positive out of the network (switched internally)
 #to use session.get for parallel API commands you have to download futures: pip install --user requests-futures
 
 class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attributes and behaviors from pbc.LPBCProcess (which is a wrapper for XBOSProcess)
-    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None', HistLength='None', loop='None'): #shoudl None be in quotes?
+    # def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None', HistLength='None', loop='None'): #shoudl None be in quotes?
+    def __init__(self, cfg, busId, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, network_kVAbase, localSratio=1, localVratio=1, ORT_max_kVA=500, VmagScaling=1, Zeffk_init_mult='None'):
         super().__init__(cfg) #cfg goes to LPBCProcess https://github.com/gtfierro/xboswave/blob/master/python/pyxbos/pyxbos/drivers/pbc/pbc_framework.py
 
         self.loop = loop
@@ -81,7 +82,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
 
         self.baseP_pu = 1
         self.baseQ_pu = self.baseP_pu
-        self.perturbScale = .005
+        self.perturbScale = .02
         # self.Pcmd_pu = (np.ones(self.nphases) + np.random.randn(self.nphases)*self.perturbScale) * self.baseP_pu
 
         '''
@@ -1734,9 +1735,10 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
-                    print('@@@@@@@@@@@@@@@@@ ENDING DEGC LOOP')
-                    if self.loop != 'None':
-                        self.loop.stop() #this should stop the xbosprocess
+                    sys.exit() #end the python program so a new run can be started
+                    # print('@@@@@@@@@@@@@@@@@ ENDING DEGC LOOP')
+                    # if self.loop != 'None':
+                    #     self.loop.stop() #this should stop the xbosprocess
 
             return #status
 
@@ -1805,7 +1807,8 @@ Tells each LPBC whether it sends commands to loads or inverters
 
 '''
 
-def buildZestimators(loop, entityIndex, Zeffk_init_mult, HistLength):
+# def buildZestimators(loop, entityIndex, Zeffk_init_mult, HistLength):
+def buildZestimators(Zeffk_init_mult):
     SPBCname = 'spbc-jasper-1'
     # SPBCname = 'spbc-example-jasper'
 
@@ -2041,12 +2044,14 @@ def buildZestimators(loop, entityIndex, Zeffk_init_mult, HistLength):
 
         # Zeffk_init_mult = .5
 
-        lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, HistLength, loop) #Every LPBC will have its own step that it calls on its own
+        # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult, HistLength, loop) #Every LPBC will have its own step that it calls on its own
+        lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling, Zeffk_init_mult)
         # lpbcdict[key] = Zestwrapper(cfg, key, testcase, nphases, act_idxs, actType, plug_to_phase_idx, timesteplength, currentMeasExists, kVbase, kVAbase, localSratio, localVratio, ORT_max_kVA, VmagScaling) #Every LPBC will have its own step that it calls on its own
         #key is busId, which is the performance node for the LPBC (not necessarily the actuation node)
 
         print(f'Zestimator built for {key}')
-# run_loop() #defined in XBOSProcess
+
+    run_loop() #defined in XBOSProcess
 
 
 

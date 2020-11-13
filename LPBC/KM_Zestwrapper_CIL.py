@@ -302,7 +302,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         self.HistLength = 101
         # self.HistLength = 10
-        # self.HistLength = 3
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
@@ -1710,7 +1710,12 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Zeffkinit = self.ZeffkTru*self.Zeffk_init_mult
                         print(f'Zeffk_true (PU) bus {self.busId}: ', self.ZeffkTru)
                         print(f'Zeffk_init (PU) bus {self.busId}: ', Zeffkinit)
+                        print(f'Zeffk_intermed (PU) bus {self.busId}: ', self.Zeffk_intermed)
                         print(f'Zeffk_est (PU) bus {self.busId}: ', Zeffkest)
+                        Zeststack = np.vstack((Zeffkinit, self.Zeffk_intermed, Zeffkest))
+                        Zest_df = pd.DataFrame(Zeststack)
+                        Zest_df.to_csv(os.path.join(resultsPATH, f'Zestimates_{self.initErrString}.csv'))
+
                         plt.plot(self.ZeffkErrorHist,'-', label='node: ' + self.busId)
                         # plt.title('Zeff Estimation Error')
                         plt.ylabel('Frobenius Norm Zeff Estimation Error')
@@ -1740,7 +1745,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         Zerr_df.to_csv(os.path.join(resultsPATH, f'ZestData_{self.initErrString}.csv'))
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
-
+                    sys.exit()
             return #status
 
 
