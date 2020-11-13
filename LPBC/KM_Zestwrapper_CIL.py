@@ -118,7 +118,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Zeffkintermed = self.ZeffkTru
 
         #for testing the Zeffestimator
-        # Zeffk_init_mult = 'uniRandom'
+        Zeffk_init_mult = 'uniRandom'
         if Zeffk_init_mult == 'None':
             self.Zeffk_init_mult = .5
             # self.Zeffk_init_mult = .75
@@ -304,7 +304,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         self.HistLength = 101
         self.HistLength = 10
-        # self.HistLength = 3
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
