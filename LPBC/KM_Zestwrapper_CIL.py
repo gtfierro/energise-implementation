@@ -119,7 +119,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.Zeffkintermed = self.ZeffkTru.copy()
 
         #for testing the Zeffestimator
-        Zeffk_init_mult = 'uniRandom'
+        # Zeffk_init_mult = 'uniRandom'
         if Zeffk_init_mult == 'None':
             Zeffk_init_mult = .5
             # Zeffk_init_mult = .75
@@ -136,6 +136,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         else:
             self.Zeff_kinit = Zeffk_init*Zeffk_init_mult
         self.Zeffk_init_mult = Zeffk_init_mult
+        print('self.Zeffk_init_mult ', self.Zeffk_init_mult)
         print(f'Zeffk_init_mult (PU) bus {busId}: ', self.Zeffk_init_mult)
         print(f'Zeffk_init (PU) bus {busId}: ', self.Zeff_kinit)
         # self.initErrString = ''
