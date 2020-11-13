@@ -1748,12 +1748,14 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
                         print('SAVED Zest plots ')
 
-                    if self.loop != 'None':
-                        self.loop.stop() #this should stop the xbosprocess
-                        self.loop.stop()
-                        self.loop.close()
-                    print('running sys.exit(0)')
-                    sys.exit(0)
+                    # if self.loop != 'None':
+                    #     self.loop.stop() #this should stop the xbosprocess
+                    #     self.loop.stop()
+                    #     self.loop.close()
+                    # print('running sys.exit(0)')
+                    # sys.exit(0)
+                    print('running os._exit(0)')
+                    os._exit(0)
             return #status
 
 
