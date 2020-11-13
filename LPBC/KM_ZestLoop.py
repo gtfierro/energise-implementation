@@ -173,11 +173,7 @@ for i in np.arange(len(Zeffk_init_mults)):
 
     print('got loop, running DEGC process')
     loop.run_forever()
-    # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-    # # await asyncio.sleep(caution * stepLength * HistLength)
-    # asyncio.sleep(caution * stepLength * HistLength)
-    # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DONE SLEEPING')
-    # loop.stop()
+    # loop.stop() is implemented inside the LPBC script once it has successfully implemented enough iterations
     loop.close() #close DEGC process
 
     sim_stop() #stop HIL run
