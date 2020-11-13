@@ -117,7 +117,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         #for testing the Zeffestimator
         if Zeffk_init_mult == 'None':
             self.Zeffk_init_mult = .5
-            # self.Zeffk_init_mult = .75
+            self.Zeffk_init_mult = .75
             # self.Zeffk_init_mult = 1
             # self.Zeffk_init_mult = 1.25
             # self.Zeffk_init_mult = 1.5
