@@ -61,8 +61,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.timesteplength = timesteplength
 
         #These are new #HEREE
-        self.useRefNodeforVcalc = True
-        # self.useRefNodeforVcalc = False
+        # self.useRefNodeforVcalc = True
+        self.useRefNodeforVcalc = False
         useV0forVth = False
         useNominalVforPsi = True
         # self.Vang_fict = None #not using these any more
@@ -311,7 +311,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveZesterrorPlot = 1
         self.HistLength = 101
         # self.HistLength = 10
-        # self.HistLength = 3
+        self.HistLength = 3
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
