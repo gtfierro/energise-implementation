@@ -400,6 +400,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
             deltaVangReliable = 1 #this isnt necessarily true, eg there could have been a frequency excursion before the data window started
         else:
             deltaVangReliable = 0
+            print(';;;;;;;;;;;;;;!!!!!!!! deltaVangReliable not reliable bc Vfreq = ', Vfreq)
+            print('self.freqTol ', self.freqTol)
 
         print('::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
         print('len(local_phasors[plug]) ', len(local_phasors[plug])) #this is the number of phasor measurements delivered. often it is 120*rate (number of seconds)
@@ -1513,7 +1515,7 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Vang, self.Vmag, dataWindowLength, deltaVangReliable = self.phasorV_localMeas(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.Vang_with120degshifts = self.PhasorV_ang_wraparound(Vang, self.nphases, nameVang='self.Vang_with120degshifts')
                 self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
-                print('deltaVangReliable ' + str(self.busId) + ' : ' + str(sdeltaVangReliable))
+                print('deltaVangReliable ' + str(self.busId) + ' : ' + str(deltaVangReliable))
                 print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
                 print('Vang_with120degshifts bus ' + str(self.busId) + ' : ' + str(self.Vang_with120degshifts))
                 Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_with120degshifts) + self.Vmag_pu*np.sin(self.Vang_with120degshifts)*1j
