@@ -10,7 +10,7 @@ function set_config(){
 array=(0.5 0.75 1.25 1.5 2)
 # array=(-1 -2 -3 -4 -5)
 # array=(0.5)
-# array=(1.25 2)
+array=(0.75 1.25 2)
 # array=(-1)
 for eps in "${array[@]}"
 do

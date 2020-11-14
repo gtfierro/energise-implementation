@@ -20,9 +20,12 @@ simFolderPATH = os.path.join(current_directory, 'simulationPlots')
 # labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r'$\epsilon$ = 1.5', r'$\epsilon$ = 2']
 
 # resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675_WOcaps_5runs_perturb:uniformRandom_lam:p95_G:100')
+# fileNames = ['ZestData_eps=uniRandom1.0',  'ZestData_eps=uniRandom2.0',  'ZestData_eps=uniRandom3.0', 'ZestData_eps=uniRandom4.0', 'ZestData_eps=uniRandom5.0']
+# labelNames = [r'Random Initialization 1', r'Random Initialization 2', r'Random Initialization 3', r'Random Initialization 4', r'Random Initialization 5']
+
 resultsPATH = os.path.join(simFolderPATH, f'feeder:13bal_bus:675')
-fileNames = ['ZestData_eps=uniRandom1.0',  'ZestData_eps=uniRandom2.0',  'ZestData_eps=uniRandom3.0', 'ZestData_eps=uniRandom4.0', 'ZestData_eps=uniRandom5.0']
-labelNames = [r'Random Initialization 1', r'Random Initialization 2', r'Random Initialization 3', r'Random Initialization 4', r'Random Initialization 5']
+fileNames = ['ZestData_eps=0.5',  'ZestData_eps=0.75',  'ZestData_eps=1.25', 'ZestData_eps=1.5', 'ZestData_eps=2.0']
+labelNames = [r'$\epsilon$ = 0.5', r'$\epsilon$ = 0.75', r'$\epsilon$ = 1.25', r'$\epsilon$ = 1.5', r'$\epsilon$ = 2']
 
 plotZest = 1
 plotVmag = 1
