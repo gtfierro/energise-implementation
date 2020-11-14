@@ -1515,7 +1515,6 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
                 Vang, self.Vmag, dataWindowLength, deltaVangReliable = self.phasorV_localMeas(local_phasors, self.nphases, self.plug_to_V_idx)
                 self.Vang_with120degshifts = self.PhasorV_ang_wraparound(Vang, self.nphases, nameVang='self.Vang_with120degshifts')
                 self.Vmag_pu = self.Vmag / (self.localkVbase * 1000) # absolute
-                print('deltaVangReliable ' + str(self.busId) + ' : ' + str(deltaVangReliable))
                 print('Vmag_pu bus ' + str(self.busId) + ' : ' + str(self.Vmag_pu))
                 print('Vang_with120degshifts bus ' + str(self.busId) + ' : ' + str(self.Vang_with120degshifts))
                 Vcomp_pu = self.Vmag_pu*np.cos(self.Vang_with120degshifts) + self.Vmag_pu*np.sin(self.Vang_with120degshifts)*1j
