@@ -310,8 +310,8 @@ class Zestwrapper(pbc.LPBCProcess): #this is related to super(), inherits attrib
         self.saveVmagandangPlot = 1
         self.saveZesterrorPlot = 1
         self.HistLength = 101
-        # self.HistLength = 10
-        self.HistLength = 5
+        self.HistLength = 10
+        # self.HistLength = 5
         self.VmagHist = np.zeros((self.nphases,self.HistLength))
         self.VangHist = np.zeros((self.nphases,self.HistLength))
         self.ZeffkErrorHist = np.zeros(self.HistLength)
